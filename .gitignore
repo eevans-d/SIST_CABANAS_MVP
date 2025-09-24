@@ -1,0 +1,39 @@
+# Byte-code files
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+.venv/
+env/
+venv/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+thumbs.db
+
+# Environment variables
+.env
+
+# Docker
+*.log
+
+# Alembic
+/backend/alembic/versions/*.pyc
+
+# Python test and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# Nginx
+nginx/ssl/*.key
+nginx/ssl/*.crt
+
+# WhatsApp media
+/tmp/whatsapp_media/
+/tmp/audio_processing/

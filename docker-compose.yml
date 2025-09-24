@@ -1,0 +1,87 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: alojamientos_postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-alojamientos}
+      POSTGRES_USER: ${DB_USER:-alojamientos}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-supersecret}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-alojamientos} -d ${DB_NAME:-alojamientos}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - backend
+
+  redis:
+    image: redis:7-alpine
+    container_name: alojamientos_redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redispass}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - backend
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: alojamientos_api
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /tmp/whatsapp_media:/tmp/whatsapp_media
+      - /tmp/audio_processing:/tmp/audio_processing
+    restart: unless-stopped
+    networks:
+      - backend
+      - frontend
+
+  nginx:
+    image: nginx:alpine
+    container_name: alojamientos_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - frontend
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  backend:
+    driver: bridge
+  frontend:
+    driver: bridge
