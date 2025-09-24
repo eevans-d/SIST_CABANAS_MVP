@@ -9,6 +9,7 @@ from datetime import datetime
 from app.core.config import get_settings
 from app.core.logging import setup_logging
 from app.routers import health
+from app.routers import reservations as reservations_router
 
 # Setup logging
 setup_logging()
@@ -109,6 +110,7 @@ async def internal_error_handler(request: Request, exc):
 
 # Include routers
 app.include_router(health.router, prefix="/api/v1")
+app.include_router(reservations_router.router, prefix="/api/v1")
 
 @app.get("/")
 async def root():
