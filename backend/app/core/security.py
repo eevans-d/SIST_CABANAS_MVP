@@ -1,7 +1,7 @@
 import hmac
 import hashlib
 import secrets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from typing import Optional, Dict, Any
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -28,10 +28,11 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
     """Create a JWT access token"""
     to_encode = data.copy()
+    now = datetime.now(UTC)
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = now + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(hours=settings.JWT_EXPIRATION_HOURS)
+        expire = now + timedelta(hours=settings.JWT_EXPIRATION_HOURS)
     
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
@@ -107,7 +108,7 @@ def verify_mercadopago_signature(headers: Dict[str, str], body: bytes) -> bool:
 # iCal token generation
 def generate_ical_token(accommodation_id: int) -> str:
     """Generate a secure token for iCal export"""
-    data = f"{accommodation_id}:{datetime.utcnow().isoformat()}"
+    data = f"{accommodation_id}:{datetime.now(UTC).isoformat()}"
     token = hmac.new(
         settings.ICS_SALT.encode(),
         data.encode(),

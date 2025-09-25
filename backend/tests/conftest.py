@@ -55,12 +55,6 @@ TEST_DATABASE_URL = os.getenv(
 SQLITE_FALLBACK_URL = "sqlite+aiosqlite:///./test_fallback.db"
 TEST_REDIS_URL = os.getenv("TEST_REDIS_URL", "redis://localhost:6379/1")
 
-@pytest.fixture(scope="session")
-def event_loop():
-    """Create an instance of the default event loop for the test session."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
 
 async def _can_connect(engine) -> bool:
     try:
@@ -201,11 +195,12 @@ async def reservation_factory(db_session, accommodation_factory):  # type: ignor
     except Exception:
         pytest.skip("Modelo Reservation no disponible todavía")
     from datetime import date
+    import uuid as _uuid
 
     async def _create(**overrides):
         acc = overrides.pop("accommodation", None) or await accommodation_factory()
         data = dict(
-            code="RES2501010001",
+            code=f"RES{_uuid.uuid4().hex[:10].upper()}",
             accommodation_id=acc.id,
             check_in=date(2025, 1, 1),
             check_out=date(2025, 1, 3),
@@ -233,11 +228,36 @@ async def reservation_factory(db_session, accommodation_factory):  # type: ignor
 # Cliente HTTP para tests de API (se activa cuando exista app.main:app)
 # ---------------------------------------------------------------------------
 @pytest.fixture()
-async def test_client():  # type: ignore
+async def test_client(test_engine):  # type: ignore
+    """Cliente HTTP usando la misma base de datos que el engine de test.
+
+    Asegura consistencia: la app importada apuntará al mismo URL (sqlite fallback o postgres)
+    evitando errores de 'database ... does not exist'.
+    """
+    from httpx import AsyncClient
+    import os as _os
+
+    # Forzar variables de entorno coherentes ANTES de importar la app
+    _os.environ.setdefault("ENVIRONMENT", "test")
+    _os.environ.setdefault("REDIS_URL", TEST_REDIS_URL)
+    _os.environ.setdefault("WHATSAPP_ACCESS_TOKEN", "dummy")
+    _os.environ.setdefault("WHATSAPP_APP_SECRET", "dummy")
+    _os.environ.setdefault("WHATSAPP_PHONE_ID", "dummy")
+    _os.environ.setdefault("MERCADOPAGO_ACCESS_TOKEN", "dummy")
+    _os.environ.setdefault("BASE_URL", "http://localhost")
+    _os.environ.setdefault("DOMAIN", "localhost")
+    # Usar exactamente el URL del engine ya inicializado (sqlite o postgres)
     try:
-        from httpx import AsyncClient
-        from app.main import app  # type: ignore
+        _os.environ["DATABASE_URL"] = str(test_engine.url)
     except Exception:
-        pytest.skip("FastAPI app no disponible aún para test_client")
-    async with AsyncClient(app=app, base_url="http://test") as client:
+        # Fallback mínimo si algo inesperado sucede
+        _os.environ.setdefault("DATABASE_URL", TEST_DATABASE_URL)
+
+    # Import tardío de la app ahora que el entorno está listo
+    from app.main import app  # type: ignore
+
+    # Evitar deprecation usando transporte explícito
+    from httpx import ASGITransport
+    transport = ASGITransport(app=app)  # type: ignore[arg-type]
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
         yield client

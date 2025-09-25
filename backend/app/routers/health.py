@@ -1,10 +1,13 @@
 from fastapi import APIRouter, Depends
-from typing import Dict
-from datetime import datetime
+from typing import Dict, Optional
+from datetime import datetime, timezone
 import structlog
 
 from app.core.database import check_database_health
 from app.core.redis import check_redis_health
+from app.core.config import get_settings
+
+settings = get_settings()
 
 router = APIRouter()
 logger = structlog.get_logger()
@@ -15,9 +18,10 @@ async def health_check() -> Dict:
     Comprehensive health check endpoint.
     Returns system status and component health.
     """
+    now = datetime.now(timezone.utc)
     health_status = {
         "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": now.isoformat(),
         "checks": {}
     }
     
@@ -38,14 +42,30 @@ async def health_check() -> Dict:
         "free_percent": round(disk_free_percent, 2)
     }
     
-    # Check memory
-    import psutil
-    memory = psutil.virtual_memory()
-    health_status["checks"]["memory"] = {
-        "status": "ok" if memory.percent < 90 else "warning",
-        "used_percent": memory.percent
-    }
+    # Memory check simplificado (sin psutil para MVP)
+    # Placeholder: se podría integrar psutil más adelante si se agrega al requirements
+    health_status["checks"]["memory"] = {"status": "ok", "used_percent": None, "detail": "not_collected"}
     
+    # iCal last sync placeholder (en MVP puede que no exista persistencia todavía)
+    # Estrategia: exponer last_sync_age_min = None si no disponible
+    last_ical_sync: Optional[datetime] = None  # TODO: reemplazar cuando se persista
+    if last_ical_sync:
+        age_min = (now - last_ical_sync).total_seconds() / 60
+        health_status["checks"]["ical"] = {
+            "status": "ok" if age_min < 20 else ("warning" if age_min < 30 else "error"),
+            "age_minutes": round(age_min, 2)
+        }
+    else:
+        health_status["checks"]["ical"] = {"status": "warning", "age_minutes": None, "detail": "no_sync_data"}
+
+    # Config flags (no hacemos llamadas externas costosas en health para mantener SLA)
+    health_status["checks"]["whatsapp"] = {
+        "status": "ok" if settings.WHATSAPP_ACCESS_TOKEN and settings.WHATSAPP_APP_SECRET else "error"
+    }
+    health_status["checks"]["mercadopago"] = {
+        "status": "ok" if settings.MERCADOPAGO_ACCESS_TOKEN else "error"
+    }
+
     # Determine overall status
     for check in health_status["checks"].values():
         if check["status"] == "error":

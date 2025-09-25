@@ -10,7 +10,8 @@ class Payment(Base, TimestampMixin):
 
     id = Column(Integer, primary_key=True)
     uuid = Column(UUID(as_uuid=True), unique=True, nullable=False, default=uuid.uuid4)
-    reservation_id = Column(Integer, ForeignKey("reservations.id", ondelete="CASCADE"), nullable=False, index=True)
+    # Nullable para permitir notificaciones huérfanas (cuando no existe la reserva) en el MVP
+    reservation_id = Column(Integer, ForeignKey("reservations.id", ondelete="CASCADE"), nullable=True, index=True)
 
     provider = Column(String(30), nullable=False, default="mercadopago")
     external_payment_id = Column(String(80), nullable=False)  # id notificación MP

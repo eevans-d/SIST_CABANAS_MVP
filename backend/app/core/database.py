@@ -8,14 +8,19 @@ from app.core.config import get_settings
 logger = structlog.get_logger()
 settings = get_settings()
 
-# Create async engine
+engine_kwargs = {
+    "echo": settings.ENVIRONMENT == "development",
+    "pool_pre_ping": True,
+}
+if settings.ENVIRONMENT == "test":
+    engine_kwargs["poolclass"] = NullPool  # type: ignore
+else:
+    engine_kwargs["pool_size"] = settings.DB_POOL_SIZE  # type: ignore
+    engine_kwargs["max_overflow"] = settings.DB_MAX_OVERFLOW  # type: ignore
+
 engine = create_async_engine(
     settings.DATABASE_URL,
-    echo=settings.ENVIRONMENT == "development",
-    pool_size=settings.DB_POOL_SIZE,
-    max_overflow=settings.DB_MAX_OVERFLOW,
-    pool_pre_ping=True,
-    poolclass=None if settings.ENVIRONMENT != "test" else NullPool,
+    **engine_kwargs,
 )
 
 # Create session factory

@@ -33,6 +33,17 @@ class ConfirmReservationResponse(BaseModel):
     confirmed_at: Optional[str] = None
     error: Optional[str] = None
 
+    class Config:
+        json_encoders = {}
+        # Para Pydantic v1 compat; en v2 se usaría ConfigDict
+        fields = {}
+        orm_mode = True
+        anystr_strip_whitespace = True
+        validate_assignment = True
+        use_enum_values = True
+        allow_population_by_field_name = True
+        # FastAPI exclude_none se maneja en response_model_exclude_none param, ajustaremos en ruta
+
 class CancelReservationRequest(BaseModel):
     reason: Optional[str] = None
 
@@ -57,7 +68,7 @@ async def create_pre_reservation(payload: PreReservationRequest, db: AsyncSessio
     )
     return result
 
-@router.post("/{code}/confirm", response_model=ConfirmReservationResponse)
+@router.post("/{code}/confirm", response_model=ConfirmReservationResponse, response_model_exclude_none=True)
 async def confirm_reservation(code: str, db: AsyncSession = Depends(get_db)):
     service = ReservationService(db)
     return await service.confirm_reservation(code)

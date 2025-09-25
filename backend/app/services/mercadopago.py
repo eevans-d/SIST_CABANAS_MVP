@@ -76,7 +76,7 @@ class MercadoPagoService:
                     reservation.payment_status = PaymentStatus.PAID.value
 
         payment = Payment(
-            reservation_id=reservation_id if reservation_id else 0,  # 0 si no asociada (se podría rechazar)
+            reservation_id=reservation_id if reservation_id is not None else None,
             external_payment_id=payment_id,
             external_reference=external_reference,
             status=status,

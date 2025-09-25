@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 import structlog
 import uuid
-from datetime import datetime
+from datetime import datetime, UTC
 
 from app.core.config import get_settings
 from app.core.logging import setup_logging
@@ -13,7 +13,9 @@ from app.routers import reservations as reservations_router
 from app.routers import mercadopago as mercadopago_router
 from app.routers import whatsapp as whatsapp_router
 from app.routers import ical as ical_router
+from app.routers import audio as audio_router
 from app.jobs.cleanup import expire_prereservations
+from prometheus_fastapi_instrumentator import Instrumentator
 from app.core.database import async_session_maker
 
 # Setup logging
@@ -81,6 +83,9 @@ app = FastAPI(
     redoc_url="/api/redoc" if settings.ENVIRONMENT != "production" else None,
 )
 
+# Prometheus instrumentation (simple MVP). Expondrá /metrics
+Instrumentator().instrument(app).expose(app, include_in_schema=False, endpoint="/metrics")
+
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
@@ -90,28 +95,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Request ID middleware
+# Request ID middleware (sin context manager erróneo)
 @app.middleware("http")
 async def add_request_id(request: Request, call_next):
     request_id = str(uuid.uuid4())
     request.state.request_id = request_id
-    
-    with structlog.contextvars.bind_contextvars(request_id=request_id):
-        start_time = datetime.utcnow()
-        response = await call_next(request)
-        
-        # Log request
-        duration_ms = (datetime.utcnow() - start_time).total_seconds() * 1000
-        logger.info(
-            "http_request",
-            method=request.method,
-            path=request.url.path,
-            status_code=response.status_code,
-            duration_ms=round(duration_ms, 2)
-        )
-        
-        response.headers["X-Request-ID"] = request_id
-        return response
+    try:
+        # bind_contextvars no es context manager; simplemente establece valores
+        import structlog.contextvars as ctxvars  # type: ignore
+        ctxvars.bind_contextvars(request_id=request_id)
+    except Exception:  # pragma: no cover
+        pass
+    # Usar datetime UTC aware para evitar deprecation warnings
+    start_time = datetime.now(UTC)
+    response = await call_next(request)
+    duration_ms = (datetime.now(UTC) - start_time).total_seconds() * 1000
+    logger.info(
+        "http_request",
+        method=request.method,
+        path=request.url.path,
+        status_code=response.status_code,
+        duration_ms=round(duration_ms, 2)
+    )
+    response.headers["X-Request-ID"] = request_id
+    return response
 
 # Exception handlers
 @app.exception_handler(400)
@@ -146,9 +153,10 @@ async def internal_error_handler(request: Request, exc):
 # Include routers
 app.include_router(health.router, prefix="/api/v1")
 app.include_router(reservations_router.router, prefix="/api/v1")
-app.include_router(mercadopago_router.router, prefix="/api/v1")
+app.include_router(mercadopago_router.router, prefix="/api/v1/mercadopago")
 app.include_router(whatsapp_router.router, prefix="/api/v1")
 app.include_router(ical_router.router, prefix="/api/v1")
+app.include_router(audio_router.router, prefix="/api/v1")
 
 @app.get("/")
 async def root():

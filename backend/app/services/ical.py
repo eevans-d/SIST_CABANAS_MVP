@@ -5,8 +5,8 @@ Export: Genera un feed ICS con reservas confirmed (y opcionalmente pre_reserved 
 Import: Consume calendarios externos (URLs registradas) y crea bloqueos como reservas PRE_RESERVED externas (canal airbnb/booking) evitando duplicación por UID.
 
 Simplificaciones MVP:
-- Almacenar eventos importados en tabla reservations con code = "ICAL<hash corta>" si no existe ya un rango que solape (usando constraint) y guardando notes con UID.
-- Dedupe: se basa en UID encontrado en notes (pattern UID:<value>).
+- Almacenar eventos importados en tabla reservations con code = "BLK<hash corta>" si no existe ya un rango que solape (usando constraint) y guardando internal_notes con UID.
+- Dedupe: se basa en UID encontrado en internal_notes (pattern UID:<value>).
 """
 from typing import List, Optional
 from datetime import datetime, date, timedelta, timezone
@@ -44,10 +44,14 @@ class ICalService:
         for r in rows:
             if r.reservation_status not in (ReservationStatus.CONFIRMED.value, ReservationStatus.PRE_RESERVED.value):
                 continue
-            if r.reservation_status == ReservationStatus.PRE_RESERVED.value and r.expires_at and r.expires_at < datetime.now(timezone.utc):
-                continue
+            if r.reservation_status == ReservationStatus.PRE_RESERVED.value and r.expires_at:
+                exp = r.expires_at
+                if exp.tzinfo is None:
+                    exp = exp.replace(tzinfo=timezone.utc)
+                if exp < datetime.now(timezone.utc):
+                    continue
             uid = f"{r.code}@acc{accommodation_id}"
-            dtstamp = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+            dtstamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
             lines.extend([
                 "BEGIN:VEVENT",
                 f"UID:{uid}",
@@ -64,7 +68,7 @@ class ICalService:
         # Parse muy simplificado: buscar bloques BEGIN:VEVENT ... END:VEVENT y extraer DTSTART/DTEND/UID
         events = ical_text.split("BEGIN:VEVENT")
         created = 0
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         for chunk in events[1:]:
             try:
                 end_idx = chunk.index("END:VEVENT")
@@ -87,15 +91,18 @@ class ICalService:
             uid = data['uid']
             check_in = data['start']
             check_out = data['end']
-            # Dedupe por UID ya en notes
-            existing_stmt = select(Reservation).where(Reservation.accommodation_id==accommodation_id, Reservation.notes.contains(uid))  # type: ignore[attr-defined]
+            # Dedupe por UID ya en internal_notes
+            existing_stmt = select(Reservation).where(
+                Reservation.accommodation_id==accommodation_id,
+                Reservation.internal_notes.contains(uid)  # type: ignore
+            )
             existing = await self.db.execute(existing_stmt)
             first = existing.scalar_one_or_none()
             if first:
                 continue
             # Crear código determinístico
             code_hash = hashlib.sha1(uid.encode()).hexdigest()[:8].upper()
-            code = f"ICAL{code_hash}"
+            code = f"BLK{code_hash}"
             reservation = Reservation(
                 code=code,
                 accommodation_id=accommodation_id,
@@ -113,7 +120,7 @@ class ICalService:
                 payment_status="pending",
                 channel_source=source,
                 expires_at=now + timedelta(days=365),  # mantener bloqueo largo
-                notes=f"UID:{uid}"
+                internal_notes=f"UID:{uid}"
             )
             self.db.add(reservation)
             try:
