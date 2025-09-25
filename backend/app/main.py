@@ -10,6 +10,8 @@ from app.core.config import get_settings
 from app.core.logging import setup_logging
 from app.routers import health
 from app.routers import reservations as reservations_router
+from app.jobs.cleanup import expire_prereservations
+from app.core.database import async_session_maker
 
 # Setup logging
 setup_logging()
@@ -31,7 +33,37 @@ async def lifespan(app: FastAPI):
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
     
+    # Background task simple para expiración de pre-reservas
+    stop_flag = False
+
+    async def expiration_worker():
+        interval = settings.JOB_EXPIRATION_INTERVAL_SECONDS
+        logger.info("expiration_worker_start", interval_seconds=interval)
+        while not stop_flag:
+            try:
+                async with async_session_maker() as session:
+                    expired = await expire_prereservations(session)
+                    if expired:
+                        logger.info("pre_reservations_expired", count=expired)
+            except Exception as e:  # pragma: no cover
+                logger.error("expiration_worker_error", error=str(e))
+            finally:
+                # dormir al final para que un ciclo rápido no haga drift si tarda > interval
+                await asyncio.sleep(interval)
+        logger.info("expiration_worker_stop")
+
+    import asyncio
+    task = asyncio.create_task(expiration_worker())
+
     yield
+
+    # Señal de parada y esperar
+    stop_flag = True
+    task.cancel()
+    try:
+        await task
+    except Exception:
+        pass
     
     # Shutdown tasks
     logger.info("application_shutdown")

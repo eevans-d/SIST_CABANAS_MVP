@@ -19,3 +19,4 @@ numpy==1.26.4
 soundfile==0.12.1
 python-multipart==0.0.9
 requests==2.31.0
+pydantic-settings==2.2.1

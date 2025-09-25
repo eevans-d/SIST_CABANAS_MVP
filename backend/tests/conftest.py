@@ -52,7 +52,7 @@ TEST_DATABASE_URL = os.getenv(
     "TEST_DATABASE_URL",
     "postgresql+asyncpg://test:test@localhost:5432/test_db"
 )
-SQLITE_FALLBACK_URL = "sqlite+aiosqlite:///:memory:"
+SQLITE_FALLBACK_URL = "sqlite+aiosqlite:///./test_fallback.db"
 TEST_REDIS_URL = os.getenv("TEST_REDIS_URL", "redis://localhost:6379/1")
 
 @pytest.fixture(scope="session")

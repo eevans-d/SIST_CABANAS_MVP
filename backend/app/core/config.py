@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     JWT_SECRET: str = Field(default_factory=lambda: secrets.token_urlsafe(32), env="JWT_SECRET")
     JWT_ALGORITHM: str = Field(default="HS256", env="JWT_ALGORITHM")
     JWT_EXPIRATION_HOURS: int = Field(default=24, env="JWT_EXPIRATION_HOURS")
+    JOB_EXPIRATION_INTERVAL_SECONDS: int = Field(default=60, env="JOB_EXPIRATION_INTERVAL_SECONDS")
     
     # iCal
     ICS_SALT: str = Field(default_factory=lambda: secrets.token_hex(16), env="ICS_SALT")
