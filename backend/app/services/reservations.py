@@ -40,6 +40,11 @@ class ReservationService:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def _get_reservation_by_code(self, code: str) -> Optional[Reservation]:
+        stmt = select(Reservation).where(Reservation.code == code)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
+
     async def create_prereservation(
         self,
         accommodation_id: int,
@@ -123,3 +128,50 @@ class ReservationService:
             # NO liberamos lock inmediatamente si se creó la pre-reserva exitosamente;
             # el lock expira solo para minimizar carrera hasta confirmación o expiración.
             await redis_client.close()
+
+    async def confirm_reservation(self, code: str) -> Dict[str, Any]:
+        """Confirma una pre-reserva si no expiró y está en estado pre_reserved.
+
+        Reglas:
+        - Si no existe → error not_found
+        - Si estado no es pre_reserved → error invalid_state
+        - Si expiró → pasa a cancelled y error expired
+        - (Pagos) Placeholder: más adelante validar depósito antes de confirmar
+        """
+        reservation = await self._get_reservation_by_code(code)
+        if not reservation:
+            return {"error": "not_found"}
+
+        if reservation.reservation_status != ReservationStatus.PRE_RESERVED.value:
+            return {"error": "invalid_state"}
+
+        # Verificar expiración
+        if reservation.expires_at and reservation.expires_at < datetime.utcnow().astimezone(reservation.expires_at.tzinfo):
+            reservation.reservation_status = ReservationStatus.CANCELLED.value
+            reservation.cancelled_at = datetime.utcnow()
+            await self.db.commit()
+            return {"error": "expired"}
+
+        reservation.reservation_status = ReservationStatus.CONFIRMED.value
+        reservation.confirmed_at = datetime.utcnow()
+        await self.db.commit()
+        await self.db.refresh(reservation)
+        return {"code": reservation.code, "status": reservation.reservation_status, "confirmed_at": reservation.confirmed_at.isoformat()}
+
+    async def cancel_reservation(self, code: str, reason: Optional[str] = None) -> Dict[str, Any]:
+        """Cancela una reserva (pre_reserved o confirmed)."""
+        reservation = await self._get_reservation_by_code(code)
+        if not reservation:
+            return {"error": "not_found"}
+
+        if reservation.reservation_status not in [ReservationStatus.PRE_RESERVED.value, ReservationStatus.CONFIRMED.value]:
+            return {"error": "invalid_state"}
+
+        reservation.reservation_status = ReservationStatus.CANCELLED.value
+        reservation.cancelled_at = datetime.utcnow()
+        if reason:
+            # Append reason to internal_notes
+            existing = reservation.internal_notes or ""
+            reservation.internal_notes = (existing + f"\nCancelled: {reason}").strip()
+        await self.db.commit()
+        return {"code": reservation.code, "status": reservation.reservation_status, "cancelled_at": reservation.cancelled_at.isoformat()}

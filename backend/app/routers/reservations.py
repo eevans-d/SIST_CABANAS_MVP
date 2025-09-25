@@ -27,6 +27,21 @@ class PreReservationResponse(BaseModel):
     nights: Optional[int] = None
     error: Optional[str] = None
 
+class ConfirmReservationResponse(BaseModel):
+    code: Optional[str]
+    status: Optional[str]
+    confirmed_at: Optional[str] = None
+    error: Optional[str] = None
+
+class CancelReservationRequest(BaseModel):
+    reason: Optional[str] = None
+
+class CancelReservationResponse(BaseModel):
+    code: Optional[str]
+    status: Optional[str]
+    cancelled_at: Optional[str] = None
+    error: Optional[str] = None
+
 @router.post("/pre-reserve", response_model=PreReservationResponse)
 async def create_pre_reservation(payload: PreReservationRequest, db: AsyncSession = Depends(get_db)):
     service = ReservationService(db)
@@ -41,3 +56,13 @@ async def create_pre_reservation(payload: PreReservationRequest, db: AsyncSessio
         contact_email=payload.contact_email,
     )
     return result
+
+@router.post("/{code}/confirm", response_model=ConfirmReservationResponse)
+async def confirm_reservation(code: str, db: AsyncSession = Depends(get_db)):
+    service = ReservationService(db)
+    return await service.confirm_reservation(code)
+
+@router.post("/{code}/cancel", response_model=CancelReservationResponse)
+async def cancel_reservation(code: str, payload: CancelReservationRequest, db: AsyncSession = Depends(get_db)):
+    service = ReservationService(db)
+    return await service.cancel_reservation(code, reason=payload.reason)
