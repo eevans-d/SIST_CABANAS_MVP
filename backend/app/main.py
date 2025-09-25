@@ -12,6 +12,7 @@ from app.routers import health
 from app.routers import reservations as reservations_router
 from app.routers import mercadopago as mercadopago_router
 from app.routers import whatsapp as whatsapp_router
+from app.routers import ical as ical_router
 from app.jobs.cleanup import expire_prereservations
 from app.core.database import async_session_maker
 
@@ -147,6 +148,7 @@ app.include_router(health.router, prefix="/api/v1")
 app.include_router(reservations_router.router, prefix="/api/v1")
 app.include_router(mercadopago_router.router, prefix="/api/v1")
 app.include_router(whatsapp_router.router, prefix="/api/v1")
+app.include_router(ical_router.router, prefix="/api/v1")
 
 @app.get("/")
 async def root():
