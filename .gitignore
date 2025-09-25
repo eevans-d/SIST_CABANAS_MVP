@@ -37,3 +37,4 @@ nginx/ssl/*.crt
 # WhatsApp media
 /tmp/whatsapp_media/
 /tmp/audio_processing/
+test_fallback.db
