@@ -4,12 +4,14 @@ from .enums import (
 )
 from .accommodation import Accommodation
 from .reservation import Reservation
+from .payment import Payment
 
 __all__ = [
 	"Base",
 	"TimestampMixin",
 	"Accommodation",
 	"Reservation",
+	"Payment",
 	"ReservationStatus",
 	"PaymentStatus",
 	"AccommodationType",
