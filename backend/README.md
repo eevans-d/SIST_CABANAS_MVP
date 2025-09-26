@@ -59,6 +59,27 @@ Regla de oro: SHIPPING > PERFECCI脫N. Si pasa tests y cumple l贸gica cr铆tica 鈫
 ### WhatsApp
 - POST /api/v1/whatsapp/webhook (firma HMAC X-Hub-Signature-256)
 
+### Firmas Webhook (Seguridad)
+Ambos webhooks (WhatsApp y Mercado Pago) validan HMAC cuando se configura el secreto correspondiente.
+
+| Integraci贸n | Cabecera | Algoritmo | Formato | Variable Entorno |
+|-------------|----------|-----------|---------|------------------|
+| WhatsApp | `X-Hub-Signature-256` | HMAC-SHA256 | `sha256=<hex>` | `WHATSAPP_APP_SECRET` |
+| Mercado Pago | `x-signature` | HMAC-SHA256 | `ts=<n>,v1=<hex>` (solo v1 requerido) | `MERCADOPAGO_WEBHOOK_SECRET` |
+
+Flujo de validaci贸n:
+1. Leer body crudo (solo una vez)
+2. Calcular `hex = HMAC_SHA256(secret, body)`
+3. Comparar con firma recibida (strict compare)
+4. Si mismatch -> 403 `{"detail": "Invalid signature"}`
+5. Si secreto ausente -> se acepta (modo desarrollo)
+
+Tests incluidos:
+- `test_whatsapp_signature.py`
+- `test_mercadopago_signature.py`
+
+Recomendaci贸n producci贸n: siempre definir ambos secretos y exigir HTTPS.
+
 ## Pricing
 - Base: base_price * noches
 - Weekend multiplier (s谩bado/domingo) aplicado por noche -> campo `weekend_multiplier` (default 1.2 si no definido)
