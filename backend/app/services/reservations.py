@@ -42,6 +42,9 @@ RESERVATIONS_DATE_OVERLAP = Counter(
 RESERVATIONS_LOCK_FAILED = Counter(
     "reservations_lock_failed_total", "Fallos de adquisición de lock Redis", ["channel"]
 )
+RESERVATIONS_CONFIRMED = Counter(
+    "reservations_confirmed_total", "Reservas confirmadas", ["channel"]
+)
 
 class ReservationService:
     def __init__(self, db: AsyncSession):
@@ -155,7 +158,10 @@ class ReservationService:
         finally:
             # NO liberamos lock inmediatamente si se creó la pre-reserva exitosamente;
             # el lock expira solo para minimizar carrera hasta confirmación o expiración.
-            await redis_client.close()
+            try:
+                await redis_client.aclose()  # type: ignore[attr-defined]
+            except AttributeError:  # pragma: no cover
+                await redis_client.close()
         
 
 
@@ -206,6 +212,11 @@ class ReservationService:
         after_row = await self.db.execute(sel_after)
         confirmed_at_val = after_row.scalar_one_or_none()
         confirmed_iso = confirmed_at_val.isoformat() if confirmed_at_val else None
+        try:
+            channel = getattr(reservation, 'channel_source', 'unknown') or 'unknown'
+            RESERVATIONS_CONFIRMED.labels(channel=channel).inc()
+        except Exception:  # pragma: no cover
+            pass
         return {"code": original_code, "status": ReservationStatus.CONFIRMED.value, "confirmed_at": confirmed_iso}
 
     async def cancel_reservation(self, code: str, reason: Optional[str] = None) -> Dict[str, Any]:
