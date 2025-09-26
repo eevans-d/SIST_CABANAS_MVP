@@ -1,10 +1,12 @@
 from __future__ import annotations
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, HTTPException
 from pydantic import BaseModel
 from typing import Any, Dict, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.services.mercadopago import MercadoPagoService
+from app.core.security import verify_mercadopago_signature
+from app.core.config import get_settings
 
 router = APIRouter()
 
@@ -24,9 +26,27 @@ class MPWebhookResponse(BaseModel):
     error: Optional[str] = None
 
 @router.post("/webhook", response_model=MPWebhookResponse)
-async def mercadopago_webhook(payload: MPWebhookPayload, db: AsyncSession = Depends(get_db)):
+async def mercadopago_webhook(request: Request, db: AsyncSession = Depends(get_db)):
+    """Procesa webhook de Mercado Pago.
+
+    Si MERCADOPAGO_WEBHOOK_SECRET está configurado, exige cabecera 'x-signature'
+    con formato que incluya v1=<hex>. Si la firma no coincide -> 403.
+    """
+    raw = await request.body()
+    settings = get_settings()
+    if settings.MERCADOPAGO_WEBHOOK_SECRET:
+        ok = verify_mercadopago_signature(dict(request.headers), raw)
+        if not ok:
+            raise HTTPException(status_code=403, detail="Invalid signature")
+
+    # Parsear JSON manualmente (evitamos doble lectura del body por Pydantic)
+    try:
+        payload = MPWebhookPayload.model_validate_json(raw)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+
     service = MercadoPagoService(db)
-    result: Dict[str, Any] = await service.process_webhook(payload.dict())
+    result: Dict[str, Any] = await service.process_webhook(payload.model_dump())
     if result.get("error"):
         return MPWebhookResponse(status="error", payment_id=payload.id, idempotent=False, error=result["error"])
     return MPWebhookResponse(
