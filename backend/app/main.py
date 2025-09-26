@@ -130,9 +130,13 @@ async def bad_request_handler(request: Request, exc):
 
 @app.exception_handler(403)
 async def forbidden_handler(request: Request, exc):
+    # Preservar el detalle original si viene desde HTTPException (p.ej. firmas inválidas)
+    detail = getattr(exc, "detail", None)
+    if not detail:
+        detail = "Access denied"
     return JSONResponse(
         status_code=403,
-        content={"error": "Forbidden", "detail": "Access denied"}
+        content={"error": "Forbidden", "detail": detail}
     )
 
 @app.exception_handler(404)
