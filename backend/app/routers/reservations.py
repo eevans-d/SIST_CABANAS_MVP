@@ -32,17 +32,13 @@ class ConfirmReservationResponse(BaseModel):
     status: Optional[str]
     confirmed_at: Optional[str] = None
     error: Optional[str] = None
-
-    class Config:
-        json_encoders = {}
-        # Para Pydantic v1 compat; en v2 se usaría ConfigDict
-        fields = {}
-        orm_mode = True
-        anystr_strip_whitespace = True
-        validate_assignment = True
-        use_enum_values = True
-        allow_population_by_field_name = True
-        # FastAPI exclude_none se maneja en response_model_exclude_none param, ajustaremos en ruta
+    model_config = {
+        "from_attributes": True,  # reemplaza orm_mode
+        "str_strip_whitespace": True,  # anystr_strip_whitespace
+        "validate_assignment": True,
+        "use_enum_values": True,
+        "populate_by_name": True,
+    }
 
 class CancelReservationRequest(BaseModel):
     reason: Optional[str] = None
