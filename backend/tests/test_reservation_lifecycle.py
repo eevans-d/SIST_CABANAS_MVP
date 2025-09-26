@@ -1,5 +1,5 @@
 import pytest
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta, datetime, UTC
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import Reservation
 from app.models.enums import ReservationStatus
@@ -47,7 +47,7 @@ async def test_cannot_confirm_expired(test_client, db_session: AsyncSession, acc
 
     # Forzar expiración editando directamente expires_at en DB (simplificación)
     q = await db_session.execute(
-        Reservation.__table__.update().where(Reservation.code == code).values(expires_at=datetime.utcnow() - timedelta(minutes=1))
+    Reservation.__table__.update().where(Reservation.code == code).values(expires_at=datetime.now(UTC) - timedelta(minutes=1))
     )
     await db_session.commit()
 

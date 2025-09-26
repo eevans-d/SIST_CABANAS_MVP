@@ -1,5 +1,5 @@
 import pytest
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta, datetime, UTC
 
 @pytest.mark.asyncio
 async def test_prereservation_expired_cannot_confirm(test_client, accommodation_factory, db_session):
@@ -20,7 +20,7 @@ async def test_prereservation_expired_cannot_confirm(test_client, accommodation_
     # Forzar expiración directa en DB
     from app.models import Reservation
     q = await db_session.execute(
-        Reservation.__table__.update().where(Reservation.code == code).values(expires_at=datetime.utcnow() - timedelta(minutes=1))
+    Reservation.__table__.update().where(Reservation.code == code).values(expires_at=datetime.now(UTC) - timedelta(minutes=1))
     )
     await db_session.commit()
 

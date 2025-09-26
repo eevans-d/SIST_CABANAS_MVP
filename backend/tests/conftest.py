@@ -21,6 +21,17 @@ from decimal import Decimal
 import os
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy.ext.compiler import compiles
+try:
+    from sqlalchemy.dialects.postgresql import UUID as PG_UUID  # type: ignore
+except Exception:  # pragma: no cover
+    PG_UUID = None  # type: ignore
+
+# Permitir usar columnas UUID (dialecto Postgres) cuando caemos a SQLite en tests
+if PG_UUID is not None:
+    @compiles(PG_UUID, 'sqlite')  # type: ignore
+    def compile_uuid_sqlite(type_, compiler, **kw):  # pragma: no cover - simple shim
+        return "CHAR(36)"
 from sqlalchemy.pool import NullPool
 
 try:
