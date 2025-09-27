@@ -129,6 +129,13 @@ D.1–D.3 E2E/Load
 - Config: `.env.template` SMTP_*, `docker-compose.test.yml`
 - Tests: `tests_e2e/`, `scripts/load/*.js|py`, fixtures de payloads firmados
 - Docs: `docs/POST_MVP.md` con resultados y tuning aplicado
+- Auditoría/Blueprint: ver `docs/AUDITORIA_2025-09-27.md` y `docs/BLUEPRINT_DESPLIEGUE.md`
+
+---
+
+## Notas de Arquitectura / ADRs
+
+- Anti double-booking: Se usa `daterange(check_in, check_out, '[)')` con `EXCLUDE USING gist`, permitiendo back-to-back (checkout = próximo checkin). La guía inicial mencionaba `'[]'`; se adopta `[)` por estándar hotelero. Documentado en `docs/AUDITORIA_2025-09-27.md`.
 
 ---
 

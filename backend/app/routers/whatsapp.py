@@ -1,5 +1,5 @@
 from __future__ import annotations
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Request, Depends, Query
 from typing import Dict, Any, Optional
 from datetime import datetime, timezone
 import json
@@ -15,6 +15,24 @@ from app.services.whatsapp import send_text_message
 from app.metrics import NLU_PRE_RESERVE
 
 router = APIRouter()
+@router.get("/webhooks/whatsapp")
+async def whatsapp_verify(
+    hub_mode: str | None = Query(default=None, alias="hub.mode"),
+    hub_challenge: str | None = Query(default=None, alias="hub.challenge"),
+    hub_verify_token: str | None = Query(default=None, alias="hub.verify_token"),
+):
+    """Verificación GET del webhook de WhatsApp (Meta) durante el onboarding.
+
+    Debe comparar el verify_token con WHATSAPP_VERIFY_TOKEN y devolver hub.challenge.
+    """
+    from app.core.config import get_settings
+    settings = get_settings()
+    if not (hub_mode == "subscribe" and hub_challenge and hub_verify_token):
+        return {"error": "invalid_params"}
+    if hub_verify_token != settings.WHATSAPP_VERIFY_TOKEN:
+        return {"error": "forbidden"}
+    # Responder con el challenge como texto plano es el comportamiento esperado
+    return hub_challenge
 
 # Contrato de salida unificado
 # {
