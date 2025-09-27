@@ -8,20 +8,22 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
-revision = '001'
+revision = '001_initial_schema'
 down_revision = None
 branch_labels = None
 depends_on = None
 
 
 def upgrade() -> None:
-    op.execute('CREATE EXTENSION IF NOT EXISTS btree_gist')
-    op.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"')
+    # Skip extensions for SQLite (tests)
+    if op.get_bind().dialect.name == 'postgresql':
+        op.execute('CREATE EXTENSION IF NOT EXISTS btree_gist')
+        op.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"')
 
     op.create_table(
         'accommodations',
         sa.Column('id', sa.Integer(), primary_key=True, nullable=False),
-        sa.Column('uuid', postgresql.UUID(as_uuid=True), nullable=False, unique=True),
+        sa.Column('uuid', postgresql.UUID(as_uuid=True) if op.get_bind().dialect.name == 'postgresql' else sa.String(36), nullable=False, unique=True),
         sa.Column('name', sa.String(length=100), nullable=False),
         sa.Column('type', sa.String(length=50), nullable=False),
         sa.Column('capacity', sa.Integer(), nullable=False),

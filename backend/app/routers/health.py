@@ -6,6 +6,10 @@ import structlog
 from app.core.database import check_database_health
 from app.core.redis import check_redis_health
 from app.core.config import get_settings
+from app.core.database import get_db
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from app.models import Accommodation
 
 settings = get_settings()
 
@@ -13,7 +17,7 @@ router = APIRouter()
 logger = structlog.get_logger()
 
 @router.get("/healthz")
-async def health_check() -> Dict:
+async def health_check(db: AsyncSession = Depends(get_db)) -> Dict:
     """
     Comprehensive health check endpoint.
     Returns system status and component health.
@@ -46,9 +50,15 @@ async def health_check() -> Dict:
     # Placeholder: se podría integrar psutil más adelante si se agrega al requirements
     health_status["checks"]["memory"] = {"status": "ok", "used_percent": None, "detail": "not_collected"}
     
-    # iCal last sync placeholder (en MVP puede que no exista persistencia todavía)
-    # Estrategia: exponer last_sync_age_min = None si no disponible
-    last_ical_sync: Optional[datetime] = None  # TODO: reemplazar cuando se persista
+    # iCal last sync: tomamos el más reciente entre todos los accommodations
+    try:
+        stmt = select(Accommodation.last_ical_sync_at).order_by(Accommodation.last_ical_sync_at.desc()).limit(1)
+        res = await db.execute(stmt)
+        last_ical_sync: Optional[datetime] = res.scalar_one_or_none()
+    except Exception as e:
+        last_ical_sync = None
+        logger.warning("health_ical_query_failed", error=str(e))
+
     if last_ical_sync:
         age_min = (now - last_ical_sync).total_seconds() / 60
         health_status["checks"]["ical"] = {

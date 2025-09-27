@@ -3,7 +3,7 @@ from __future__ import annotations
 from decimal import Decimal
 import uuid
 from sqlalchemy import (
-    Column, Integer, String, Boolean, Text, JSON, NUMERIC, Index
+    Column, Integer, String, Boolean, Text, JSON, NUMERIC, Index, DateTime
 )
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -28,6 +28,8 @@ class Accommodation(Base, TimestampMixin):
     policies = Column(JSON, default=dict)
     ical_export_token = Column(String(64), unique=True, nullable=False, default=lambda: uuid.uuid4().hex)
     ical_import_urls = Column(JSON, default=dict)
+    # Última sincronización iCal (import)
+    last_ical_sync_at = Column(DateTime(timezone=True), nullable=True)
 
     active = Column(Boolean, nullable=False, default=True, index=True)
 

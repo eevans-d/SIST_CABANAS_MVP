@@ -69,6 +69,12 @@ class ICalService:
         events = ical_text.split("BEGIN:VEVENT")
         created = 0
         now = datetime.now(timezone.utc)
+        # Cargar accommodation una vez para validar existencia y luego actualizar last_ical_sync_at
+        acc_stmt = select(Accommodation).where(Accommodation.id == accommodation_id)
+        acc_res = await self.db.execute(acc_stmt)
+        acc = acc_res.scalar_one_or_none()
+        if not acc:
+            return 0
         for chunk in events[1:]:
             try:
                 end_idx = chunk.index("END:VEVENT")
@@ -129,4 +135,11 @@ class ICalService:
             except Exception:
                 await self.db.rollback()
                 continue
+        # Actualizar timestamp de última sync, independientemente de si se crearon eventos nuevos
+        try:
+            acc.last_ical_sync_at = now
+            self.db.add(acc)
+            await self.db.commit()
+        except Exception:
+            await self.db.rollback()
         return created
