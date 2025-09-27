@@ -10,6 +10,7 @@ from app.core.database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.models import Accommodation
+import os
 
 settings = get_settings()
 
@@ -74,6 +75,18 @@ async def health_check(db: AsyncSession = Depends(get_db)) -> Dict:
     }
     health_status["checks"]["mercadopago"] = {
         "status": "ok" if settings.MERCADOPAGO_ACCESS_TOKEN else "error"
+    }
+
+    # Runtime details (no costosos): gunicorn workers y pool DB configurado
+    try:
+        gunicorn_workers = int(os.getenv("GUNICORN_WORKERS", "0")) or None
+    except Exception:
+        gunicorn_workers = None
+    health_status["checks"]["runtime"] = {
+        "status": "ok",
+        "gunicorn_workers": gunicorn_workers,
+        "db_pool_size": getattr(settings, "DB_POOL_SIZE", None),
+        "db_max_overflow": getattr(settings, "DB_MAX_OVERFLOW", None),
     }
 
     # Determine overall status

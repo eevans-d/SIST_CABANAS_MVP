@@ -16,6 +16,10 @@ services:
       - MERCADOPAGO_WEBHOOK_SECRET=${MERCADOPAGO_WEBHOOK_SECRET}
       - JWT_SECRET=${JWT_SECRET}
       - ICS_SALT=${ICS_SALT}
+  - GUNICORN_WORKERS=2
+  - GUNICORN_TIMEOUT=60
+  - GUNICORN_GRACEFUL_TIMEOUT=30
+  - GUNICORN_KEEP_ALIVE=75
     depends_on:
       db:
         condition: service_healthy
@@ -28,7 +32,7 @@ services:
     volumes:
       - ./temp:/app/temp  # Para archivos temporales de audio
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3

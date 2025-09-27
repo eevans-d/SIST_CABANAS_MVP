@@ -27,6 +27,7 @@ from prometheus_client import Counter
 from app.models.enums import ReservationStatus, PaymentStatus
 from app.core.redis import acquire_lock, release_lock, get_redis_pool
 import redis.asyncio as redis
+from app.services.email import email_service
 
 LOCK_TTL_SECONDS = 1800  # 30 minutos
 PRERESERVATION_EXPIRY_MINUTES = 30
@@ -215,6 +216,26 @@ class ReservationService:
         try:
             channel = getattr(reservation, 'channel_source', 'unknown') or 'unknown'
             RESERVATIONS_CONFIRMED.labels(channel=channel).inc()
+        except Exception:  # pragma: no cover
+            pass
+        # Enviar email de confirmación si hay email y SMTP está configurado (best-effort)
+        try:
+            if getattr(reservation, 'guest_email', None):
+                try:
+                    html = email_service.render("confirmation.html", {
+                        "guest_name": getattr(reservation, 'guest_name', 'Cliente'),
+                        "code": original_code,
+                        "accommodation_name": getattr(reservation, 'accommodation', None).name if getattr(reservation, 'accommodation', None) else str(reservation.accommodation_id),
+                        "check_in": str(reservation.check_in),
+                        "check_out": str(reservation.check_out),
+                        "total_price": str(getattr(reservation, 'total_price', '')),
+                    })
+                except Exception:
+                    html = (
+                        f"<h3>Reserva confirmada {original_code}</h3>"
+                        f"<p>Check-in: {reservation.check_in} - Check-out: {reservation.check_out}</p>"
+                    )
+                email_service.send_html(reservation.guest_email, f"Reserva {original_code} confirmada", html, email_type="confirmed")
         except Exception:  # pragma: no cover
             pass
         return {"code": original_code, "status": ReservationStatus.CONFIRMED.value, "confirmed_at": confirmed_iso}

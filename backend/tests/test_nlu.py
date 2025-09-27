@@ -21,3 +21,10 @@ def test_nlu_unknown_intent():  # type: ignore
     from app.services import nlu
     r = nlu.analyze("Hola")
     assert r["intents"] == ["desconocido"], r
+
+def test_nlu_extract_guests_and_range():  # type: ignore
+    from app.services import nlu
+    r = nlu.analyze("Hay libre 25/12 al 28/12 para 4 personas?")
+    # Debe detectar 2 fechas y 4 huéspedes
+    assert len(r.get("dates", [])) >= 2, r
+    assert r.get("guests") == 4, r

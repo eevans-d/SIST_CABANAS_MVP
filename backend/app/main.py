@@ -14,7 +14,9 @@ from app.routers import mercadopago as mercadopago_router
 from app.routers import whatsapp as whatsapp_router
 from app.routers import ical as ical_router
 from app.routers import audio as audio_router
-from app.jobs.cleanup import expire_prereservations
+from app.routers import nlu as nlu_router
+from app.routers import admin as admin_router
+from app.jobs.cleanup import expire_prereservations, send_prereservation_reminders
 from prometheus_fastapi_instrumentator import Instrumentator
 from app.core.database import async_session_maker
 
@@ -50,6 +52,9 @@ async def lifespan(app: FastAPI):
                     expired = await expire_prereservations(session)
                     if expired:
                         logger.info("pre_reservations_expired", count=expired)
+                    reminders = await send_prereservation_reminders(session)
+                    if reminders:
+                        logger.info("pre_reservations_reminders_sent", count=reminders)
             except Exception as e:  # pragma: no cover
                 logger.error("expiration_worker_error", error=str(e))
             finally:
@@ -161,6 +166,8 @@ app.include_router(mercadopago_router.router, prefix="/api/v1/mercadopago")
 app.include_router(whatsapp_router.router, prefix="/api/v1")
 app.include_router(ical_router.router, prefix="/api/v1")
 app.include_router(audio_router.router, prefix="/api/v1")
+app.include_router(admin_router.router, prefix="/api/v1")
+app.include_router(nlu_router.router, prefix="/api/v1")
 
 @app.get("/")
 async def root():

@@ -5,6 +5,14 @@ from datetime import datetime, timezone
 import json
 
 from app.core.security import verify_whatsapp_signature
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from app.core.database import get_db
+from app.services import nlu
+from app.services.reservations import ReservationService
+from app.models import Accommodation
+from app.services.whatsapp import send_text_message
+from app.metrics import NLU_PRE_RESERVE
 
 router = APIRouter()
 
@@ -21,7 +29,7 @@ router = APIRouter()
 # }
 
 @router.post("/webhooks/whatsapp")
-async def whatsapp_webhook(request: Request) -> Dict[str, Any]:
+async def whatsapp_webhook(request: Request, db: AsyncSession = Depends(get_db)) -> Dict[str, Any]:
     raw_body = await verify_whatsapp_signature(request)
 
     try:
@@ -78,7 +86,7 @@ async def whatsapp_webhook(request: Request) -> Dict[str, Any]:
         msg_type = "text"
         texto = None
 
-    normalized = {
+    normalized: Dict[str, Any] = {
         "message_id": message_id,
         "canal": "whatsapp",
         "user_id": from_user,
@@ -88,5 +96,98 @@ async def whatsapp_webhook(request: Request) -> Dict[str, Any]:
         "media_url": media_url,
         "metadata": metadata,
     }
-    # MVP: sólo devolvemos; futuro: encolar a NLU / workflow
+    # Orquestación mínima: si es texto, intentar NLU -> pre-reserva
+    try:
+        if msg_type == "text" and (texto or "").strip():
+            analysis = nlu.analyze(texto or "")
+            normalized["nlu"] = analysis
+
+            # Extraer slots
+            dates = analysis.get("dates") or []
+            guests = analysis.get("guests")
+            parsed: list[str] = [d for d in dates if isinstance(d, str)]
+            check_in_iso: Optional[str] = parsed[0] if len(parsed) >= 2 else (parsed[0] if len(parsed) == 1 else None)
+            check_out_iso: Optional[str] = parsed[1] if len(parsed) >= 2 else None
+
+            missing = []
+            # Resolver alojamiento: si hay exactamente 1 activo
+            acc_id: Optional[int] = None
+            q = await db.execute(select(Accommodation).where(Accommodation.active.is_(True)).limit(2))
+            accs = q.scalars().all()
+            if len(accs) == 1:
+                acc_id = accs[0].id
+            else:
+                missing.append("accommodation_id")
+
+            if not check_in_iso:
+                missing.append("check_in")
+            if not check_out_iso:
+                missing.append("check_out")
+            if not guests:
+                missing.append("guests")
+
+            if missing:
+                normalized["auto_action"] = "needs_slots"
+                normalized["missing"] = missing
+                try:
+                    NLU_PRE_RESERVE.labels(action="needs_slots", source="whatsapp").inc()
+                except Exception:
+                    pass
+                # Enviar prompt simple de slots faltantes (no-op en dev/test)
+                try:
+                    missing_human = ", ".join(missing)
+                    await send_text_message(str(from_user), f"Para avanzar necesito: {missing_human}.")
+                except Exception:
+                    pass
+                return normalized
+
+            # Crear pre-reserva
+            from datetime import date as _date
+            try:
+                ci = _date.fromisoformat(check_in_iso)  # type: ignore[arg-type]
+                co = _date.fromisoformat(check_out_iso)  # type: ignore[arg-type]
+            except Exception:
+                normalized["auto_action"] = "needs_slots"
+                normalized["missing"] = ["check_in", "check_out"]
+                return normalized
+
+            service = ReservationService(db)
+            result = await service.create_prereservation(
+                accommodation_id=acc_id,  # type: ignore[arg-type]
+                check_in=ci,
+                check_out=co,
+                guests=int(guests),
+                channel="whatsapp",
+                contact_name="Cliente WhatsApp",
+                contact_phone=str(from_user),
+                contact_email=None,
+            )
+            if result.get("error"):
+                normalized["auto_action"] = "error"
+                normalized["error"] = result["error"]
+                try:
+                    NLU_PRE_RESERVE.labels(action="error", source="whatsapp").inc()
+                except Exception:
+                    pass
+                try:
+                    await send_text_message(str(from_user), f"No pude crear la pre-reserva: {result['error']}")
+                except Exception:
+                    pass
+            else:
+                normalized["auto_action"] = "pre_reserved"
+                normalized["pre_reservation"] = result
+                try:
+                    NLU_PRE_RESERVE.labels(action="pre_reserved", source="whatsapp").inc()
+                except Exception:
+                    pass
+                try:
+                    code = result.get("code", "")
+                    exp = result.get("expires_at", "")
+                    await send_text_message(str(from_user), f"Listo! Pre-reserva {code} creada. Vence: {exp}")
+                except Exception:
+                    pass
+    except Exception:  # pragma: no cover - no romper webhook ante errores no previstos
+        normalized["auto_action"] = "error"
+        normalized["error"] = "internal"
+
     return normalized

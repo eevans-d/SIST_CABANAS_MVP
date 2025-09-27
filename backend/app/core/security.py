@@ -86,8 +86,9 @@ def verify_mercadopago_signature(headers: Dict[str, str], body: bytes) -> bool:
         return True  # No secret configured, accept all
     
     signature = headers.get("x-signature", "")
+    # Si hay secreto configurado, la firma es obligatoria
     if not signature:
-        return True  # No signature sent, accept
+        return False  # Missing signature when required
     
     # Parse signature components
     parts = {}
@@ -95,6 +96,10 @@ def verify_mercadopago_signature(headers: Dict[str, str], body: bytes) -> bool:
         key_value = part.strip().split("=", 1)
         if len(key_value) == 2:
             parts[key_value[0]] = key_value[1]
+    # Debe existir al menos v1
+    received_v1 = parts.get("v1", "")
+    if not received_v1:
+        return False
     
     # Calculate expected signature
     expected = hmac.new(
@@ -103,7 +108,7 @@ def verify_mercadopago_signature(headers: Dict[str, str], body: bytes) -> bool:
         hashlib.sha256
     ).hexdigest()
     
-    return hmac.compare_digest(expected, parts.get("v1", ""))
+    return hmac.compare_digest(expected, received_v1)
 
 # iCal token generation
 def generate_ical_token(accommodation_id: int) -> str:

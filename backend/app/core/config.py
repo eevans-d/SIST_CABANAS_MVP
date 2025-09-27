@@ -15,8 +15,8 @@ class Settings(BaseSettings):
     
     # Database
     DATABASE_URL: str | None = None
-    DB_POOL_SIZE: int = 20
-    DB_MAX_OVERFLOW: int = 0
+    DB_POOL_SIZE: int = 10
+    DB_MAX_OVERFLOW: int = 5
     
     # Redis
     REDIS_URL: str | None = None
@@ -50,6 +50,17 @@ class Settings(BaseSettings):
     
     # Domain
     DOMAIN: str = "localhost"
+
+    # Email (SMTP)
+    SMTP_HOST: str | None = None
+    SMTP_PORT: int = 587
+    SMTP_USER: str | None = None
+    SMTP_PASS: str | None = None
+    SMTP_FROM: str | None = None
+
+    # Admin (seguridad mínima)
+    ADMIN_ALLOWED_EMAILS: str = "admin@example.com"  # coma-separado
+    ADMIN_CSRF_SECRET: str = Field(default_factory=lambda: secrets.token_urlsafe(24))
     
     @field_validator("DATABASE_URL", mode="before")
     def validate_database_url(cls, v: str | None):

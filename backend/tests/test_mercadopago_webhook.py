@@ -7,6 +7,9 @@ from datetime import date, timedelta
 pytestmark = pytest.mark.asyncio
 
 async def test_webhook_idempotent(test_client, db_session: AsyncSession, accommodation_factory):
+    # Forzar modo dev: no exigir firma en este test
+    from app.core.config import get_settings
+    get_settings().MERCADOPAGO_WEBHOOK_SECRET = None  # type: ignore[attr-defined]
     acc = await accommodation_factory()
     # Crear pre-reserva
     r_payload = {
@@ -46,6 +49,9 @@ async def test_webhook_idempotent(test_client, db_session: AsyncSession, accommo
     assert row is not None
 
 async def test_webhook_payment_without_reservation(test_client, db_session: AsyncSession):
+    # Forzar modo dev: no exigir firma en este test
+    from app.core.config import get_settings
+    get_settings().MERCADOPAGO_WEBHOOK_SECRET = None  # type: ignore[attr-defined]
     payload = {
         "id": "MPORPHAN1",
         "status": "pending",

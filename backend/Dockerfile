@@ -34,5 +34,10 @@ USER appuser
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=5 \
     CMD curl -fsS http://localhost:8000/api/v1/healthz || exit 1
 
-# Run application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run application with Gunicorn (Uvicorn workers)
+ENV GUNICORN_WORKERS=2 \
+    GUNICORN_TIMEOUT=60 \
+    GUNICORN_GRACEFUL_TIMEOUT=30 \
+    GUNICORN_KEEP_ALIVE=75
+
+CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "${GUNICORN_WORKERS}", "--bind", "0.0.0.0:8000", "--timeout", "${GUNICORN_TIMEOUT}", "--graceful-timeout", "${GUNICORN_GRACEFUL_TIMEOUT}", "--keep-alive", "${GUNICORN_KEEP_ALIVE}", "app.main:app"]

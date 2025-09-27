@@ -45,6 +45,8 @@ Regla de oro: SHIPPING > PERFECCI脫N. Si pasa tests y cumple l贸gica cr铆tica 鈫
   - reservations_created_total{channel}
   - reservations_date_overlap_total{channel}
   - reservations_lock_failed_total{channel}
+  - prereservations_expired_total
+  - prereservation_reminders_processed_total
 
 ### Audio / NLU
 - POST /api/v1/audio/transcribe (si existe en el proyecto) -> transcripci贸n + intent heur铆stico
@@ -58,6 +60,13 @@ Regla de oro: SHIPPING > PERFECCI脫N. Si pasa tests y cumple l贸gica cr铆tica 鈫
 
 ### WhatsApp
 - POST /api/v1/whatsapp/webhook (firma HMAC X-Hub-Signature-256)
+
+### Admin (m铆nimo)
+- POST /api/v1/admin/login { email } -> devuelve JWT si email pertenece a ADMIN_ALLOWED_EMAILS (uso dev/test)
+- GET /api/v1/admin/reservations (Bearer JWT)
+- GET /api/v1/admin/reservations/export.csv (Bearer JWT)
+- POST /api/v1/admin/actions/resend-email/{code} (Bearer JWT + header x-csrf-token)
+  - Header ejemplo: `x-csrf-token: use-un-secreto-aleatorio-8+chars`
 
 ### Firmas Webhook (Seguridad)
 Ambos webhooks (WhatsApp y Mercado Pago) validan HMAC cuando se configura el secreto correspondiente.
@@ -166,6 +175,13 @@ JOB_EXPIRATION_INTERVAL_SECONDS=60
 5. Ejecutar: `uvicorn app.main:app --reload --port 8000`
 6. Probar health: `curl http://localhost:8000/api/v1/healthz`
 7. Crear pre-reserva -> confirmar -> cancelar (ver ejemplos en secci贸n Reservas)
+
+### Entorno de pruebas E2E r谩pido (opcional)
+1. Levantar dependencias con Mailhog:
+  - `docker compose -f docker-compose.test.yml up -d`
+2. Sembrar datos de ejemplo (si aplica): `python scripts/seed.py`
+3. Ejecutar smoke E2E: `pytest -q tests/test_journey_basic.py`
+4. Ver emails en http://localhost:8025 (Mailhog)
 
 ## Alembic / Migraciones
 Generar nueva migraci贸n (ejemplo):
