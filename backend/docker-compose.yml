@@ -1,0 +1,133 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: alojamientos_api
+    restart: unless-stopped
+    environment:
+      - ENVIRONMENT=production
+      - DATABASE_URL=postgresql://alojamientos:${POSTGRES_PASSWORD}@db:5432/alojamientos_db
+      - REDIS_URL=redis://redis:6379/0
+      - WHATSAPP_ACCESS_TOKEN=${WHATSAPP_ACCESS_TOKEN}
+      - WHATSAPP_APP_SECRET=${WHATSAPP_APP_SECRET}
+      - WHATSAPP_VERIFY_TOKEN=${WHATSAPP_VERIFY_TOKEN}
+      - MERCADOPAGO_ACCESS_TOKEN=${MERCADOPAGO_ACCESS_TOKEN}
+      - MERCADOPAGO_WEBHOOK_SECRET=${MERCADOPAGO_WEBHOOK_SECRET}
+      - JWT_SECRET=${JWT_SECRET}
+      - ICS_SALT=${ICS_SALT}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - alojamientos_network
+    expose:
+      - "8000"
+    volumes:
+      - ./temp:/app/temp  # Para archivos temporales de audio
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  db:
+    image: postgres:16-alpine
+    container_name: alojamientos_db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=alojamientos_db
+      - POSTGRES_USER=alojamientos
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    networks:
+      - alojamientos_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U alojamientos -d alojamientos_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    ports:
+      - "5432:5432"  # Solo para debugging - remover en prod
+
+  redis:
+    image: redis:7-alpine
+    container_name: alojamientos_redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD} --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    networks:
+      - alojamientos_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    ports:
+      - "6379:6379"  # Solo para debugging - remover en prod
+
+  nginx:
+    image: nginx:alpine
+    container_name: alojamientos_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro  # Certificados SSL
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - app
+    networks:
+      - alojamientos_network
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Contenedor para tareas programadas (iCal sync, cleanup)
+  scheduler:
+    build: .
+    container_name: alojamientos_scheduler
+    restart: unless-stopped
+    command: python -m app.jobs.scheduler
+    environment:
+      - ENVIRONMENT=production
+      - DATABASE_URL=postgresql://alojamientos:${POSTGRES_PASSWORD}@db:5432/alojamientos_db
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - alojamientos_network
+    volumes:
+      - ./temp:/app/temp
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  nginx_logs:
+    driver: local
+
+networks:
+  alojamientos_network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
