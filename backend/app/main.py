@@ -17,6 +17,7 @@ from app.routers import audio as audio_router
 from app.routers import nlu as nlu_router
 from app.routers import admin as admin_router
 from app.jobs.cleanup import expire_prereservations, send_prereservation_reminders
+from app.jobs.import_ical import run_ical_sync
 from prometheus_fastapi_instrumentator import Instrumentator
 from app.core.database import async_session_maker
 
@@ -40,7 +41,7 @@ async def lifespan(app: FastAPI):
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
     
-    # Background task simple para expiración de pre-reservas
+    # Background tasks: expiración/reminders e import iCal
     stop_flag = False
 
     async def expiration_worker():
@@ -65,13 +66,31 @@ async def lifespan(app: FastAPI):
     import asyncio
     task = asyncio.create_task(expiration_worker())
 
+    async def ical_worker():
+        interval = getattr(settings, "JOB_ICAL_INTERVAL_SECONDS", 300)
+        logger.info("ical_worker_start", interval_seconds=interval)
+        while not stop_flag:
+            try:
+                created = await run_ical_sync(logger)
+                if created:
+                    logger.info("ical_events_created", count=created)
+            except Exception as e:  # pragma: no cover
+                logger.error("ical_worker_error", error=str(e))
+            finally:
+                await asyncio.sleep(interval)
+        logger.info("ical_worker_stop")
+
+    task2 = asyncio.create_task(ical_worker())
+
     yield
 
     # Señal de parada y esperar
     stop_flag = True
     task.cancel()
+    task2.cancel()
     try:
         await task
+        await task2
     except Exception:
         pass
     

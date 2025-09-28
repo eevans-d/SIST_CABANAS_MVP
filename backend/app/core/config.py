@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     model_config: SettingsConfigDict = {
         "env_file": ".env",
         "case_sensitive": True,
+        "extra": "ignore",  # Ignorar variables de entorno no utilizadas (p.ej. DB_NAME)
     }
     # Environment
     ENVIRONMENT: str = Field(default="development")
@@ -37,6 +38,7 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRATION_HOURS: int = 24
     JOB_EXPIRATION_INTERVAL_SECONDS: int = 60
+    JOB_ICAL_INTERVAL_SECONDS: int = 300
     
     # iCal
     ICS_SALT: str = Field(default_factory=lambda: secrets.token_hex(16))
@@ -88,34 +90,40 @@ class Settings(BaseSettings):
 _settings = None
 
 def get_settings() -> Settings:
+    """Devuelve Settings con cache controlado y auto-refresh.
+
+    - Usa un singleton cached por proceso.
+    - Si `DATABASE_URL` en entorno difiere del valor en cache, reconstruye el singleton.
+    - Si la construcción falla (imports tempranos), usa un fallback mínimo.
+    """
     global _settings
+    env = os.getenv("ENVIRONMENT")
+    current_db_url = os.getenv("DATABASE_URL")
+    if _settings is not None and current_db_url and getattr(_settings, "DATABASE_URL", None) != current_db_url:
+        _settings = None
     if _settings is None:
         try:
             _settings = Settings()
         except Exception:
-            # Fallback minimal para ciertos tests que importan antes de setear env
-            # Sólo usar en contexto de pruebas rápidas (no producción)
-            import os
-            # Fallback pensado para entorno de tests cuando las variables aún no están seteadas.
-            # Usar SQLite para evitar intentos de conexión a un Postgres inexistente que rompan import-time.
-            env = os.getenv("ENVIRONMENT", "test")
-            default_db = "sqlite+aiosqlite:///./test_fallback.db" if env == "test" else "postgresql+asyncpg://user:pass@localhost:5432/db"
+            # Fallback mínimamente viable si variables no están listas (no recomendado fuera de tests)
+            default_db = "postgresql+asyncpg://user:pass@localhost:5432/db"
             dummy = {
-                "ENVIRONMENT": env,
-                "DATABASE_URL": os.getenv("DATABASE_URL", default_db),
+                "ENVIRONMENT": env or "development",
+                "DATABASE_URL": current_db_url or default_db,
                 "REDIS_URL": os.getenv("REDIS_URL", "redis://localhost:6379/0"),
-                "WHATSAPP_ACCESS_TOKEN": "dummy",
-                "WHATSAPP_APP_SECRET": "dummy",
-                "WHATSAPP_PHONE_ID": "dummy",
-                "MERCADOPAGO_ACCESS_TOKEN": "dummy",
-                "BASE_URL": "http://localhost",
-                "DOMAIN": "localhost",
-                "DB_POOL_SIZE": 5,
-                "DB_MAX_OVERFLOW": 0,
-                "JWT_EXPIRATION_HOURS": 24,
-                "JOB_EXPIRATION_INTERVAL_SECONDS": 60,
-                "AUDIO_MODEL": "base",
-                "AUDIO_MIN_CONFIDENCE": 0.6,
+                "WHATSAPP_ACCESS_TOKEN": os.getenv("WHATSAPP_ACCESS_TOKEN", "dummy"),
+                "WHATSAPP_APP_SECRET": os.getenv("WHATSAPP_APP_SECRET", "dummy"),
+                "WHATSAPP_PHONE_ID": os.getenv("WHATSAPP_PHONE_ID", "dummy"),
+                "MERCADOPAGO_ACCESS_TOKEN": os.getenv("MERCADOPAGO_ACCESS_TOKEN", "dummy"),
+                "BASE_URL": os.getenv("BASE_URL", "http://localhost"),
+                "DOMAIN": os.getenv("DOMAIN", "localhost"),
+                "DB_POOL_SIZE": int(os.getenv("DB_POOL_SIZE", "5")),
+                "DB_MAX_OVERFLOW": int(os.getenv("DB_MAX_OVERFLOW", "0")),
+                "JWT_EXPIRATION_HOURS": int(os.getenv("JWT_EXPIRATION_HOURS", "24")),
+                "JOB_EXPIRATION_INTERVAL_SECONDS": int(os.getenv("JOB_EXPIRATION_INTERVAL_SECONDS", "60")),
+                "JOB_ICAL_INTERVAL_SECONDS": int(os.getenv("JOB_ICAL_INTERVAL_SECONDS", "300")),
+                "AUDIO_MODEL": os.getenv("AUDIO_MODEL", "base"),
+                "AUDIO_MIN_CONFIDENCE": float(os.getenv("AUDIO_MIN_CONFIDENCE", "0.6")),
             }
             _settings = Settings(**dummy)
     return _settings
