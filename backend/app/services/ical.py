@@ -59,6 +59,9 @@ class ICalService:
                 f"DTSTART;VALUE=DATE:{_format_dt(r.check_in)}",
                 f"DTEND;VALUE=DATE:{_format_dt(r.check_out)}",
                 f"SUMMARY:RESERVA {r.code}",
+                # Propiedades custom para trazabilidad (ignoradas por clientes estándar)
+                f"X-CODE:{r.code}",
+                f"X-SOURCE:{(r.channel_source or '').upper()}",
                 "END:VEVENT",
             ])
         lines.append(ICS_FOOTER)
