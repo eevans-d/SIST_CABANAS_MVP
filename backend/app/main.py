@@ -20,6 +20,7 @@ from app.jobs.cleanup import expire_prereservations, send_prereservation_reminde
 from app.jobs.import_ical import run_ical_sync
 from prometheus_fastapi_instrumentator import Instrumentator
 from app.core.database import async_session_maker
+from app.core.redis import get_redis_pool
 
 # Setup logging
 setup_logging()
@@ -118,6 +119,34 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Rate limit middleware (simple per-IP + path, Redis-based). Bypass in development.
+@app.middleware("http")
+async def rate_limit(request: Request, call_next):
+    try:
+        if not settings.RATE_LIMIT_ENABLED or settings.ENVIRONMENT == "development":
+            return await call_next(request)
+        path = request.url.path
+        # No limitar healthz ni metrics para no afectar observabilidad
+        if path in ("/api/v1/healthz", "/metrics"):
+            return await call_next(request)
+        # clave por IP + path, ventana deslizante básica (fixed window)
+        client_ip = request.client.host if request.client else "unknown"
+        key = f"ratelimit:{client_ip}:{path}"
+        pool = get_redis_pool()
+        import redis.asyncio as redis
+        r = redis.Redis(connection_pool=pool)
+        # incrementar y setear TTL si clave nueva
+        count = await r.incr(key)
+        if count == 1:
+            await r.expire(key, settings.RATE_LIMIT_WINDOW_SECONDS)
+        if count > settings.RATE_LIMIT_REQUESTS:
+            logger.warning("rate_limited", ip=client_ip, path=path, count=int(count))
+            return JSONResponse(status_code=429, content={"error": "Too Many Requests"})
+        return await call_next(request)
+    except Exception:  # pragma: no cover
+        # fallback: no bloquear si redis falla
+        return await call_next(request)
 
 # Request ID middleware (sin context manager erróneo)
 @app.middleware("http")

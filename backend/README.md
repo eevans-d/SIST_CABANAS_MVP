@@ -68,6 +68,29 @@ Regla de oro: SHIPPING > PERFECCIÓN. Si pasa tests y cumple lógica crítica �
 - POST /api/v1/admin/actions/resend-email/{code} (Bearer JWT + header x-csrf-token)
   - Header ejemplo: `x-csrf-token: use-un-secreto-aleatorio-8+chars`
 
+### Uso rápido Admin (CLI)
+1) Obtener token:
+```bash
+curl -s -X POST http://localhost:8000/api/v1/admin/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"admin@example.com"}' | jq -r .access_token
+```
+2) Listar reservas recientes:
+```bash
+TOKEN="<pegar_token>"; curl -s http://localhost:8000/api/v1/admin/reservations \
+  -H "Authorization: Bearer $TOKEN" | jq .
+```
+3) Export CSV:
+```bash
+curl -s http://localhost:8000/api/v1/admin/reservations/export.csv -H "Authorization: Bearer $TOKEN" -o reservas.csv
+```
+4) Reenviar email:
+```bash
+curl -s -X POST http://localhost:8000/api/v1/admin/actions/resend-email/RESXXXX \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'x-csrf-token: use-un-secreto-aleatorio' | jq .
+```
+
 ### Firmas Webhook (Seguridad)
 Ambos webhooks (WhatsApp y Mercado Pago) validan HMAC cuando se configura el secreto correspondiente.
 
@@ -157,6 +180,23 @@ JOB_EXPIRATION_INTERVAL_SECONDS=60
 ## Métricas de Observabilidad Futuras (no MVP aún)
 - Latencia p95 por endpoint
 - Contadores por intent NLU
+
+### Prometheus / Alertas (guía rápida)
+- Endpoint de métricas: `GET /metrics`
+- Gauge incluido: `ical_last_sync_age_minutes`
+- Reglas ejemplo (YAML):
+```yaml
+groups:
+- name: alojamientos
+  rules:
+  - alert: ICalSyncStale
+    expr: ical_last_sync_age_minutes > 30
+    for: 10m
+    labels: {severity: warning}
+    annotations:
+      summary: "Sync iCal atrasado"
+      description: "Edad de sync iCal > 30m"
+```
 
 ## Ejecución Local
 1. Crear `.env` (ver sección anterior)

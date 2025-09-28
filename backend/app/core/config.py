@@ -40,6 +40,10 @@ class Settings(BaseSettings):
     JOB_EXPIRATION_INTERVAL_SECONDS: int = 60
     JOB_ICAL_INTERVAL_SECONDS: int = 300
     ICAL_SYNC_MAX_AGE_MINUTES: int = 20
+    # Rate limit (simple)
+    RATE_LIMIT_ENABLED: bool = True
+    RATE_LIMIT_REQUESTS: int = 60
+    RATE_LIMIT_WINDOW_SECONDS: int = 60
     
     # iCal
     ICS_SALT: str = Field(default_factory=lambda: secrets.token_hex(16))
