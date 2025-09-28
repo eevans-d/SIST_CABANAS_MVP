@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     JWT_EXPIRATION_HOURS: int = 24
     JOB_EXPIRATION_INTERVAL_SECONDS: int = 60
     JOB_ICAL_INTERVAL_SECONDS: int = 300
+    ICAL_SYNC_MAX_AGE_MINUTES: int = 20
     
     # iCal
     ICS_SALT: str = Field(default_factory=lambda: secrets.token_hex(16))

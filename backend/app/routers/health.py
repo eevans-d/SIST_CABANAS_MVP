@@ -10,6 +10,7 @@ from app.core.database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.models import Accommodation
+from app.metrics import ICAL_LAST_SYNC_AGE_MIN
 import os
 
 settings = get_settings()
@@ -62,8 +63,13 @@ async def health_check(db: AsyncSession = Depends(get_db)) -> Dict:
 
     if last_ical_sync:
         age_min = (now - last_ical_sync).total_seconds() / 60
+        try:
+            ICAL_LAST_SYNC_AGE_MIN.set(age_min)
+        except Exception:
+            pass
+        max_ok = getattr(settings, "ICAL_SYNC_MAX_AGE_MINUTES", 20)
         health_status["checks"]["ical"] = {
-            "status": "ok" if age_min < 20 else ("warning" if age_min < 30 else "error"),
+            "status": "ok" if age_min < max_ok else ("warning" if age_min < (max_ok + 10) else "error"),
             "age_minutes": round(age_min, 2)
         }
     else:
