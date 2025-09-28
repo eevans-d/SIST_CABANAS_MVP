@@ -250,5 +250,21 @@ OGG/OPUS -> (si modelo) transcribe; si modelo ausente => retorna `audio_unclear`
 ## ADR Principal
 No integrar PMS externo en MVP (ver documentación original). Foco en core pipeline (locks, expiraciones, pagos, iCal, audio/NLU básico).
 
----
 Para mejoras futuras: auth admin, dashboard, sync iCal incremental, retry pagos, intents ML.
+
+### Docker Compose (producción mínima) y Scheduler
+
+- Levantar stack completo (app + db + redis + nginx + scheduler):
+  ```bash
+  docker compose up -d --build
+  ```
+
+- Variables de jobs (en `.env`):
+  - `JOB_EXPIRATION_INTERVAL_SECONDS` (default 30)
+  - `JOB_ICAL_INTERVAL_SECONDS` (default 300)
+
+El contenedor `scheduler` ejecuta en loop la expiración de pre-reservas, recordatorios y la sincronización iCal.
+
+### Ejemplos de firmas Webhook
+- WhatsApp: `X-Hub-Signature-256: sha256=<HMAC_HEX(WHATSAPP_APP_SECRET, body)>`
+- Mercado Pago: `x-signature: ts=1,v1=<HMAC_HEX(MERCADOPAGO_WEBHOOK_SECRET, body)>`

@@ -9,6 +9,8 @@ services:
       - ENVIRONMENT=production
       - DATABASE_URL=postgresql://alojamientos:${POSTGRES_PASSWORD}@db:5432/alojamientos_db
       - REDIS_URL=redis://redis:6379/0
+      - JOB_EXPIRATION_INTERVAL_SECONDS=${JOB_EXPIRATION_INTERVAL_SECONDS}
+      - JOB_ICAL_INTERVAL_SECONDS=${JOB_ICAL_INTERVAL_SECONDS}
       - WHATSAPP_ACCESS_TOKEN=${WHATSAPP_ACCESS_TOKEN}
       - WHATSAPP_APP_SECRET=${WHATSAPP_APP_SECRET}
       - WHATSAPP_VERIFY_TOKEN=${WHATSAPP_VERIFY_TOKEN}
@@ -110,6 +112,8 @@ services:
       - ENVIRONMENT=production
       - DATABASE_URL=postgresql://alojamientos:${POSTGRES_PASSWORD}@db:5432/alojamientos_db
       - REDIS_URL=redis://redis:6379/0
+      - JOB_EXPIRATION_INTERVAL_SECONDS=${JOB_EXPIRATION_INTERVAL_SECONDS}
+      - JOB_ICAL_INTERVAL_SECONDS=${JOB_ICAL_INTERVAL_SECONDS}
     depends_on:
       db:
         condition: service_healthy
