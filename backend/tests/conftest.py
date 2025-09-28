@@ -21,6 +21,7 @@ from decimal import Decimal
 import os
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy import text
 from sqlalchemy.ext.compiler import compiles
 try:
     from sqlalchemy.dialects.postgresql import UUID as PG_UUID  # type: ignore
@@ -102,9 +103,43 @@ async def test_engine():  # type: ignore
         pytest.skip("Base de modelos no disponible para crear tablas")
 
     async with engine.begin() as conn:
+        # Crear tablas base
         await conn.run_sync(Base.metadata.create_all)
+        # Si es Postgres, asegurar constraint anti doble-booking con DDL explícito
+        if engine.dialect.name == "postgresql":
+            # Extensión necesaria para el índice gist por rangos
+            await conn.execute(text("CREATE EXTENSION IF NOT EXISTS btree_gist"))
+            # Alinear columna generada y constraint según ADR-0001 (rango half-open '[)')
+            # Eliminar si existieran de una corrida previa
+            await conn.execute(text("""
+                DO $$
+                BEGIN
+                    IF EXISTS (
+                        SELECT 1 FROM information_schema.columns 
+                        WHERE table_name='reservations' AND column_name='period'
+                    ) THEN
+                        ALTER TABLE reservations DROP COLUMN period;
+                    END IF;
+                END$$;
+            """))
+            await conn.execute(text("""
+                ALTER TABLE reservations 
+                ADD COLUMN period daterange 
+                GENERATED ALWAYS AS (daterange(check_in, check_out, '[)')) STORED
+            """))
+            # Constraint de exclusión (eliminar si existe y recrear)
+            await conn.execute(text("ALTER TABLE reservations DROP CONSTRAINT IF EXISTS no_overlap_reservations"))
+            await conn.execute(text("""
+                ALTER TABLE reservations 
+                ADD CONSTRAINT no_overlap_reservations 
+                EXCLUDE USING gist (
+                    accommodation_id WITH =,
+                    period WITH &&
+                ) WHERE (reservation_status IN ('pre_reserved','confirmed'))
+            """))
     yield engine
     async with engine.begin() as conn:
+        # Drop all tables (también elimina constraint/columnas derivadas)
         await conn.run_sync(Base.metadata.drop_all)
     await engine.dispose()
 

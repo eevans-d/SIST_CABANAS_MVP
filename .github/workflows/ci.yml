@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  tests-sqlite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install root deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Install backend deps
+        working-directory: backend
+        run: |
+          pip install -r requirements.txt
+      - name: Run tests (SQLite fallback)
+        env:
+          ENVIRONMENT: test
+          DATABASE_URL: sqlite+aiosqlite:///./test_fallback.db
+          REDIS_URL: redis://localhost:6379/0
+          WHATSAPP_ACCESS_TOKEN: dummy
+          WHATSAPP_APP_SECRET: dummy
+          WHATSAPP_PHONE_ID: dummy
+          MERCADOPAGO_ACCESS_TOKEN: dummy
+        run: |
+          pytest -q
+
+  tests-postgres-redis:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: alojamientos
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: alojamientos_test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U alojamientos -d alojamientos_test_db"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install system deps
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Install root deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Install backend deps
+        working-directory: backend
+        run: |
+          pip install -r requirements.txt
+      - name: Wait for Postgres ready
+        run: |
+          for i in {1..30}; do
+            pg_isready -h localhost -p 5432 -U alojamientos -d alojamientos_test_db && break
+            sleep 2
+          done
+      - name: Prepare DB extensions
+        env:
+          PGPASSWORD: password
+        run: |
+          psql -h localhost -U alojamientos -d alojamientos_test_db -c 'CREATE EXTENSION IF NOT EXISTS "uuid-ossp";'
+          psql -h localhost -U alojamientos -d alojamientos_test_db -c 'CREATE EXTENSION IF NOT EXISTS btree_gist;'
+      - name: Run tests (Postgres + Redis)
+        env:
+          ENVIRONMENT: test
+          TEST_DATABASE_URL: postgresql+asyncpg://alojamientos:password@localhost:5432/alojamientos_test_db
+          REDIS_URL: redis://localhost:6379/0
+          TEST_REDIS_URL: redis://localhost:6379/0
+          WHATSAPP_ACCESS_TOKEN: dummy
+          WHATSAPP_APP_SECRET: dummy
+          WHATSAPP_PHONE_ID: dummy
+          MERCADOPAGO_ACCESS_TOKEN: dummy
+        run: |
+          pytest -q
