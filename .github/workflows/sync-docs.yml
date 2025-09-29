@@ -1,0 +1,48 @@
+name: Sync Docs to Public Mirror
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  sync-docs:
+    if: github.repository == 'eevans-d/SIST_CABANAS_MVP'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prepare docs bundle
+        run: |
+          mkdir -p _mirror
+          # Seleccionar solo docs públicos: README.md, backend/README.md, backend/docs, backend/docs/adr, .github/copilot-instructions.md
+          cp README.md _mirror/
+          mkdir -p _mirror/backend
+          if [ -f backend/README.md ]; then cp backend/README.md _mirror/backend/; fi
+          if [ -d backend/docs ]; then cp -r backend/docs _mirror/backend/; fi
+          mkdir -p _mirror/.github
+          if [ -f .github/copilot-instructions.md ]; then cp .github/copilot-instructions.md _mirror/.github/; fi
+          # Sanitizar archivos sensibles si existieran (no copiar .env, compose con secretos, etc.)
+          find _mirror -name '*.Zone.Identifier' -delete || true
+
+      - name: Push to public docs repo
+        env:
+          GH_TOKEN: ${{ secrets.DOCS_MIRROR_TOKEN }}
+        run: |
+          set -e
+          if [ -z "$GH_TOKEN" ]; then
+            echo "DOCS_MIRROR_TOKEN no configurado; se salta sync" && exit 0
+          fi
+          cd _mirror
+          git init
+          git config user.name "docs-bot"
+          git config user.email "docs-bot@users.noreply.github.com"
+          git add .
+          git commit -m "docs: sync from SIST_CABANAS_MVP ${GITHUB_SHA}"
+          git branch -M main
+          git remote add origin https://$GH_TOKEN@github.com/eevans-d/SIST_CABANAS_DOCS.git
+          git push -f origin main

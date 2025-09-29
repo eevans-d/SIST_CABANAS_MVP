@@ -2,6 +2,15 @@
 
 > Filosofía: SHIPPING > PERFECCIÓN. Código mínimo viable para orquestar pre-reservas con anti doble-booking, canal WhatsApp y pagos (WIP).
 
+## Repos oficiales (fuente de verdad)
+- Código privado (source-of-truth): https://github.com/eevans-d/SIST_CABANAS_MVP
+- Mirror público de documentación (docs-only): https://github.com/eevans-d/SIST_CABANAS_DOCS
+
+Política:
+- El código y los issues viven en el repo privado.
+- El repo público contiene solo documentación para compartir contexto. Se sincroniza automáticamente (workflow `sync-docs.yml`).
+- Cualquier otro repo duplicado debe archivarse/borrarse para evitar confusión.
+
 ## Estado Actual (2025-09-24)
 - Esquema base: `accommodations`, `reservations` + constraint `no_overlap_reservations` (PostgreSQL, daterange + EXCLUDE gist) implementado en migración `001_initial_schema.py`.
 - Tests anti solapamiento listos (`test_double_booking.py`, `test_constraint_validation.py`).
