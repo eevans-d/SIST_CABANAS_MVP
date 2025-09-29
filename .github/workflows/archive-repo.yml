@@ -3,8 +3,8 @@ name: Maintenance - Archive Duplicate Repo
 on:
   workflow_dispatch:
     inputs:
-      repo_name:
-        description: "Nombre del repositorio a archivar (ej. SIST_CABANAS_OLD)"
+      repo_names:
+        description: "Lista de repos a archivar, separados por coma (ej.: SIST_CABANAS,SIST_CABANAS_DOCS)"
         required: true
 
 permissions:
@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Check inputs
         run: |
-          echo "Repo a archivar: ${{ github.event.inputs.repo_name }}"
+          echo "Repos a archivar: ${{ github.event.inputs.repo_names }}"
       - name: Install GitHub CLI
         run: |
           sudo apt-get update
@@ -25,17 +25,23 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.REPO_ADMIN_TOKEN }}
           OWNER: ${{ github.repository_owner }}
-          TARGET: ${{ github.event.inputs.repo_name }}
+          TARGETS: ${{ github.event.inputs.repo_names }}
         run: |
           if [ -z "$GH_TOKEN" ]; then
             echo "REPO_ADMIN_TOKEN no configurado; abortando" >&2
             exit 1
           fi
           set -e
-          echo "Archiving repo $OWNER/$TARGET ..."
-          gh api \
-            -X PATCH \
-            -H "Accept: application/vnd.github+json" \
-            "/repos/$OWNER/$TARGET" \
-            -f archived=true
-          echo "OK"
+          IFS=',' read -ra REPOS <<< "$TARGETS"
+          for R in "${REPOS[@]}"; do
+            R_TRIM=$(echo "$R" | xargs)
+            if [ -z "$R_TRIM" ]; then continue; fi
+            echo "Archiving repo $OWNER/$R_TRIM ..."
+            gh api \
+              -X PATCH \
+              -H "Accept: application/vnd.github+json" \
+              "/repos/$OWNER/$R_TRIM" \
+              -f archived=true
+            echo "Archived: $OWNER/$R_TRIM"
+          done
+          echo "All requested repos archived"
