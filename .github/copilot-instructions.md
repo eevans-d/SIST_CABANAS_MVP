@@ -1,5 +1,18 @@
 # Instrucciones para Agentes de IA - Sistema Agéntico MVP de Alojamientos
 
+## ⚡ TL;DR para agentes (actualizado 2025-09-29)
+- Código monolito FastAPI + SQLAlchemy Async + PostgreSQL 16 + Redis 7. Evitar microservicios y abstracciones innecesarias.
+- Tests: pytest con fallback a SQLite para unitarios; las pruebas de overlap requieren Postgres real con btree_gist (ver `backend/tests/test_double_booking.py`, `test_constraint_validation.py`). Pytest está configurado en `pytest.ini` y fixtures en `backend/tests/conftest.py` (inyecta DB/Redis y cliente HTTP con entorno de test).
+- Constraint anti doble-booking: columna `period` `[)` y `EXCLUDE USING gist` filtrando estados pre_reserved/confirmed; esperá IntegrityError en solapes concurrentes. Llaves Redis de lock: `lock:acc:{id}:{checkin}:{checkout}` TTL 1800s.
+- Webhooks críticos: validar firmas siempre.
+  - WhatsApp: header `X-Hub-Signature-256` (HMAC-SHA256). Normalizar mensaje a contrato unificado.
+  - Mercado Pago: header `x-signature` (ts, v1). Manejo idempotente de eventos de pago.
+- Background jobs: en `app/main.py` se lanzan workers de expiración de pre-reserva y sync iCal (también hay `jobs/scheduler.py`). iCal import/export en `services/ical.py` (export añade `X-CODE` y `X-SOURCE`).
+- Observabilidad: `prometheus-fastapi-instrumentator` expone `/metrics`. Gauge `ical_last_sync_age_minutes` y health `/api/v1/healthz` considera DB/Redis y max age iCal (configurable). Rate limit middleware Redis per-IP+path, bypass en `/api/v1/healthz` y `/metrics` y fail-open ante error de Redis.
+- Rutas principales (prefijo `/api/v1`): `health`, `reservations`, `mercadopago`, `whatsapp`, `ical`, `audio`, `admin`, `nlu` (ver `app/routers/*`).
+- Config por entorno en `app/core/config.py` y `.env.template` (e.g., `JOB_ICAL_INTERVAL_SECONDS`, `ICAL_SYNC_MAX_AGE_MINUTES`, `RATE_LIMIT_*`). CI: GitHub Actions corre tests en SQLite y Postgres+Redis.
+
+
 ## 🎯 Contexto Central
 Este es un **Sistema MVP de reservas de alojamientos** con automatización completa para WhatsApp y email, diseñado para construirse en **10-12 días**. La filosofía es **SHIPPING > PERFECCIÓN**.
 
@@ -23,7 +36,7 @@ Este es un **Sistema MVP de reservas de alojamientos** con automatización compl
 - **Constraint PostgreSQL OBLIGATORIO:**
   ```sql
   CREATE EXTENSION btree_gist;
-  period daterange GENERATED ALWAYS AS (daterange(check_in, check_out, '[]')) STORED
+  period daterange GENERATED ALWAYS AS (daterange(check_in, check_out, '[)')) STORED
   CONSTRAINT no_overlap_reservations EXCLUDE USING gist
     (accommodation_id WITH =, period WITH &&)
     WHERE (reservation_status IN ('pre_reserved','confirmed'))
