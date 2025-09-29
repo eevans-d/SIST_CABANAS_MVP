@@ -65,7 +65,7 @@ backend/
     routers/           # endpoints (solo health por ahora)
   alembic/             # migraciones
   tests/               # tests y fixtures
-.docs/adr              # ADRs
+docs/adr               # ADRs
 ```
 
 ## Convenciones Anti Doble-Booking

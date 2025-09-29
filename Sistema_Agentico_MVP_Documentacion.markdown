@@ -85,7 +85,7 @@ MODELOS EXACTOS (NO agregar campos):
    imported_blocks, pricing_rules, domain_events
 CONSTRAINT CRÍTICO (NO NEGOCIABLE):
 - CREATE EXTENSION btree_gist;
-- period daterange GENERATED ALWAYS AS (daterange(check_in, check_out, '[]')) STORED
+- period daterange GENERATED ALWAYS AS (daterange(check_in, check_out, '[)')) STORED
 - CONSTRAINT no_overlap_reservations EXCLUDE USING gist
   (accommodation_id WITH =, period WITH &&)
   WHERE (reservation_status IN ('pre_reserved','confirmed'))
