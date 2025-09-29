@@ -11,6 +11,7 @@ Política de consolidación:
 - La documentación vive dentro de este mismo repo (carpetas `README.md`, `backend/docs`, `backend/docs/adr`).
 
 Estado de consolidación: ver `docs/CONSOLIDATION_STATUS.md`.
+Seguimiento: https://github.com/eevans-d/SIST_CABANAS_MVP/issues/1
 
 ## Estado Actual (2025-09-24)
 - Esquema base: `accommodations`, `reservations` + constraint `no_overlap_reservations` (PostgreSQL, daterange + EXCLUDE gist) implementado en migración `001_initial_schema.py`.
