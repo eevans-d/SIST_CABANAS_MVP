@@ -13,6 +13,9 @@ Acción pendiente (dueño del repo):
 - [ ] Crear secret `REPO_ADMIN_TOKEN` con un PAT que tenga permisos de administración sobre los repos a archivar.
 - [ ] Re-ejecutar el workflow desde Actions → "Maintenance - Archive Duplicate Repo".
 
+  Última verificación:
+  - 2025-09-29: Smoke E2E ok (backend/tests/test_journey_basic.py y test_journey_expiration.py → 4 passed, 3 warnings). Suite general previamente en verde (37 passed, 11 skipped).
+
 Notas:
 - Alternativamente, archivar manualmente por UI en cada repo (Settings → Danger Zone → Archive this repository).
 - Una vez archivados, actualizar este archivo a Estado: COMPLETADO.
