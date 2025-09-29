@@ -1,0 +1,41 @@
+name: Maintenance - Archive Duplicate Repo
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo_name:
+        description: "Nombre del repositorio a archivar (ej. SIST_CABANAS_OLD)"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check inputs
+        run: |
+          echo "Repo a archivar: ${{ github.event.inputs.repo_name }}"
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gh
+      - name: Archive repository via API
+        env:
+          GH_TOKEN: ${{ secrets.REPO_ADMIN_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          TARGET: ${{ github.event.inputs.repo_name }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "REPO_ADMIN_TOKEN no configurado; abortando" >&2
+            exit 1
+          fi
+          set -e
+          echo "Archiving repo $OWNER/$TARGET ..."
+          gh api \
+            -X PATCH \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/$OWNER/$TARGET" \
+            -f archived=true
+          echo "OK"
