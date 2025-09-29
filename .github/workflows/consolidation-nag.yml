@@ -1,0 +1,42 @@
+name: Consolidation Reminder
+
+on:
+  schedule:
+    - cron: '0 9 * * 1' # Lunes 09:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check-and-remind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check secret and prepare message
+        id: prep
+        run: |
+          MISSING=0
+          if [ -z "${{ secrets.REPO_ADMIN_TOKEN }}" ]; then
+            MISSING=1
+          fi
+          echo "missing=$MISSING" >> $GITHUB_OUTPUT
+      - name: Create or update reminder issue
+        if: steps.prep.outputs.missing == '1'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const title = 'Recordatorio: finalizar consolidación y archivar repos duplicados';
+            const body = `El workflow de archivado requiere definir el secreto REPO_ADMIN_TOKEN.\n\nRepos sugeridos a archivar: SIST_CABANAS_DOCS, SIST_CABANAS.\n\nPasos:\n1) Crear secret REPO_ADMIN_TOKEN (PAT con permisos de administración).\n2) Actions → Maintenance - Archive Duplicate Repo → repo_names: SIST_CABANAS_DOCS,SIST_CABANAS.\n\nArchivo de estado: docs/CONSOLIDATION_STATUS.md`;
+            const { data: issues } = await github.rest.issues.listForRepo({ owner, repo, state: 'open' });
+            const existing = issues.find(i => i.title === title);
+            if (existing) {
+              await github.rest.issues.update({ owner, repo, issue_number: existing.number, body });
+              core.info(`Issue actualizado #${existing.number}`);
+            } else {
+              const { data: created } = await github.rest.issues.create({ owner, repo, title, body });
+              core.info(`Issue creado #${created.number}`);
+            }

@@ -1,4 +1,4 @@
-# Sistema MVP Reservas Alojamientos
+# Sistema MVP Reservas Alojamientos [![CI](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci.yml)
 
 > Filosofía: SHIPPING > PERFECCIÓN. Código mínimo viable para orquestar pre-reservas con anti doble-booking, canal WhatsApp y pagos (WIP).
 
@@ -9,6 +9,8 @@ Política de consolidación:
 - Este es el único repositorio oficial del proyecto.
 - Cualquier otro repositorio con contenido duplicado (p. ej. `SIST_CABANAS`, `SIST_CABANAS_DOCS`) será archivado para evitar confusiones.
 - La documentación vive dentro de este mismo repo (carpetas `README.md`, `backend/docs`, `backend/docs/adr`).
+
+Estado de consolidación: ver `docs/CONSOLIDATION_STATUS.md`.
 
 ## Estado Actual (2025-09-24)
 - Esquema base: `accommodations`, `reservations` + constraint `no_overlap_reservations` (PostgreSQL, daterange + EXCLUDE gist) implementado en migración `001_initial_schema.py`.
