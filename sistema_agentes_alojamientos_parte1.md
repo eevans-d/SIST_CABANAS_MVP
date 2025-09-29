@@ -444,7 +444,7 @@ CREATE EXTENSION IF NOT EXISTS btree_gist;
 
 -- Agregar columna calculada para rango fechas
 ALTER TABLE reservations ADD COLUMN period daterange
-  GENERATED ALWAYS AS (daterange(check_in, check_out, '[]')) STORED;
+  GENERATED ALWAYS AS (daterange(check_in, check_out, '[)')) STORED;
 
 -- Excluir solapes por alojamiento cuando estado activo
 ALTER TABLE reservations ADD CONSTRAINT no_overlap_reservations
