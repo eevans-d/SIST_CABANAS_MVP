@@ -155,6 +155,16 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
         expire_on_commit=False,
     )
     async with session_factory() as session:
+        # Si estamos usando SQLite file fallback, limpiar todas las tablas antes de cada test
+        try:
+            if test_engine.dialect.name == "sqlite":
+                from app.models.base import Base as _Base
+                async with test_engine.begin() as _conn:
+                    await _conn.run_sync(_Base.metadata.drop_all)
+                    await _conn.run_sync(_Base.metadata.create_all)
+        except Exception:
+            # Best-effort: no fallar si no podemos limpiar (p.ej., Postgres gestionado por transacción)
+            pass
         trans = await session.begin()
         try:
             yield session

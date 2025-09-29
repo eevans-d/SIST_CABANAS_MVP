@@ -62,6 +62,9 @@ async def health_check(db: AsyncSession = Depends(get_db)) -> Dict:
         logger.warning("health_ical_query_failed", error=str(e))
 
     if last_ical_sync:
+        # Normalizar tz: SQLite puede devolver naive aunque la columna sea timezone-aware
+        if last_ical_sync.tzinfo is None:
+            last_ical_sync = last_ical_sync.replace(tzinfo=timezone.utc)
         age_min = (now - last_ical_sync).total_seconds() / 60
         try:
             ICAL_LAST_SYNC_AGE_MIN.set(age_min)
