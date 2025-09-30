@@ -14,6 +14,21 @@ jobs:
   archive:
     runs-on: ubuntu-latest
     steps:
+      - name: Prepare token (REPO_ADMIN_TOKEN or GH_TOKEN)
+        env:
+          REPO_ADMIN_TOKEN: ${{ secrets.REPO_ADMIN_TOKEN }}
+          GH_TOKEN_ALT: ${{ secrets.GH_TOKEN }}
+        run: |
+          if [ -n "$REPO_ADMIN_TOKEN" ]; then
+            echo "GH_TOKEN=$REPO_ADMIN_TOKEN" >> $GITHUB_ENV
+            echo "Using REPO_ADMIN_TOKEN"
+          elif [ -n "$GH_TOKEN_ALT" ]; then
+            echo "GH_TOKEN=$GH_TOKEN_ALT" >> $GITHUB_ENV
+            echo "Using GH_TOKEN"
+          else
+            echo "REPO_ADMIN_TOKEN/GH_TOKEN no configurado; abortando" >&2
+            exit 1
+          fi
       - name: Check inputs
         run: |
           echo "Repos a archivar: ${{ github.event.inputs.repo_names }}"
@@ -23,12 +38,12 @@ jobs:
           sudo apt-get install -y gh
       - name: Archive repository via API
         env:
-          GH_TOKEN: ${{ secrets.REPO_ADMIN_TOKEN }}
+          GH_TOKEN: ${{ env.GH_TOKEN }}
           OWNER: ${{ github.repository_owner }}
           TARGETS: ${{ github.event.inputs.repo_names }}
         run: |
           if [ -z "$GH_TOKEN" ]; then
-            echo "REPO_ADMIN_TOKEN no configurado; abortando" >&2
+            echo "GH_TOKEN no configurado; abortando" >&2
             exit 1
           fi
           set -e
