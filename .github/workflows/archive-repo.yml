@@ -36,12 +36,22 @@ jobs:
           for R in "${REPOS[@]}"; do
             R_TRIM=$(echo "$R" | xargs)
             if [ -z "$R_TRIM" ]; then continue; fi
-            echo "Archiving repo $OWNER/$R_TRIM ..."
+            # Verificar estado actual antes de intentar archivar
+            CURRENT=$(gh api -H "Accept: application/vnd.github+json" "/repos/$OWNER/$R_TRIM" --jq '.archived' || echo "error")
+            if [ "$CURRENT" = "error" ]; then
+              echo "No se pudo obtener el estado de $OWNER/$R_TRIM. Se omite."
+              continue
+            fi
+            if [ "$CURRENT" = "true" ]; then
+              echo "Ya archivado: $OWNER/$R_TRIM. Se omite."
+              continue
+            fi
+            echo "Archivando repo $OWNER/$R_TRIM ..."
             gh api \
               -X PATCH \
               -H "Accept: application/vnd.github+json" \
               "/repos/$OWNER/$R_TRIM" \
               -f archived=true
-            echo "Archived: $OWNER/$R_TRIM"
+            echo "Archivado: $OWNER/$R_TRIM"
           done
           echo "All requested repos archived"
