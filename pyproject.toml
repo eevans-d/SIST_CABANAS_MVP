@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sistema-alojamientos-mvp"
-version = "0.9.8"
+version = "0.9.9"
 description = "Sistema MVP de reservas de alojamientos con automatización WhatsApp"
 readme = "README.md"
 requires-python = ">=3.12"
