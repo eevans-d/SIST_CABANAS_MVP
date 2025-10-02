@@ -125,19 +125,39 @@ cd backend
 pip install -r requirements.txt
 pip install -r requirements-dev.txt  # Si existe
 
-# 4. Configurar .env
+# 4. Instalar pre-commit hooks (RECOMENDADO)
+pip install pre-commit
+pre-commit install
+# Esto validará automáticamente el código antes de cada commit
+
+# 5. Configurar .env
 cp .env.template .env
 # Editar .env con valores de desarrollo
 
-# 5. Levantar servicios
+# 6. Levantar servicios
 docker-compose up -d postgres redis
 
-# 6. Ejecutar migraciones
+# 7. Ejecutar migraciones
 docker-compose exec api alembic upgrade head
 
-# 7. Verificar instalación
+# 8. Verificar instalación
 pytest tests/ -v
+
+# 9. Verificar pre-commit (opcional)
+pre-commit run --all-files
 ```
+
+### Pre-commit Hooks
+
+El proyecto usa `pre-commit` para validar automáticamente:
+- Formato de código (Black, isort)
+- Linting (Flake8)
+- Seguridad (Bandit)
+- Sintaxis (YAML, JSON, Dockerfiles)
+- Conventional Commits en mensajes
+
+Ejecutar manualmente: `pre-commit run --all-files`
+Omitir en un commit específico: `git commit --no-verify` (usar con precaución)
 
 ---
 
@@ -240,7 +260,7 @@ async def create_prereservation(
 ) -> dict:
     """
     Crea una pre-reserva con lock Redis y validación de constraint.
-    
+
     Args:
         accommodation_id: ID del alojamiento
         check_in: Fecha de entrada (inclusive)
@@ -248,20 +268,20 @@ async def create_prereservation(
         guests: Número de huéspedes
         channel: Canal de origen (whatsapp|email)
         contact: Teléfono o email del huésped
-        
+
     Returns:
         Dict con código de reserva, expires_at y deposit
-        
+
     Raises:
         ValueError: Si las fechas son inválidas
         IntegrityError: Si hay solapamiento de fechas
     """
     lock_key = f"lock:acc:{accommodation_id}:{check_in}:{check_out}"
-    
+
     # Lock Redis primero
     if not await redis.set(lock_key, "locked", ex=1800, nx=True):
         raise ValueError("En proceso o no disponible")
-    
+
     try:
         # Lógica de creación...
         return result
@@ -473,7 +493,7 @@ async def test_create_prereservation_with_valid_dates_succeeds():
     accommodation_id = 1
     check_in = date.today() + timedelta(days=7)
     check_out = check_in + timedelta(days=3)
-    
+
     # Act
     result = await reservation_service.create_prereservation(
         accommodation_id=accommodation_id,
@@ -483,7 +503,7 @@ async def test_create_prereservation_with_valid_dates_succeeds():
         channel="whatsapp",
         contact="+5491112345678"
     )
-    
+
     # Assert
     assert result["code"].startswith("RES")
     assert result["expires_at"] > datetime.now()
@@ -541,30 +561,30 @@ async def calculate_total_price(
 ) -> float:
     """
     Calcula el precio total de una reserva con multiplicadores.
-    
+
     Args:
         base_price: Precio base por noche del alojamiento
         check_in: Fecha de entrada (inclusive)
         check_out: Fecha de salida (exclusive)
         guests: Número de huéspedes
         season_multiplier: Multiplicador de temporada (default: 1.0)
-        
+
     Returns:
         Precio total calculado incluyendo todos los multiplicadores
-        
+
     Raises:
         ValueError: Si check_out <= check_in o guests <= 0
-        
+
     Example:
         >>> calculate_total_price(100.0, date(2025, 1, 1), date(2025, 1, 3), 2)
         200.0
     """
     if check_out <= check_in:
         raise ValueError("check_out debe ser posterior a check_in")
-    
+
     nights = (check_out - check_in).days
     total = base_price * nights * season_multiplier
-    
+
     return total
 ```
 
@@ -665,19 +685,19 @@ Relates to #[número]
 
 ## Preguntas Frecuentes
 
-**Q: ¿Puedo usar una librería nueva?**  
+**Q: ¿Puedo usar una librería nueva?**
 A: Solo si es estrictamente necesaria. Evitar dependencias innecesarias.
 
-**Q: ¿Debo añadir tests para un bugfix pequeño?**  
+**Q: ¿Debo añadir tests para un bugfix pequeño?**
 A: Sí. Siempre. El test previene regresión.
 
-**Q: ¿Puedo refactorizar código existente?**  
+**Q: ¿Puedo refactorizar código existente?**
 A: Solo si los tests existentes pasan y no cambias funcionalidad.
 
-**Q: ¿Cuándo crear un ADR?**  
+**Q: ¿Cuándo crear un ADR?**
 A: Para decisiones arquitectónicas que afectan el diseño general del sistema.
 
-**Q: ¿Qué hacer si mi PR está bloqueado mucho tiempo?**  
+**Q: ¿Qué hacer si mi PR está bloqueado mucho tiempo?**
 A: Comentar en el PR mencionando a los reviewers. Si no hay respuesta en 2 días, contactar por otro canal.
 
 ---

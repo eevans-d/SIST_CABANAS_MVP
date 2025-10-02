@@ -1,14 +1,22 @@
-# Sistema MVP Reservas Alojamientos [![CI](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci.yml) ![Production Ready](https://img.shields.io/badge/production-9.5%2F10-brightgreen) ![Python](https://img.shields.io/badge/python-3.12-blue) ![FastAPI](https://img.shields.io/badge/fastapi-0.115-009688)
+# Sistema MVP Reservas Alojamientos
+
+[![CI](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci.yml)
+[![Production Ready](https://img.shields.io/badge/production-9.8%2F10-brightgreen)](https://github.com/eevans-d/SIST_CABANAS_MVP)
+[![Python](https://img.shields.io/badge/python-3.12-blue)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/fastapi-0.115-009688)](https://fastapi.tiangolo.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 
 > **Filosofía:** SHIPPING > PERFECCIÓN. Sistema agéntico MVP de alojamientos con automatización completa para WhatsApp, anti-doble-booking y pagos.
 
-## 🎯 Estado Actual: **9.5/10 Production Ready** (2025-10-02)
+## 🎯 Estado Actual: **9.8/10 Production Ready** (2025-10-02)
 
-✅ **MVP Completado** - Todos los componentes críticos implementados y funcionando  
-✅ **P0 Gaps Resueltos** - 5/5 gaps críticos solucionados  
-✅ **37 Tests Pasando** - Suite completa de tests unitarios y de integración  
-✅ **Deploy Automatizado** - Scripts de validación, deploy y smoke testing  
-✅ **Documentación Completa** - Guías paso a paso para desarrollo y producción  
+✅ **MVP Completado** - Todos los componentes críticos implementados y funcionando
+✅ **P0 Gaps Resueltos** - 5/5 gaps críticos solucionados
+✅ **37 Tests Pasando** - Suite completa de tests unitarios y de integración
+✅ **Deploy Automatizado** - Scripts de validación, deploy y smoke testing
+✅ **Documentación Completa** - Guías paso a paso para desarrollo y producción
 
 ### 🚀 Características Principales
 
@@ -32,12 +40,12 @@
 
 ## 📦 Stack Tecnológico
 
-**Backend:** FastAPI 0.115 + SQLAlchemy Async + Alembic  
-**Database:** PostgreSQL 16 (btree_gist) + Redis 7  
-**Deploy:** Docker + Docker Compose + Nginx  
-**Observability:** Prometheus + structlog  
-**Testing:** pytest + asyncio (37 tests)  
-**CI/CD:** GitHub Actions  
+**Backend:** FastAPI 0.115 + SQLAlchemy Async + Alembic
+**Database:** PostgreSQL 16 (btree_gist) + Redis 7
+**Deploy:** Docker + Docker Compose + Nginx
+**Observability:** Prometheus + structlog
+**Testing:** pytest + asyncio (37 tests)
+**CI/CD:** GitHub Actions
 
 ## 🎯 Repositorio Oficial
 
@@ -91,9 +99,9 @@ curl http://localhost:8000/api/v1/healthz
 # Respuesta esperada: {"status": "healthy", ...}
 ```
 
-**API disponible en:** http://localhost:8000  
-**Documentación OpenAPI:** http://localhost:8000/docs  
-**Métricas Prometheus:** http://localhost:8000/metrics  
+**API disponible en:** http://localhost:8000
+**Documentación OpenAPI:** http://localhost:8000/docs
+**Métricas Prometheus:** http://localhost:8000/metrics
 
 ### Deploy a Producción
 

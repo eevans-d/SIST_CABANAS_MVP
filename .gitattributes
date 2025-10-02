@@ -1,0 +1,97 @@
+# .gitattributes - Git attributes for consistent repository behavior
+
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Explicitly declare text files
+*.py text eol=lf
+*.pyi text eol=lf
+*.txt text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.toml text eol=lf
+*.ini text eol=lf
+*.cfg text eol=lf
+*.sh text eol=lf
+*.bash text eol=lf
+*.sql text eol=lf
+*.env text eol=lf
+*.env.* text eol=lf
+Dockerfile* text eol=lf
+Makefile text eol=lf
+*.template text eol=lf
+
+# Documentation
+*.markdown text eol=lf
+*.rst text eol=lf
+LICENSE text eol=lf
+CHANGELOG* text eol=lf
+README* text eol=lf
+CONTRIBUTING* text eol=lf
+CODE_OF_CONDUCT* text eol=lf
+
+# Scripts
+*.sh text eol=lf
+scripts/* text eol=lf
+
+# Denote binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg binary
+*.pdf binary
+*.zip binary
+*.tar binary
+*.gz binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.otf binary
+
+# Python compiled files
+*.pyc binary
+*.pyo binary
+*.pyd binary
+
+# Database files
+*.db binary
+*.sqlite binary
+*.sqlite3 binary
+
+# Archives
+*.7z binary
+*.bz2 binary
+*.rar binary
+*.tgz binary
+
+# Git LFS (Large File Storage) - if needed in the future
+# *.psd filter=lfs diff=lfs merge=lfs -text
+# *.ai filter=lfs diff=lfs merge=lfs -text
+
+# Export-ignore - files not included in git archives
+.gitignore export-ignore
+.gitattributes export-ignore
+.github/ export-ignore
+.editorconfig export-ignore
+.pre-commit-config.yaml export-ignore
+tests/ export-ignore
+*.pyc export-ignore
+__pycache__/ export-ignore
+.pytest_cache/ export-ignore
+htmlcov/ export-ignore
+.coverage export-ignore
+*.log export-ignore
+
+# Diff behavior for specific files
+*.py diff=python
+*.md diff=markdown
+*.json diff=json
+
+# Merge behavior
+*.json merge=union
+CHANGELOG.md merge=union
