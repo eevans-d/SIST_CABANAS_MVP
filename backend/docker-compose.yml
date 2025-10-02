@@ -63,8 +63,8 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
-    ports:
-      - "5432:5432"  # Solo para debugging - remover en prod
+    # ports:
+    #   - "5432:5432"  # ⚠️ NO EXPONER EN PRODUCCIÓN - Solo habilitar para debugging local
 
   redis:
     image: redis:7-alpine
@@ -81,8 +81,8 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
-    ports:
-      - "6379:6379"  # Solo para debugging - remover en prod
+    # ports:
+    #   - "6379:6379"  # ⚠️ NO EXPONER EN PRODUCCIÓN - Solo habilitar para debugging local
 
   nginx:
     image: nginx:alpine
