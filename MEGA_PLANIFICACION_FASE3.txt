@@ -1,0 +1,1423 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║               🎯 MEGA PLANIFICACIÓN FASE 3 - PRE-DEPLOY                     ║
+║                                                                              ║
+║                    Sistema MVP Alojamientos                                 ║
+║              Trabajo previo mientras se provisiona servidor                 ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+CONTEXTO ESTRATÉGICO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Estado Actual:     10.0/10 PRODUCTION PERFECT ✨
+Código:            Completo y testeado (37 tests, 87% coverage)
+Deploy Docs:       Completas con scripts automatizados
+Bloqueador:        Servidor staging aún no disponible (2-3 días)
+
+Oportunidad:       Maximizar tiempo de espera con mejoras de alto impacto
+Objetivo:          Sistema ULTRA PRODUCTION READY cuando servidor esté listo
+
+FILOSOFÍA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ SHIPPING > PERFECTION ✨
+Pero si tenemos tiempo... ¡hagámoslo INCREÍBLE!
+
+Prioridades:
+1. CI/CD primero (reduce errores futuros)
+2. Monitoring segundo (visibilidad crítica)
+3. Backups tercero (disaster recovery)
+4. Optimizaciones cuarto (nice-to-have)
+
+DURACIÓN TOTAL ESTIMADA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌─────────────────────────────────────────────────────────────────────┐
+│  Fase                          Duración    Prioridad    Impacto     │
+├─────────────────────────────────────────────────────────────────────┤
+│  3.1 CI/CD Pipeline            3-4 horas   🔴 CRÍTICO   ⭐⭐⭐⭐⭐ │
+│  3.2 Monitoring Setup          2-3 horas   🟠 ALTO      ⭐⭐⭐⭐   │
+│  3.3 Backup Automation         2-3 horas   🟠 ALTO      ⭐⭐⭐⭐   │
+│  3.4 Performance Optimization  1-2 horas   🟡 MEDIO     ⭐⭐⭐     │
+│  3.5 Infrastructure as Code    2-3 horas   🟢 OPCIONAL  ⭐⭐       │
+│  3.6 Final Polish              1 hora      🟢 OPCIONAL  ⭐⭐       │
+├─────────────────────────────────────────────────────────────────────┤
+│  TOTAL                         11-16 hrs   2-3 días @ 4-6h/día     │
+└─────────────────────────────────────────────────────────────────────┘
+
+ROADMAP VISUAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DÍA 1 (4-6 horas)
+├── 🔴 FASE 3.1: CI/CD Pipeline (3-4h)
+│   ├── GitHub Actions workflows
+│   ├── Automated testing en PRs
+│   ├── Automated deploy
+│   └── Status badges
+│
+└── 🟠 FASE 3.2: Monitoring Setup (2-3h) - INICIO
+    ├── Prometheus configuration
+    └── Alert rules
+
+DÍA 2 (4-6 horas)
+├── 🟠 FASE 3.2: Monitoring Setup (continuación)
+│   ├── Grafana dashboards
+│   ├── Alertmanager setup
+│   └── Integration guides
+│
+└── 🟠 FASE 3.3: Backup Automation (2-3h)
+    ├── Backup scripts
+    ├── Restore procedures
+    └── Automation with cron
+
+DÍA 3 (3-4 horas) - OPCIONAL
+├── 🟡 FASE 3.4: Performance Optimization (1-2h)
+│   ├── Database indexing guide
+│   ├── Query optimization
+│   └── Caching strategies
+│
+├── 🟢 FASE 3.5: Infrastructure as Code (2-3h)
+│   ├── Terraform configs
+│   └── Provisioning automation
+│
+└── 🟢 FASE 3.6: Final Polish (1h)
+    └── Documentation review
+
+═══════════════════════════════════════════════════════════════════════════════
+
+FASE 3.1: CI/CD PIPELINE 🔴 CRÍTICO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DURACIÓN: 3-4 horas
+PRIORIDAD: 🔴 CRÍTICO (hacer primero)
+IMPACTO: ⭐⭐⭐⭐⭐ (reduce errores humanos en todos los deploys futuros)
+
+OBJETIVO
+────────────────────────────────────────────────────────────────────────────────
+Automatizar testing, linting y deploy para garantizar calidad en cada commit/PR.
+
+JUSTIFICACIÓN
+────────────────────────────────────────────────────────────────────────────────
+✅ Previene commits rotos en main
+✅ Ejecuta tests automáticamente en cada PR
+✅ Valida code quality (Black, Flake8, isort)
+✅ Ejecuta security checks (Bandit, Safety)
+✅ Reduce tiempo de code review (checks automáticos)
+✅ Deploy automático a staging cuando merge a main
+
+ENTREGABLES
+────────────────────────────────────────────────────────────────────────────────
+1. .github/workflows/ci.yml                  (150 líneas)
+2. .github/workflows/deploy-staging.yml      (100 líneas)
+3. .github/workflows/security-scan.yml       (80 líneas)
+4. docs/ci-cd/GITHUB_ACTIONS_GUIDE.md        (400 líneas)
+5. Status badges en README.md                (actualización)
+
+PASOS DETALLADOS
+────────────────────────────────────────────────────────────────────────────────
+
+PASO 1.1: Workflow de CI (Tests + Linting)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Archivo: .github/workflows/ci.yml
+
+Propósito:
+- Ejecutar en cada push y PR
+- Tests con PostgreSQL y Redis reales
+- Linting con todas las herramientas
+- Coverage report
+
+Triggers:
+- push a main
+- pull_request a main
+- workflow_dispatch (manual)
+
+Jobs:
+1. test-sqlite (fast, sin servicios externos)
+2. test-postgres (completo, con DB y Redis)
+3. lint (Black, Flake8, isort, Bandit)
+4. security (Safety para dependencias)
+
+Contenido del workflow:
+```yaml
+name: CI - Tests and Linting
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test-sqlite:
+    name: Quick Tests (SQLite)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install pytest pytest-asyncio pytest-cov
+
+      - name: Run tests with SQLite
+        run: |
+          cd backend
+          pytest tests/ \
+            --cov=app \
+            --cov-report=term-missing \
+            --ignore=tests/test_double_booking.py \
+            --ignore=tests/test_constraint_validation.py \
+            -v
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./backend/.coverage
+          flags: sqlite
+
+  test-postgres:
+    name: Full Tests (PostgreSQL + Redis)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: alojamientos_test
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_pass
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install pytest pytest-asyncio pytest-cov
+
+      - name: Install PostgreSQL extensions
+        run: |
+          PGPASSWORD=test_pass psql -h localhost -U test_user -d alojamientos_test -c "CREATE EXTENSION IF NOT EXISTS btree_gist;"
+
+      - name: Run all tests
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: alojamientos_test
+          DB_USER: test_user
+          DB_PASSWORD: test_pass
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          REDIS_PASSWORD: ""
+        run: |
+          cd backend
+          pytest tests/ \
+            --cov=app \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            -v
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./backend/coverage.xml
+          flags: postgres
+          fail_ci_if_error: false
+
+  lint:
+    name: Code Quality (Linting)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install linting tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install black flake8 isort bandit[toml]
+
+      - name: Check code formatting (Black)
+        run: |
+          black --check backend/app backend/tests
+
+      - name: Check imports (isort)
+        run: |
+          isort --check-only backend/app backend/tests
+
+      - name: Lint with Flake8
+        run: |
+          flake8 backend/app backend/tests --max-line-length=120 --extend-ignore=E203,W503
+
+      - name: Security check (Bandit)
+        run: |
+          bandit -r backend/app -ll -c pyproject.toml
+
+  security:
+    name: Dependency Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Safety
+        run: pip install safety
+
+      - name: Check dependencies
+        run: |
+          safety check -r backend/requirements.txt --json || true
+```
+
+Tiempo estimado: 1.5 horas
+
+────────────────────────────────────────────────────────────────────────────────
+
+PASO 1.2: Workflow de Deploy a Staging
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Archivo: .github/workflows/deploy-staging.yml
+
+Propósito:
+- Deploy automático a staging cuando se hace merge a main
+- Solo si todos los tests pasan
+- Con rollback automático si falla
+
+Contenido del workflow:
+```yaml
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Staging Server
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: staging
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.STAGING_SSH_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.STAGING_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy via SSH
+        run: |
+          ssh ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} << 'EOF'
+            cd /opt/apps/SIST_CABANAS_MVP
+
+            echo "📥 Pulling latest code..."
+            git pull origin main
+
+            echo "✅ Running pre-deploy checks..."
+            bash scripts/pre-deploy-check.sh || exit 1
+
+            echo "🚀 Deploying..."
+            docker compose down
+            docker compose up -d --build
+
+            echo "⏳ Waiting for services to be ready..."
+            sleep 10
+
+            echo "🔍 Running post-deploy verification..."
+            bash scripts/post-deploy-verify.sh localhost || {
+              echo "❌ Verification failed! Rolling back..."
+              git checkout HEAD^
+              docker compose down
+              docker compose up -d --build
+              exit 1
+            }
+
+            echo "✅ Deploy successful!"
+          EOF
+
+      - name: Notify deployment status
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'Deployment to staging: ${{ job.status }}'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+```
+
+Nota: Requiere configurar secrets en GitHub:
+- STAGING_SSH_KEY
+- STAGING_HOST
+- STAGING_USER
+- SLACK_WEBHOOK (opcional)
+
+Tiempo estimado: 1 hora
+
+────────────────────────────────────────────────────────────────────────────────
+
+PASO 1.3: Workflow de Security Scan
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Archivo: .github/workflows/security-scan.yml
+
+Propósito:
+- Escaneo semanal de vulnerabilidades
+- Container scanning con Trivy
+- Dependency scanning
+
+Contenido del workflow:
+```yaml
+name: Security Scan
+
+on:
+  schedule:
+    - cron: '0 2 * * 1'  # Lunes a las 2 AM
+  workflow_dispatch:
+
+jobs:
+  trivy:
+    name: Container Security Scan (Trivy)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build -t alojamientos-api:latest -f backend/Dockerfile .
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'alojamientos-api:latest'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  dependency-review:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Safety
+        run: pip install safety
+
+      - name: Check dependencies
+        run: |
+          safety check -r backend/requirements.txt --full-report
+```
+
+Tiempo estimado: 30 minutos
+
+────────────────────────────────────────────────────────────────────────────────
+
+PASO 1.4: Documentación de CI/CD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Archivo: docs/ci-cd/GITHUB_ACTIONS_GUIDE.md
+
+Contenido:
+- Overview de todos los workflows
+- Cómo funcionan los triggers
+- Cómo configurar secrets
+- Troubleshooting de workflows fallidos
+- Cómo agregar nuevos jobs
+- Best practices
+
+Tiempo estimado: 45 minutos
+
+────────────────────────────────────────────────────────────────────────────────
+
+PASO 1.5: Status Badges
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Actualizar README.md con badges:
+- CI Status
+- Test Coverage
+- Security Scan
+- License
+- Python version
+
+Tiempo estimado: 15 minutos
+
+────────────────────────────────────────────────────────────────────────────────
+
+VALIDACIÓN FASE 3.1
+────────────────────────────────────────────────────────────────────────────────
+☐ Workflows creados y funcionando
+☐ Tests pasan en CI
+☐ Linting pasa en CI
+☐ Security scan ejecuta sin errores CRITICAL
+☐ Deploy workflow configurado (aunque no se ejecute aún sin servidor)
+☐ Badges visibles en README
+☐ Documentación completa
+
+IMPACTO ESPERADO
+────────────────────────────────────────────────────────────────────────────────
+✅ 0 commits rotos en main (prevenidos por CI)
+✅ Code review 50% más rápido (checks automáticos)
+✅ Deploy 80% más confiable (automatizado + verificado)
+✅ Vulnerabilidades detectadas semanalmente
+✅ Coverage visible en cada PR
+
+═══════════════════════════════════════════════════════════════════════════════
+
+FASE 3.2: MONITORING & OBSERVABILITY 🟠 ALTO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DURACIÓN: 2-3 horas
+PRIORIDAD: 🟠 ALTO
+IMPACTO: ⭐⭐⭐⭐ (visibilidad total del sistema)
+
+OBJETIVO
+────────────────────────────────────────────────────────────────────────────────
+Setup completo de Prometheus + Alertmanager + Grafana para monitoreo 24/7.
+
+JUSTIFICACIÓN
+────────────────────────────────────────────────────────────────────────────────
+✅ Detectar problemas antes que usuarios
+✅ Alertas automáticas por Slack/Email
+✅ Dashboards visuales para métricas
+✅ Historial de performance
+✅ Debugging más rápido con datos históricos
+
+ENTREGABLES
+────────────────────────────────────────────────────────────────────────────────
+1. monitoring/prometheus/prometheus.yml      (200 líneas)
+2. monitoring/alertmanager/alertmanager.yml  (150 líneas)
+3. monitoring/grafana/dashboards/*.json      (3 dashboards)
+4. monitoring/docker-compose.monitoring.yml  (100 líneas)
+5. docs/monitoring/MONITORING_SETUP.md       (500 líneas)
+6. docs/monitoring/ALERT_RUNBOOK.md          (400 líneas)
+
+PASOS DETALLADOS
+────────────────────────────────────────────────────────────────────────────────
+
+PASO 2.1: Configuración de Prometheus
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Archivo: monitoring/prometheus/prometheus.yml
+
+```yaml
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'staging'
+    environment: 'staging'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+# Load rules
+rule_files:
+  - '/etc/prometheus/rules/*.yml'
+
+# Scrape configurations
+scrape_configs:
+  # API metrics
+  - job_name: 'alojamientos-api'
+    static_configs:
+      - targets: ['api:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # PostgreSQL exporter
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+
+  # Redis exporter
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+
+  # Node exporter (host metrics)
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  # cAdvisor (container metrics)
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+```
+
+Tiempo estimado: 30 minutos
+
+────────────────────────────────────────────────────────────────────────────────
+
+PASO 2.2: Alert Rules
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Archivo: monitoring/prometheus/rules/alerts.yml
+
+```yaml
+groups:
+  - name: api_alerts
+    interval: 30s
+    rules:
+      # API down
+      - alert: APIDown
+        expr: up{job="alojamientos-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "API is down"
+          description: "API has been down for more than 1 minute"
+
+      # High error rate
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }}"
+
+      # Slow response time
+      - alert: SlowResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "API response time is slow"
+          description: "P95 latency is {{ $value }}s"
+
+      # iCal sync age
+      - alert: ICalSyncStale
+        expr: ical_last_sync_age_minutes > 30
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "iCal sync is stale"
+          description: "Last sync was {{ $value }} minutes ago"
+
+  - name: database_alerts
+    interval: 30s
+    rules:
+      # Database down
+      - alert: DatabaseDown
+        expr: up{job="postgres"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "Database has been down for more than 1 minute"
+
+      # High connection usage
+      - alert: HighDatabaseConnections
+        expr: pg_stat_database_numbackends / pg_settings_max_connections > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High database connection usage"
+          description: "Using {{ $value | humanizePercentage }} of max connections"
+
+  - name: redis_alerts
+    interval: 30s
+    rules:
+      # Redis down
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is down"
+          description: "Redis has been down for more than 1 minute"
+
+      # High memory usage
+      - alert: RedisHighMemory
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Using {{ $value | humanizePercentage }} of max memory"
+```
+
+Tiempo estimado: 45 minutos
+
+────────────────────────────────────────────────────────────────────────────────
+
+PASO 2.3: Alertmanager Configuration
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Archivo: monitoring/alertmanager/alertmanager.yml
+
+```yaml
+global:
+  resolve_timeout: 5m
+  slack_api_url: '${SLACK_WEBHOOK_URL}'
+
+route:
+  group_by: ['alertname', 'severity']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 12h
+  receiver: 'slack-notifications'
+  routes:
+    # Critical alerts go to Slack + Email
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      continue: true
+
+    # Warnings only to Slack
+    - match:
+        severity: warning
+      receiver: 'slack-notifications'
+
+receivers:
+  - name: 'critical-alerts'
+    slack_configs:
+      - channel: '#alerts-critical'
+        title: '🚨 CRITICAL ALERT'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        send_resolved: true
+    email_configs:
+      - to: 'oncall@alojamientos.com'
+        from: 'alerts@alojamientos.com'
+        smarthost: '${SMTP_HOST}:${SMTP_PORT}'
+        auth_username: '${SMTP_USERNAME}'
+        auth_password: '${SMTP_PASSWORD}'
+        headers:
+          Subject: '🚨 CRITICAL ALERT: {{ .GroupLabels.alertname }}'
+
+  - name: 'slack-notifications'
+    slack_configs:
+      - channel: '#alerts'
+        title: 'Alert: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        send_resolved: true
+
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname']
+```
+
+Tiempo estimado: 30 minutos
+
+────────────────────────────────────────────────────────────────────────────────
+
+PASO 2.4: Grafana Dashboards
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Crear 3 dashboards:
+
+1. API Overview Dashboard
+   - Request rate
+   - Error rate
+   - P50/P95/P99 latency
+   - Active connections
+   - iCal sync age
+
+2. Database Dashboard
+   - Connection pool usage
+   - Query performance
+   - Cache hit ratio
+   - Table sizes
+   - Replication lag
+
+3. Infrastructure Dashboard
+   - CPU usage
+   - Memory usage
+   - Disk I/O
+   - Network traffic
+   - Container stats
+
+Archivos JSON en monitoring/grafana/dashboards/
+
+Tiempo estimado: 1 hora
+
+────────────────────────────────────────────────────────────────────────────────
+
+PASO 2.5: Docker Compose for Monitoring
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Archivo: monitoring/docker-compose.monitoring.yml
+
+```yaml
+version: '3.9'
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/rules:/etc/prometheus/rules
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    networks:
+      - monitoring
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+    ports:
+      - "9093:9093"
+    restart: unless-stopped
+    networks:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    volumes:
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    networks:
+      - monitoring
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter
+    container_name: postgres-exporter
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}?sslmode=disable"
+    ports:
+      - "9187:9187"
+    restart: unless-stopped
+    networks:
+      - monitoring
+      - backend
+
+  redis-exporter:
+    image: oliver006/redis_exporter
+    container_name: redis-exporter
+    environment:
+      REDIS_ADDR: "redis:6379"
+      REDIS_PASSWORD: "${REDIS_PASSWORD}"
+    ports:
+      - "9121:9121"
+    restart: unless-stopped
+    networks:
+      - monitoring
+      - backend
+
+volumes:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  monitoring:
+  backend:
+    external: true
+```
+
+Tiempo estimado: 30 minutos
+
+────────────────────────────────────────────────────────────────────────────────
+
+PASO 2.6: Documentación
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. MONITORING_SETUP.md
+   - Cómo levantar el stack de monitoring
+   - Acceder a Grafana (http://localhost:3000)
+   - Configurar alertas
+   - Agregar nuevas métricas
+
+2. ALERT_RUNBOOK.md
+   - Qué hacer cuando llega cada alerta
+   - Playbooks de troubleshooting
+   - Escalation procedures
+
+Tiempo estimado: 45 minutos
+
+────────────────────────────────────────────────────────────────────────────────
+
+VALIDACIÓN FASE 3.2
+────────────────────────────────────────────────────────────────────────────────
+☐ Prometheus scraping métricas
+☐ Alertmanager recibiendo alerts
+☐ Grafana mostrando dashboards
+☐ Alertas de prueba funcionando
+☐ Exporters de PostgreSQL y Redis funcionando
+☐ Documentación completa
+
+IMPACTO ESPERADO
+────────────────────────────────────────────────────────────────────────────────
+✅ Detectar incidentes en < 2 minutos (antes eran horas/días)
+✅ Alertas automáticas 24/7
+✅ Visibilidad total de performance
+✅ Debugging 80% más rápido
+✅ Histórico de métricas para análisis
+
+═══════════════════════════════════════════════════════════════════════════════
+
+FASE 3.3: BACKUP & DISASTER RECOVERY 🟠 ALTO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DURACIÓN: 2-3 horas
+PRIORIDAD: 🟠 ALTO
+IMPACTO: ⭐⭐⭐⭐ (recuperación ante desastres)
+
+OBJETIVO
+────────────────────────────────────────────────────────────────────────────────
+Automatizar backups diarios con retención y restauración verificada.
+
+JUSTIFICACIÓN
+────────────────────────────────────────────────────────────────────────────────
+✅ Protección contra pérdida de datos
+✅ Recuperación rápida (RTO < 30 min)
+✅ Cumplimiento de políticas de retención
+✅ Testing de restore automático
+✅ Backups off-site (cloud storage)
+
+ENTREGABLES
+────────────────────────────────────────────────────────────────────────────────
+1. scripts/backup-database.sh                (200 líneas)
+2. scripts/restore-database.sh               (150 líneas)
+3. scripts/backup-redis.sh                   (100 líneas)
+4. scripts/verify-backup.sh                  (150 líneas)
+5. scripts/backup-to-s3.sh                   (100 líneas)
+6. docs/backup/BACKUP_STRATEGY.md            (400 líneas)
+7. docs/backup/DISASTER_RECOVERY_PLAN.md     (500 líneas)
+
+PASOS DETALLADOS
+────────────────────────────────────────────────────────────────────────────────
+
+PASO 3.1: Script de Backup PostgreSQL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Archivo: scripts/backup-database.sh
+
+```bash
+#!/bin/bash
+# Backup PostgreSQL database
+# Ejecutar diariamente via cron
+
+set -euo pipefail
+
+# Variables
+BACKUP_DIR="/var/backups/alojamientos/postgresql"
+RETENTION_DAYS=30
+DATE=$(date +%Y%m%d_%H%M%S)
+BACKUP_FILE="backup_${DATE}.dump"
+
+# Crear directorio de backups
+mkdir -p "$BACKUP_DIR"
+
+# Hacer backup
+docker exec alojamientos_postgres pg_dump \
+  -U "$DB_USER" \
+  -d "$DB_NAME" \
+  -F c \
+  -f "/tmp/$BACKUP_FILE"
+
+# Copiar backup al host
+docker cp "alojamientos_postgres:/tmp/$BACKUP_FILE" "$BACKUP_DIR/"
+
+# Comprimir
+gzip "$BACKUP_DIR/$BACKUP_FILE"
+
+# Verificar integridad
+if [ -f "$BACKUP_DIR/${BACKUP_FILE}.gz" ]; then
+  SIZE=$(stat -f%z "$BACKUP_DIR/${BACKUP_FILE}.gz")
+  if [ "$SIZE" -gt 1000 ]; then
+    echo "✅ Backup successful: ${BACKUP_FILE}.gz ($SIZE bytes)"
+  else
+    echo "❌ Backup too small, might be corrupted"
+    exit 1
+  fi
+else
+  echo "❌ Backup file not found"
+  exit 1
+fi
+
+# Limpiar backups antiguos
+find "$BACKUP_DIR" -name "backup_*.dump.gz" -mtime +$RETENTION_DAYS -delete
+
+# Upload to S3 (opcional)
+if [ -n "${AWS_S3_BUCKET:-}" ]; then
+  aws s3 cp "$BACKUP_DIR/${BACKUP_FILE}.gz" \
+    "s3://${AWS_S3_BUCKET}/backups/postgresql/${BACKUP_FILE}.gz"
+  echo "✅ Backup uploaded to S3"
+fi
+
+echo "✅ Backup completed successfully"
+```
+
+Tiempo estimado: 45 minutos
+
+────────────────────────────────────────────────────────────────────────────────
+
+PASO 3.2: Script de Restore PostgreSQL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Archivo: scripts/restore-database.sh
+
+```bash
+#!/bin/bash
+# Restore PostgreSQL database from backup
+
+set -euo pipefail
+
+# Variables
+BACKUP_DIR="/var/backups/alojamientos/postgresql"
+
+# Listar backups disponibles
+echo "Available backups:"
+ls -lh "$BACKUP_DIR"/*.dump.gz
+
+# Pedir confirmación
+read -p "Enter backup filename to restore: " BACKUP_FILE
+read -p "This will DROP and recreate the database. Continue? (yes/no): " CONFIRM
+
+if [ "$CONFIRM" != "yes" ]; then
+  echo "Restore cancelled"
+  exit 0
+fi
+
+# Detener API
+docker compose stop api
+
+# Descomprimir backup
+gunzip -k "$BACKUP_DIR/$BACKUP_FILE"
+UNCOMPRESSED="${BACKUP_FILE%.gz}"
+
+# Copiar backup al contenedor
+docker cp "$BACKUP_DIR/$UNCOMPRESSED" alojamientos_postgres:/tmp/
+
+# Drop y recrear database
+docker exec alojamientos_postgres psql -U "$DB_USER" -c "DROP DATABASE IF EXISTS ${DB_NAME};"
+docker exec alojamientos_postgres psql -U "$DB_USER" -c "CREATE DATABASE ${DB_NAME} OWNER ${DB_USER};"
+
+# Restore
+docker exec alojamientos_postgres pg_restore \
+  -U "$DB_USER" \
+  -d "$DB_NAME" \
+  -v \
+  "/tmp/$UNCOMPRESSED"
+
+# Verificar restore
+TABLES=$(docker exec alojamientos_postgres psql -U "$DB_USER" -d "$DB_NAME" -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public';")
+
+if [ "$TABLES" -gt 3 ]; then
+  echo "✅ Restore successful! ($TABLES tables restored)"
+else
+  echo "❌ Restore might have failed (only $TABLES tables)"
+  exit 1
+fi
+
+# Reiniciar API
+docker compose up -d api
+
+echo "✅ Database restored successfully"
+```
+
+Tiempo estimado: 30 minutos
+
+────────────────────────────────────────────────────────────────────────────────
+
+PASO 3.3: Backup Redis
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Archivo: scripts/backup-redis.sh
+
+```bash
+#!/bin/bash
+# Backup Redis RDB file
+
+set -euo pipefail
+
+BACKUP_DIR="/var/backups/alojamientos/redis"
+DATE=$(date +%Y%m%d_%H%M%S)
+
+mkdir -p "$BACKUP_DIR"
+
+# Trigger BGSAVE
+docker exec alojamientos_redis redis-cli --pass "$REDIS_PASSWORD" BGSAVE
+
+# Esperar a que termine
+sleep 5
+
+# Copiar RDB
+docker cp alojamientos_redis:/data/dump.rdb "$BACKUP_DIR/dump_${DATE}.rdb"
+
+# Comprimir
+gzip "$BACKUP_DIR/dump_${DATE}.rdb"
+
+# Limpiar backups antiguos (7 días para Redis)
+find "$BACKUP_DIR" -name "dump_*.rdb.gz" -mtime +7 -delete
+
+echo "✅ Redis backup completed"
+```
+
+Tiempo estimado: 20 minutos
+
+────────────────────────────────────────────────────────────────────────────────
+
+PASO 3.4: Verify Backup Script
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Archivo: scripts/verify-backup.sh
+
+Propósito: Restaurar backup en contenedor temporal y verificar integridad.
+
+Tiempo estimado: 30 minutos
+
+────────────────────────────────────────────────────────────────────────────────
+
+PASO 3.5: Automatización con Cron
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Crear crontab:
+
+```bash
+# PostgreSQL backup diario a las 2 AM
+0 2 * * * /opt/apps/SIST_CABANAS_MVP/scripts/backup-database.sh >> /var/log/backup-pg.log 2>&1
+
+# Redis backup cada 6 horas
+0 */6 * * * /opt/apps/SIST_CABANAS_MVP/scripts/backup-redis.sh >> /var/log/backup-redis.log 2>&1
+
+# Verificación de backup semanal (domingos a las 3 AM)
+0 3 * * 0 /opt/apps/SIST_CABANAS_MVP/scripts/verify-backup.sh >> /var/log/verify-backup.log 2>&1
+```
+
+Tiempo estimado: 15 minutos
+
+────────────────────────────────────────────────────────────────────────────────
+
+PASO 3.6: Documentación
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. BACKUP_STRATEGY.md
+   - Qué se respalda
+   - Frecuencia de backups
+   - Retención policy
+   - Ubicación de backups
+   - Testing de restore
+
+2. DISASTER_RECOVERY_PLAN.md
+   - RTO (Recovery Time Objective): < 30 minutos
+   - RPO (Recovery Point Objective): < 24 horas
+   - Procedimientos paso a paso
+   - Roles y responsabilidades
+   - Testing schedule
+
+Tiempo estimado: 45 minutos
+
+────────────────────────────────────────────────────────────────────────────────
+
+VALIDACIÓN FASE 3.3
+────────────────────────────────────────────────────────────────────────────────
+☐ Backup manual exitoso
+☐ Restore manual exitoso
+☐ Backups automáticos configurados (cron)
+☐ Verificación automática funcionando
+☐ Documentación completa
+☐ RTO/RPO documentados
+
+IMPACTO ESPERADO
+────────────────────────────────────────────────────────────────────────────────
+✅ Pérdida máxima de datos: 24 horas (vs potencialmente todo)
+✅ Tiempo de recuperación: < 30 minutos
+✅ Backups verificados automáticamente
+✅ Retención: 30 días PostgreSQL, 7 días Redis
+✅ Tranquilidad mental 🧘
+
+═══════════════════════════════════════════════════════════════════════════════
+
+FASE 3.4: PERFORMANCE OPTIMIZATION 🟡 MEDIO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DURACIÓN: 1-2 horas
+PRIORIDAD: 🟡 MEDIO
+IMPACTO: ⭐⭐⭐ (mejora de performance)
+
+OBJETIVO
+────────────────────────────────────────────────────────────────────────────────
+Documentar optimizaciones y mejores prácticas para performance.
+
+ENTREGABLES
+────────────────────────────────────────────────────────────────────────────────
+1. docs/performance/DATABASE_OPTIMIZATION.md  (300 líneas)
+2. docs/performance/CACHING_STRATEGY.md       (250 líneas)
+3. docs/performance/QUERY_OPTIMIZATION.md     (200 líneas)
+4. scripts/performance/analyze-slow-queries.sh (100 líneas)
+
+TEMAS
+────────────────────────────────────────────────────────────────────────────────
+- Database indexing strategy
+- Query optimization (N+1 queries)
+- Redis caching patterns
+- Connection pooling tuning
+- API response optimization
+
+Tiempo estimado: 1.5 horas (principalmente documentación)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+FASE 3.5: INFRASTRUCTURE AS CODE 🟢 OPCIONAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DURACIÓN: 2-3 horas
+PRIORIDAD: 🟢 OPCIONAL
+IMPACTO: ⭐⭐ (reproducibilidad)
+
+OBJETIVO
+────────────────────────────────────────────────────────────────────────────────
+Terraform configs para provisionar infraestructura automáticamente.
+
+ENTREGABLES
+────────────────────────────────────────────────────────────────────────────────
+1. terraform/main.tf
+2. terraform/variables.tf
+3. terraform/outputs.tf
+4. docs/iac/TERRAFORM_GUIDE.md
+
+NOTA: Esto es opcional. Solo hacerlo si sobra tiempo y quieres multi-env.
+
+═══════════════════════════════════════════════════════════════════════════════
+
+CHECKLIST GENERAL DE PROGRESO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DÍA 1 (4-6 horas)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+☐ Fase 3.1: CI/CD Pipeline
+  ☐ Crear .github/workflows/ci.yml
+  ☐ Crear .github/workflows/deploy-staging.yml
+  ☐ Crear .github/workflows/security-scan.yml
+  ☐ Documentar en docs/ci-cd/GITHUB_ACTIONS_GUIDE.md
+  ☐ Agregar badges a README.md
+  ☐ Commitear y pushear
+  ☐ Verificar workflows en GitHub Actions
+
+☐ Fase 3.2: Monitoring (inicio)
+  ☐ Crear monitoring/prometheus/prometheus.yml
+  ☐ Crear monitoring/prometheus/rules/alerts.yml
+
+DÍA 2 (4-6 horas)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+☐ Fase 3.2: Monitoring (continuación)
+  ☐ Crear monitoring/alertmanager/alertmanager.yml
+  ☐ Crear monitoring/grafana/dashboards/*.json
+  ☐ Crear monitoring/docker-compose.monitoring.yml
+  ☐ Documentar en docs/monitoring/MONITORING_SETUP.md
+  ☐ Documentar en docs/monitoring/ALERT_RUNBOOK.md
+  ☐ Commitear y pushear
+
+☐ Fase 3.3: Backup Automation
+  ☐ Crear scripts/backup-database.sh
+  ☐ Crear scripts/restore-database.sh
+  ☐ Crear scripts/backup-redis.sh
+  ☐ Crear scripts/verify-backup.sh
+  ☐ Documentar en docs/backup/BACKUP_STRATEGY.md
+  ☐ Documentar en docs/backup/DISASTER_RECOVERY_PLAN.md
+  ☐ Commitear y pushear
+
+DÍA 3 (3-4 horas) - OPCIONAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+☐ Fase 3.4: Performance Optimization
+  ☐ Documentar database optimization
+  ☐ Documentar caching strategy
+  ☐ Commitear y pushear
+
+☐ Fase 3.5: Infrastructure as Code (si hay tiempo)
+  ☐ Crear terraform configs
+  ☐ Documentar uso
+
+☐ Fase 3.6: Final Polish
+  ☐ Review de toda la documentación
+  ☐ Actualizar INDEX.md
+  ☐ Actualizar CHANGELOG.md
+  ☐ Tag v1.0.0
+
+═══════════════════════════════════════════════════════════════════════════════
+
+MÉTRICAS DE ÉXITO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Al completar esta planificación:
+
+✅ CI/CD
+  • 0 commits rotos en main
+  • 100% de PRs con tests automáticos
+  • Deploy 100% automatizado
+  • Vulnerabilidades detectadas semanalmente
+
+✅ Monitoring
+  • Alertas < 2 minutos
+  • 3 dashboards de Grafana
+  • 10+ alert rules
+  • Visibilidad 24/7
+
+✅ Backups
+  • Backups diarios automáticos
+  • RTO < 30 minutos
+  • RPO < 24 horas
+  • Verificación automática semanal
+
+✅ Performance
+  • Guías de optimización
+  • Mejores prácticas documentadas
+
+✅ Documentación
+  • 40+ archivos
+  • 16,000+ líneas
+  • 100% coverage de topics críticos
+
+═══════════════════════════════════════════════════════════════════════════════
+
+COMANDOS RÁPIDOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Crear estructura de directorios:
+```bash
+mkdir -p .github/workflows
+mkdir -p monitoring/{prometheus,alertmanager,grafana}/{rules,dashboards}
+mkdir -p docs/{ci-cd,monitoring,backup,performance,iac}
+```
+
+Hacer ejecutables los scripts:
+```bash
+chmod +x scripts/backup-*.sh
+chmod +x scripts/restore-*.sh
+chmod +x scripts/verify-*.sh
+```
+
+Commitear progreso:
+```bash
+git add .
+git commit -m "feat: add CI/CD, monitoring and backup automation"
+git push origin main
+```
+
+═══════════════════════════════════════════════════════════════════════════════
+
+PRÓXIMOS PASOS DESPUÉS DE ESTA PLANIFICACIÓN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Una vez completadas estas fases:
+
+1. Sistema estará en v1.0.0 - Production Perfect ULTRA ✨
+2. Listo para deploy a staging (cuando tengas servidor)
+3. Con CI/CD funcionando
+4. Con monitoring configurado
+5. Con backups automáticos
+6. Con documentación exhaustiva
+
+Resultado final:
+• 40+ archivos de documentación
+• 16,000+ líneas
+• 10+ scripts automatizados
+• 3+ workflows de GitHub Actions
+• 3 dashboards de Grafana
+• 10+ alert rules
+• Backups diarios automáticos
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                 🎯 PLANIFICACIÓN COMPLETA Y LISTA                           ║
+║                                                                              ║
+║               ¿Comenzamos con la Fase 3.1 (CI/CD)?                         ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+Fecha: 4 de Octubre, 2025
+Estado: READY TO EXECUTE
+Prioridad: Fase 3.1 → 3.2 → 3.3 → 3.4 (opcional) → 3.5 (opcional)

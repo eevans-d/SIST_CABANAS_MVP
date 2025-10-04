@@ -1,6 +1,6 @@
 # 📚 Documentación del Sistema - Índice Maestro
 
-**Sistema MVP Alojamientos v0.9.9**
+**Sistema MVP Alojamientos v1.0.0**
 **Production Ready: 10.0/10 PERFECT ✨**
 
 ---
@@ -26,10 +26,11 @@
 | **[docs/architecture/TECHNICAL_ARCHITECTURE.md](architecture/TECHNICAL_ARCHITECTURE.md)** | Arquitectura técnica detallada, diagramas, flujos | 30 min |
 | **[docs/API_REFERENCE.md](API_REFERENCE.md)** | Referencia completa de API, endpoints, ejemplos | 25 min |
 | **[docs/testing/BEST_PRACTICES.md](testing/BEST_PRACTICES.md)** | Patrones de testing, anti-doble-booking, mocking | 20 min |
+| **[docs/ci-cd/GITHUB_ACTIONS_GUIDE.md](ci-cd/GITHUB_ACTIONS_GUIDE.md)** | CI/CD con GitHub Actions (NUEVO) | 30 min |
 | **[docs/TROUBLESHOOTING.md](TROUBLESHOOTING.md)** | Solución de problemas comunes, FAQ | 15 min |
 | **[Makefile](../Makefile)** | Comandos de desarrollo (make help) | 5 min |
 
-**Total:** ~2 horas para onboarding completo
+**Total:** ~2.5 horas para onboarding completo
 
 ---
 
@@ -37,12 +38,13 @@
 
 | Documento | Descripción | Tiempo |
 |-----------|-------------|--------|
-| **[docs/deployment/STAGING_DEPLOY_GUIDE.md](deployment/STAGING_DEPLOY_GUIDE.md)** | Guía completa de deploy a staging (NUEVO) | 45 min |
-| **[docs/deployment/ROLLBACK_PLAN.md](deployment/ROLLBACK_PLAN.md)** | Procedimientos de rollback por severidad (NUEVO) | 20 min |
+| **[docs/ci-cd/GITHUB_ACTIONS_GUIDE.md](ci-cd/GITHUB_ACTIONS_GUIDE.md)** | Guía completa de CI/CD con GitHub Actions (NUEVO ⭐) | 30 min |
+| **[docs/deployment/STAGING_DEPLOY_GUIDE.md](deployment/STAGING_DEPLOY_GUIDE.md)** | Guía completa de deploy a staging | 45 min |
+| **[docs/deployment/ROLLBACK_PLAN.md](deployment/ROLLBACK_PLAN.md)** | Procedimientos de rollback por severidad | 20 min |
 | **[PRODUCTION_SETUP.md](../PRODUCTION_SETUP.md)** | Guía paso a paso de deploy a producción | 30 min |
 | **[docs/security/AUDIT_CHECKLIST.md](security/AUDIT_CHECKLIST.md)** | Checklist de seguridad pre-producción | 25 min |
-| **[scripts/server-setup.sh](../scripts/server-setup.sh)** | Script automatizado de setup de servidor (NUEVO) | 5 min |
-| **[scripts/post-deploy-verify.sh](../scripts/post-deploy-verify.sh)** | Verificación post-deploy automatizada (NUEVO) | 5 min |
+| **[scripts/server-setup.sh](../scripts/server-setup.sh)** | Script automatizado de setup de servidor | 5 min |
+| **[scripts/post-deploy-verify.sh](../scripts/post-deploy-verify.sh)** | Verificación post-deploy automatizada | 5 min |
 | **[scripts/README.md](../scripts/README.md)** | Documentación de scripts de automatización | 15 min |
 | **[docs/TROUBLESHOOTING.md](TROUBLESHOOTING.md)** | Troubleshooting operacional, logs, debug | 20 min |
 | **[docs/architecture/TECHNICAL_ARCHITECTURE.md](architecture/TECHNICAL_ARCHITECTURE.md)** | Sección de observabilidad y escalabilidad | 15 min |

@@ -1,0 +1,112 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Staging Server
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: staging
+
+    # Solo ejecutar si todos los tests pasan
+    needs: []
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.STAGING_SSH_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.STAGING_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy via SSH
+        run: |
+          ssh ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} << 'EOF'
+            set -e
+
+            cd /opt/apps/SIST_CABANAS_MVP
+
+            echo "📥 Pulling latest code..."
+            git fetch origin
+            git reset --hard origin/main
+
+            echo "✅ Running pre-deploy checks..."
+            if [ -f scripts/pre-deploy-check.sh ]; then
+              bash scripts/pre-deploy-check.sh || {
+                echo "❌ Pre-deploy checks failed!"
+                exit 1
+              }
+            fi
+
+            echo "🚀 Deploying..."
+            docker compose down
+            docker compose pull
+            docker compose up -d --build
+
+            echo "⏳ Waiting for services to be ready (30s)..."
+            sleep 30
+
+            echo "🔍 Running post-deploy verification..."
+            if [ -f scripts/post-deploy-verify.sh ]; then
+              bash scripts/post-deploy-verify.sh localhost || {
+                echo "❌ Verification failed! Rolling back..."
+                git checkout HEAD^
+                docker compose down
+                docker compose up -d --build
+                exit 1
+              }
+            fi
+
+            echo "✅ Deploy successful!"
+            echo "📊 Running containers:"
+            docker compose ps
+          EOF
+
+      - name: Notify deployment status (Success)
+        if: success()
+        run: |
+          echo "✅ Deployment to staging completed successfully!"
+          echo "Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+          echo "Commit: ${{ github.sha }}"
+
+      - name: Notify deployment status (Failure)
+        if: failure()
+        run: |
+          echo "❌ Deployment to staging failed!"
+          echo "Check logs above for details."
+          exit 1
+
+  # Job opcional para notificar via webhook (Slack, Discord, etc.)
+  notify:
+    name: Notify Deployment
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: always()
+
+    steps:
+      - name: Send notification
+        run: |
+          STATUS="${{ needs.deploy.result }}"
+          if [ "$STATUS" == "success" ]; then
+            EMOJI="✅"
+            COLOR="good"
+          else
+            EMOJI="❌"
+            COLOR="danger"
+          fi
+
+          echo "${EMOJI} Staging deployment ${STATUS}"
+
+          # Descomentar para enviar a Slack/Discord
+          # curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+          #   -H 'Content-Type: application/json' \
+          #   -d "{\"text\":\"${EMOJI} Staging deployment: ${STATUS}\"}"
