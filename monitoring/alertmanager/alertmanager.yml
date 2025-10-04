@@ -1,0 +1,217 @@
+# Alertmanager Configuration
+# Sistema MVP Alojamientos
+
+global:
+  resolve_timeout: 5m
+
+  # Slack configuration (if using Slack)
+  slack_api_url: '${SLACK_WEBHOOK_URL}'
+
+  # SMTP configuration (for email alerts)
+  smtp_smarthost: '${SMTP_HOST}:${SMTP_PORT}'
+  smtp_from: 'alerts@alojamientos.com'
+  smtp_auth_username: '${SMTP_USERNAME}'
+  smtp_auth_password: '${SMTP_PASSWORD}'
+  smtp_require_tls: true
+
+# Templates for notifications
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Route configuration
+route:
+  # Root route - default settings
+  receiver: 'slack-notifications'
+  group_by: ['alertname', 'severity', 'component']
+  group_wait: 10s              # Wait 10s before sending first notification
+  group_interval: 10s          # Wait 10s before sending about new alerts
+  repeat_interval: 12h         # Resend alerts every 12h if still firing
+
+  # Child routes for specific handling
+  routes:
+    # CRITICAL alerts go to multiple channels
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      continue: true
+      group_wait: 5s             # Faster notification for critical
+      group_interval: 5s
+      repeat_interval: 4h        # More frequent reminders
+
+    # WARNING alerts only to Slack
+    - match:
+        severity: warning
+      receiver: 'slack-notifications'
+      group_wait: 30s
+      group_interval: 30s
+      repeat_interval: 24h
+
+    # INFO alerts (low priority)
+    - match:
+        severity: info
+      receiver: 'info-notifications'
+      group_wait: 5m
+      group_interval: 5m
+      repeat_interval: 48h
+
+    # Database-specific alerts
+    - match:
+        component: database
+      receiver: 'database-team'
+      continue: true
+
+    # Infrastructure alerts
+    - match:
+        component: infrastructure
+      receiver: 'devops-team'
+      continue: true
+
+# Inhibition rules - suppress lower severity alerts when higher severity firing
+inhibit_rules:
+  # If CRITICAL alert is firing, don't send WARNING for same alertname
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'instance']
+
+  # If API is down, suppress all API-related alerts
+  - source_match:
+      alertname: 'APIDown'
+    target_match_re:
+      alertname: '^(HighErrorRate|SlowResponseTime|VerySlowResponseTime)$'
+    equal: ['instance']
+
+  # If Database is down, suppress connection alerts
+  - source_match:
+      alertname: 'DatabaseDown'
+    target_match:
+      alertname: 'HighDatabaseConnections'
+    equal: ['instance']
+
+  # If Redis is down, suppress memory alerts
+  - source_match:
+      alertname: 'RedisDown'
+    target_match_re:
+      alertname: '^(RedisHighMemory|RedisEvictingKeys)$'
+    equal: ['instance']
+
+# Receiver definitions
+receivers:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # CRITICAL ALERTS - Multiple channels
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: 'critical-alerts'
+    slack_configs:
+      - channel: '#alerts-critical'
+        username: 'Alertmanager'
+        icon_emoji: ':rotating_light:'
+        title: '🚨 CRITICAL ALERT'
+        title_link: '{{ template "slack.default.titlelink" . }}'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Labels.alertname }}
+          *Summary:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Component:* {{ .Labels.component }}
+          *Severity:* {{ .Labels.severity }}
+          *Runbook:* {{ .Annotations.runbook_url }}
+          {{ end }}
+        send_resolved: true
+        color: 'danger'
+
+    email_configs:
+      - to: 'oncall@alojamientos.com'
+        headers:
+          Subject: '🚨 CRITICAL: {{ .GroupLabels.alertname }} on {{ .GroupLabels.instance }}'
+        html: |
+          <h2>🚨 CRITICAL ALERT</h2>
+          {{ range .Alerts }}
+          <p><strong>Alert:</strong> {{ .Labels.alertname }}</p>
+          <p><strong>Summary:</strong> {{ .Annotations.summary }}</p>
+          <p><strong>Description:</strong> {{ .Annotations.description }}</p>
+          <p><strong>Component:</strong> {{ .Labels.component }}</p>
+          <p><strong>Severity:</strong> {{ .Labels.severity }}</p>
+          <p><strong>Runbook:</strong> <a href="{{ .Annotations.runbook_url }}">View Runbook</a></p>
+          <p><strong>Started:</strong> {{ .StartsAt }}</p>
+          <hr>
+          {{ end }}
+
+    # PagerDuty integration (optional)
+    # pagerduty_configs:
+    #   - service_key: '${PAGERDUTY_SERVICE_KEY}'
+    #     description: '{{ .GroupLabels.alertname }}: {{ .CommonAnnotations.summary }}'
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # WARNING & INFO ALERTS - Slack only
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: 'slack-notifications'
+    slack_configs:
+      - channel: '#alerts'
+        username: 'Alertmanager'
+        icon_emoji: ':warning:'
+        title: '⚠️ {{ .GroupLabels.severity | toUpper }}: {{ .GroupLabels.alertname }}'
+        title_link: '{{ template "slack.default.titlelink" . }}'
+        text: |
+          {{ range .Alerts }}
+          *Summary:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Component:* {{ .Labels.component }}
+          {{ end }}
+        send_resolved: true
+        color: 'warning'
+
+  - name: 'info-notifications'
+    slack_configs:
+      - channel: '#monitoring-info'
+        username: 'Alertmanager'
+        icon_emoji: ':information_source:'
+        title: 'ℹ️ INFO: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          {{ .Annotations.description }}
+          {{ end }}
+        send_resolved: true
+        color: 'good'
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # TEAM-SPECIFIC RECEIVERS
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: 'database-team'
+    slack_configs:
+      - channel: '#team-database'
+        username: 'Alertmanager'
+        icon_emoji: ':database:'
+        title: 'Database Alert: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        send_resolved: true
+
+  - name: 'devops-team'
+    slack_configs:
+      - channel: '#team-devops'
+        username: 'Alertmanager'
+        icon_emoji: ':wrench:'
+        title: 'Infrastructure Alert: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        send_resolved: true
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # WEBHOOK INTEGRATIONS
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  # Discord webhook (optional)
+  # - name: 'discord-alerts'
+  #   webhook_configs:
+  #     - url: '${DISCORD_WEBHOOK_URL}'
+  #       send_resolved: true
+
+  # Custom webhook (optional)
+  # - name: 'custom-webhook'
+  #   webhook_configs:
+  #     - url: '${CUSTOM_WEBHOOK_URL}'
+  #       send_resolved: true
+  #       http_config:
+  #         bearer_token: '${WEBHOOK_TOKEN}'

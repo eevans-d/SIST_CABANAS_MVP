@@ -1,0 +1,320 @@
+# Prometheus Alert Rules
+# Sistema MVP Alojamientos
+
+groups:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # API HEALTH & PERFORMANCE ALERTS
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: api_alerts
+    interval: 30s
+    rules:
+      # API Down - CRITICAL
+      - alert: APIDown
+        expr: up{job="alojamientos-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: api
+          team: backend
+        annotations:
+          summary: "API is down"
+          description: "API {{ $labels.instance }} has been down for more than 1 minute"
+          runbook_url: "https://github.com/eevans-d/SIST_CABANAS_MVP/blob/main/docs/monitoring/ALERT_RUNBOOK.md#apidown"
+
+      # High Error Rate - CRITICAL
+      - alert: HighErrorRate
+        expr: |
+          rate(http_requests_total{status=~"5.."}[5m])
+          /
+          rate(http_requests_total[5m])
+          > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          component: api
+          team: backend
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes"
+          runbook_url: "https://github.com/eevans-d/SIST_CABANAS_MVP/blob/main/docs/monitoring/ALERT_RUNBOOK.md#higherrorrate"
+
+      # Slow Response Time - WARNING
+      - alert: SlowResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 5
+        for: 10m
+        labels:
+          severity: warning
+          component: api
+          team: backend
+        annotations:
+          summary: "API response time is slow"
+          description: "P95 latency is {{ $value }}s (threshold: 5s)"
+          runbook_url: "https://github.com/eevans-d/SIST_CABANAS_MVP/blob/main/docs/monitoring/ALERT_RUNBOOK.md#slowresponsetime"
+
+      # Very Slow Response Time - CRITICAL
+      - alert: VerySlowResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 10
+        for: 5m
+        labels:
+          severity: critical
+          component: api
+          team: backend
+        annotations:
+          summary: "API response time is critically slow"
+          description: "P95 latency is {{ $value }}s (threshold: 10s)"
+          runbook_url: "https://github.com/eevans-d/SIST_CABANAS_MVP/blob/main/docs/monitoring/ALERT_RUNBOOK.md#veryslowresponsetime"
+
+      # iCal Sync Stale - WARNING
+      - alert: ICalSyncStale
+        expr: ical_last_sync_age_minutes > 30
+        for: 15m
+        labels:
+          severity: warning
+          component: ical-sync
+          team: integrations
+        annotations:
+          summary: "iCal sync is stale"
+          description: "Last sync was {{ $value }} minutes ago (threshold: 30 min)"
+          runbook_url: "https://github.com/eevans-d/SIST_CABANAS_MVP/blob/main/docs/monitoring/ALERT_RUNBOOK.md#icalsyncstale"
+
+      # High Request Rate - INFO
+      - alert: HighRequestRate
+        expr: rate(http_requests_total[5m]) > 100
+        for: 10m
+        labels:
+          severity: info
+          component: api
+          team: backend
+        annotations:
+          summary: "High request rate"
+          description: "Request rate is {{ $value }} req/s (monitoring for capacity planning)"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # DATABASE ALERTS
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: database_alerts
+    interval: 30s
+    rules:
+      # Database Down - CRITICAL
+      - alert: DatabaseDown
+        expr: up{job="postgres"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: database
+          team: backend
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "Database has been down for more than 1 minute"
+          runbook_url: "https://github.com/eevans-d/SIST_CABANAS_MVP/blob/main/docs/monitoring/ALERT_RUNBOOK.md#databasedown"
+
+      # High Connection Usage - WARNING
+      - alert: HighDatabaseConnections
+        expr: |
+          pg_stat_database_numbackends
+          /
+          pg_settings_max_connections{setting="max_connections"}
+          > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+          team: backend
+        annotations:
+          summary: "High database connection usage"
+          description: "Using {{ $value | humanizePercentage }} of max connections"
+          runbook_url: "https://github.com/eevans-d/SIST_CABANAS_MVP/blob/main/docs/monitoring/ALERT_RUNBOOK.md#highdatabaseconnections"
+
+      # Slow Queries - WARNING
+      - alert: SlowQueries
+        expr: rate(pg_stat_activity_max_tx_duration[5m]) > 10
+        for: 10m
+        labels:
+          severity: warning
+          component: database
+          team: backend
+        annotations:
+          summary: "Slow database queries detected"
+          description: "Average query duration is {{ $value }}s"
+          runbook_url: "https://github.com/eevans-d/SIST_CABANAS_MVP/blob/main/docs/monitoring/ALERT_RUNBOOK.md#slowqueries"
+
+      # Database Deadlocks - WARNING
+      - alert: DatabaseDeadlocks
+        expr: rate(pg_stat_database_deadlocks[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+          team: backend
+        annotations:
+          summary: "Database deadlocks detected"
+          description: "{{ $value }} deadlocks per second"
+          runbook_url: "https://github.com/eevans-d/SIST_CABANAS_MVP/blob/main/docs/monitoring/ALERT_RUNBOOK.md#databasedeadlocks"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # REDIS ALERTS
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: redis_alerts
+    interval: 30s
+    rules:
+      # Redis Down - CRITICAL
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: redis
+          team: backend
+        annotations:
+          summary: "Redis is down"
+          description: "Redis has been down for more than 1 minute"
+          runbook_url: "https://github.com/eevans-d/SIST_CABANAS_MVP/blob/main/docs/monitoring/ALERT_RUNBOOK.md#redisdown"
+
+      # High Memory Usage - WARNING
+      - alert: RedisHighMemory
+        expr: |
+          redis_memory_used_bytes
+          /
+          redis_memory_max_bytes
+          > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          component: redis
+          team: backend
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Using {{ $value | humanizePercentage }} of max memory"
+          runbook_url: "https://github.com/eevans-d/SIST_CABANAS_MVP/blob/main/docs/monitoring/ALERT_RUNBOOK.md#redishighmemory"
+
+      # Evicted Keys - WARNING
+      - alert: RedisEvictingKeys
+        expr: rate(redis_evicted_keys_total[5m]) > 100
+        for: 10m
+        labels:
+          severity: warning
+          component: redis
+          team: backend
+        annotations:
+          summary: "Redis is evicting keys"
+          description: "Evicting {{ $value }} keys per second (increase memory or review TTL)"
+          runbook_url: "https://github.com/eevans-d/SIST_CABANAS_MVP/blob/main/docs/monitoring/ALERT_RUNBOOK.md#redisevictingkeys"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # INFRASTRUCTURE ALERTS
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: infrastructure_alerts
+    interval: 30s
+    rules:
+      # High CPU Usage - WARNING
+      - alert: HighCPUUsage
+        expr: |
+          100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+          component: infrastructure
+          team: devops
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value }}% on {{ $labels.instance }}"
+          runbook_url: "https://github.com/eevans-d/SIST_CABANAS_MVP/blob/main/docs/monitoring/ALERT_RUNBOOK.md#highcpuusage"
+
+      # Critical CPU Usage - CRITICAL
+      - alert: CriticalCPUUsage
+        expr: |
+          100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 95
+        for: 5m
+        labels:
+          severity: critical
+          component: infrastructure
+          team: devops
+        annotations:
+          summary: "Critical CPU usage"
+          description: "CPU usage is {{ $value }}% on {{ $labels.instance }}"
+          runbook_url: "https://github.com/eevans-d/SIST_CABANAS_MVP/blob/main/docs/monitoring/ALERT_RUNBOOK.md#criticalcpuusage"
+
+      # High Memory Usage - WARNING
+      - alert: HighMemoryUsage
+        expr: |
+          (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes)
+          /
+          node_memory_MemTotal_bytes
+          > 0.85
+        for: 10m
+        labels:
+          severity: warning
+          component: infrastructure
+          team: devops
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+          runbook_url: "https://github.com/eevans-d/SIST_CABANAS_MVP/blob/main/docs/monitoring/ALERT_RUNBOOK.md#highmemoryusage"
+
+      # Critical Memory Usage - CRITICAL
+      - alert: CriticalMemoryUsage
+        expr: |
+          (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes)
+          /
+          node_memory_MemTotal_bytes
+          > 0.95
+        for: 5m
+        labels:
+          severity: critical
+          component: infrastructure
+          team: devops
+        annotations:
+          summary: "Critical memory usage"
+          description: "Memory usage is {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+          runbook_url: "https://github.com/eevans-d/SIST_CABANAS_MVP/blob/main/docs/monitoring/ALERT_RUNBOOK.md#criticalmemoryusage"
+
+      # Low Disk Space - WARNING
+      - alert: LowDiskSpace
+        expr: |
+          (node_filesystem_avail_bytes{mountpoint="/"}
+          /
+          node_filesystem_size_bytes{mountpoint="/"})
+          < 0.15
+        for: 10m
+        labels:
+          severity: warning
+          component: infrastructure
+          team: devops
+        annotations:
+          summary: "Low disk space"
+          description: "Only {{ $value | humanizePercentage }} disk space available on {{ $labels.instance }}"
+          runbook_url: "https://github.com/eevans-d/SIST_CABANAS_MVP/blob/main/docs/monitoring/ALERT_RUNBOOK.md#lowdiskspace"
+
+      # Critical Disk Space - CRITICAL
+      - alert: CriticalDiskSpace
+        expr: |
+          (node_filesystem_avail_bytes{mountpoint="/"}
+          /
+          node_filesystem_size_bytes{mountpoint="/"})
+          < 0.05
+        for: 5m
+        labels:
+          severity: critical
+          component: infrastructure
+          team: devops
+        annotations:
+          summary: "Critical disk space"
+          description: "Only {{ $value | humanizePercentage }} disk space available on {{ $labels.instance }}"
+          runbook_url: "https://github.com/eevans-d/SIST_CABANAS_MVP/blob/main/docs/monitoring/ALERT_RUNBOOK.md#criticaldiskspace"
+
+      # Container Down - WARNING
+      - alert: ContainerDown
+        expr: up{job="cadvisor"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          component: docker
+          team: devops
+        annotations:
+          summary: "Container monitoring down"
+          description: "cAdvisor on {{ $labels.instance }} is not responding"
+          runbook_url: "https://github.com/eevans-d/SIST_CABANAS_MVP/blob/main/docs/monitoring/ALERT_RUNBOOK.md#containerdown"

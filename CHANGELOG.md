@@ -7,6 +7,95 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+### 🎯 FASE 3.2: Monitoring & Observability (2025-10-04)
+
+#### Added - Monitoring Stack
+- **Prometheus (v2.47.2):**
+  - `monitoring/prometheus/prometheus.yml` - Main configuration
+  - 7 scrape jobs: API (10s), PostgreSQL (30s), Redis (30s), Node (15s), cAdvisor (15s), self-monitoring
+  - 15s scrape interval global, 30-day retention
+  - Alertmanager integration
+
+- **Alert Rules:**
+  - `monitoring/prometheus/rules/alerts.yml` - 22 alert rules
+  - 4 alert groups: api_alerts (6 rules), database_alerts (4 rules), redis_alerts (3 rules), infrastructure_alerts (9 rules)
+  - Severities: CRITICAL, WARNING, INFO
+  - Runbook URLs for each alert
+
+- **Alertmanager (v0.26.0):**
+  - `monitoring/alertmanager/alertmanager.yml` - Alert routing configuration
+  - Severity-based routing: CRITICAL (5s wait, 4h repeat), WARNING (30s wait, 24h repeat), INFO (5m wait, 48h repeat)
+  - 5 receivers: critical-alerts, slack-notifications, info-notifications, database-team, devops-team
+  - Inhibition rules: Suppress lower severity when higher active, suppress related alerts when main service down
+  - Slack, Email, PagerDuty integrations
+
+- **Grafana (10.2.0):**
+  - `monitoring/grafana/provisioning/datasources/prometheus.yml` - Auto-provisioned Prometheus datasource
+  - `monitoring/grafana/provisioning/dashboards/dashboards.yml` - Auto-load dashboards
+  - 3 pre-configured dashboards:
+    * `api-overview.json` - API Overview (7 panels): Request rate, error rate, response time percentiles, API status, iCal sync age, connections, memory
+    * `database.json` - Database (9 panels): DB status, connections, cache hit ratio, deadlocks, transaction rate, tuple operations, size, top tables, locks
+    * `infrastructure.json` - Infrastructure (10 panels): CPU/memory/disk gauges, CPU by mode, memory details, disk I/O, network I/O, containers, container memory
+  - Pie Chart plugin pre-installed
+  - 10s auto-refresh on all dashboards
+
+- **Exporters:**
+  - PostgreSQL Exporter v0.15.0 (port 9187)
+  - Redis Exporter v1.55.0 (port 9121)
+  - Node Exporter v1.7.0 (port 9100)
+  - cAdvisor v0.47.2 (port 8080)
+
+- **Docker Compose Stack:**
+  - `monitoring/docker-compose.yml` - Complete stack orchestration (7 services)
+  - Networks: monitoring (internal), backend (external connection to API/DB/Redis)
+  - Volumes: prometheus_data, alertmanager_data, grafana_data (persistent)
+  - Health checks on all services
+  - Environment-based configuration (Slack, Email, DB credentials)
+
+#### Added - Monitoring Documentation
+- `docs/monitoring/MONITORING_SETUP.md` (600+ lines):
+  - Complete installation and configuration guide
+  - Architecture diagrams
+  - Component descriptions (Prometheus, Alertmanager, Grafana, Exporters)
+  - Step-by-step setup (7 steps)
+  - Access to services and dashboards
+  - Alert configuration details (22 alerts documented)
+  - Troubleshooting guide (5+ scenarios)
+  - Maintenance procedures (backup, updates, cleanup)
+
+- `docs/monitoring/ALERT_RUNBOOK.md` (500+ lines):
+  - Step-by-step incident response procedures
+  - Runbooks for all CRITICAL alerts: APIDown, DatabaseDown, RedisDown, CPU/Memory/Disk
+  - Runbooks for WARNING alerts: HighErrorRate, SlowResponseTime, HighDatabaseConnections
+  - Runbooks for INFO alerts: ICalSyncStale
+  - Diagnostic commands and validation steps
+  - Escalation procedures (3 levels)
+  - Postmortem template
+
+- `monitoring/README.md` (300+ lines):
+  - Quick start guide (4 steps)
+  - Component summary table
+  - Dashboard descriptions
+  - Alert list by severity
+  - Useful commands (logs, validation, reload, test)
+  - Architecture diagram
+  - Exposed metrics reference
+
+#### Changed - Documentation Index
+- Updated `docs/INDEX.md`:
+  - Added monitoring documentation to DevOps/SRE section
+  - 3 new entries: MONITORING_SETUP.md, ALERT_RUNBOOK.md, monitoring/README.md
+  - Adjusted onboarding time estimate
+
+#### Metrics
+- **Files added**: 10 (5 configs, 3 dashboards, 2 docs)
+- **Lines of code**: ~2,800 (configs + dashboards + docs)
+- **Alerting coverage**: 22 rules across 4 groups
+- **Dashboards**: 3 with 26 total panels
+- **Documentation**: ~1,500 lines (setup guide + runbook + README)
+
+---
+
 ### 🎯 FASE 3.1: CI/CD Pipeline (2025-10-04)
 
 #### Added - GitHub Actions Workflows
