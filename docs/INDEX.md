@@ -1,7 +1,7 @@
 # 📚 Documentación del Sistema - Índice Maestro
 
-**Sistema MVP Alojamientos v0.9.8**
-**Production Ready: 9.9/10**
+**Sistema MVP Alojamientos v0.9.9**
+**Production Ready: 10.0/10 PERFECT ✨**
 
 ---
 
@@ -37,14 +37,18 @@
 
 | Documento | Descripción | Tiempo |
 |-----------|-------------|--------|
+| **[docs/deployment/STAGING_DEPLOY_GUIDE.md](deployment/STAGING_DEPLOY_GUIDE.md)** | Guía completa de deploy a staging (NUEVO) | 45 min |
+| **[docs/deployment/ROLLBACK_PLAN.md](deployment/ROLLBACK_PLAN.md)** | Procedimientos de rollback por severidad (NUEVO) | 20 min |
 | **[PRODUCTION_SETUP.md](../PRODUCTION_SETUP.md)** | Guía paso a paso de deploy a producción | 30 min |
 | **[docs/security/AUDIT_CHECKLIST.md](security/AUDIT_CHECKLIST.md)** | Checklist de seguridad pre-producción | 25 min |
+| **[scripts/server-setup.sh](../scripts/server-setup.sh)** | Script automatizado de setup de servidor (NUEVO) | 5 min |
+| **[scripts/post-deploy-verify.sh](../scripts/post-deploy-verify.sh)** | Verificación post-deploy automatizada (NUEVO) | 5 min |
 | **[scripts/README.md](../scripts/README.md)** | Documentación de scripts de automatización | 15 min |
 | **[docs/TROUBLESHOOTING.md](TROUBLESHOOTING.md)** | Troubleshooting operacional, logs, debug | 20 min |
 | **[docs/architecture/TECHNICAL_ARCHITECTURE.md](architecture/TECHNICAL_ARCHITECTURE.md)** | Sección de observabilidad y escalabilidad | 15 min |
 | **[backend/docker-compose.yml](../backend/docker-compose.yml)** | Configuración de servicios | 10 min |
 
-**Total:** ~2 horas para setup de producción seguro
+**Total:** ~3 horas para setup de staging + producción seguro
 
 ---
 
@@ -95,6 +99,10 @@ SIST_CABAÑAS/
 │   ├── architecture/
 │   │   └── TECHNICAL_ARCHITECTURE.md  # 🏗️ Arquitectura técnica
 │   │
+│   ├── deployment/                    # 🚀 Guías de deployment (NUEVO)
+│   │   ├── STAGING_DEPLOY_GUIDE.md    # 📦 Deploy a staging paso a paso
+│   │   └── ROLLBACK_PLAN.md           # 🔄 Procedimientos de rollback
+│   │
 │   ├── testing/
 │   │   └── BEST_PRACTICES.md          # ✅ Best practices de testing
 │   │
@@ -107,6 +115,8 @@ SIST_CABAÑAS/
 │
 ├── scripts/
 │   ├── README.md                      # 📖 Documentación de scripts
+│   ├── server-setup.sh                # 🖥️ Setup automatizado de servidor (NUEVO)
+│   ├── post-deploy-verify.sh          # ✅ Verificación post-deploy (NUEVO)
 │   ├── pre-deploy-check.sh            # ✅ Validaciones pre-deploy
 │   ├── smoke-test-prod.sh             # 🧪 Tests de producción
 │   └── deploy.sh                      # 🚢 Deploy automatizado
@@ -119,7 +129,7 @@ SIST_CABAÑAS/
     └── pull_request_template.md       # 🔀 Template para PRs
 ```
 
-**Total:** 25+ archivos de documentación (~10,000 líneas)
+**Total:** 32+ archivos de documentación (~14,000 líneas)
 
 ---
 
@@ -184,6 +194,12 @@ SIST_CABAÑAS/
 - Reservations: [API_REFERENCE.md § Reservations](API_REFERENCE.md#reservations)
 - Webhooks: [API_REFERENCE.md § Webhooks](API_REFERENCE.md#webhooks)
 - Rate Limiting: [API_REFERENCE.md § Rate Limiting](API_REFERENCE.md#rate-limiting)
+
+**Deployment:** (NUEVO)
+- Staging Deploy: [STAGING_DEPLOY_GUIDE.md](deployment/STAGING_DEPLOY_GUIDE.md)
+- Rollback Plan: [ROLLBACK_PLAN.md](deployment/ROLLBACK_PLAN.md)
+- Server Setup: [server-setup.sh](../scripts/server-setup.sh)
+- Post-Deploy Verify: [post-deploy-verify.sh](../scripts/post-deploy-verify.sh)
 
 **Operaciones:**
 - Deploy: [PRODUCTION_SETUP.md](../PRODUCTION_SETUP.md)

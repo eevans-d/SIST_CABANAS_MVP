@@ -5,6 +5,49 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [Unreleased]
+
+### 🚀 INICIO FASE 3: Deploy Staging
+
+#### Added - Deployment Documentation & Tooling
+- **Staging Deploy Guide:**
+  - `docs/deployment/STAGING_DEPLOY_GUIDE.md` (600+ líneas)
+  - Complete step-by-step staging deployment guide
+  - Server provisioning (DigitalOcean, AWS, Hetzner)
+  - Initial server configuration (Docker, firewall, fail2ban)
+  - SSL configuration with Let's Encrypt
+  - Post-deploy verification procedures
+  - Nginx configuration for production
+  - Troubleshooting section for common issues
+
+- **Rollback Plan:**
+  - `docs/deployment/ROLLBACK_PLAN.md` (500+ líneas)
+  - Rollback procedures by severity (SEV1-SEV4)
+  - Complete rollback (code + DB migrations)
+  - Partial rollback (API only, config only)
+  - Data recovery procedures (backup/restore)
+  - Post-rollback verification checklist
+  - Communication templates for incidents
+
+- **Deployment README:**
+  - `docs/deployment/README.md` (300+ líneas)
+  - Overview of all deployment docs
+  - Quick reference for common workflows
+  - Emergency procedures
+  - Deployment metrics and objectives
+
+- **Automated Scripts:**
+  - `scripts/server-setup.sh` (300+ líneas) - Automated server setup
+  - `scripts/post-deploy-verify.sh` (400+ líneas) - Post-deploy verification
+  - Both scripts with color output, error handling, and comprehensive checks
+
+#### Changed - Documentation Update
+- `docs/INDEX.md` updated with deployment section
+- DevOps onboarding track expanded (2h → 3h with deploy docs)
+- Total documentation: 29 files → 32 files
+- Total lines: 12,000+ → 14,000+
+- Production readiness: 10.0/10 → **Staging Deploy Ready** 🚀
+
 ## [0.9.9] - 2025-10-02
 
 ### 🏁 CIERRE FASE 2: Production Ready 9.9/10
