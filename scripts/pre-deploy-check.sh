@@ -28,7 +28,7 @@ echo ""
 log_info "Verificando configuración de entorno..."
 if [[ -f ".env" ]]; then
     log_success ".env existe"
-    
+
     # Verificar variables críticas
     CRITICAL_VARS=(
         "DOMAIN"
@@ -40,7 +40,7 @@ if [[ -f ".env" ]]; then
         "WHATSAPP_APP_SECRET"
         "MERCADOPAGO_ACCESS_TOKEN"
     )
-    
+
     source .env 2>/dev/null || true
     for var in "${CRITICAL_VARS[@]}"; do
         if [[ -z "${!var:-}" ]]; then
@@ -50,16 +50,16 @@ if [[ -f ".env" ]]; then
             log_success "Variable $var configurada"
         fi
     done
-    
+
     # Verificar que no sean valores por defecto
     if [[ "${DOMAIN:-}" == "your-domain.com" ]]; then
         log_error "DOMAIN aún tiene valor por defecto"
     fi
-    
+
     if [[ "${POSTGRES_PASSWORD:-}" == "change_this_secure_password" ]]; then
         log_warning "POSTGRES_PASSWORD parece ser el valor por defecto"
     fi
-    
+
 else
     log_error ".env no existe. Copiar desde .env.template"
 fi
@@ -107,6 +107,7 @@ if [[ -f "backend/nginx.conf" ]]; then
     fi
 else
     if [[ -f "backend/nginx.conf.template" ]]; then
+        log_success "nginx.conf.template encontrado"
         log_warning "nginx.conf no existe. Ejecutar: backend/generate_nginx_conf.sh"
     else
         log_error "nginx.conf.template no encontrado"
@@ -134,7 +135,7 @@ if git rev-parse --git-dir > /dev/null 2>&1; then
     else
         log_warning "Hay cambios sin commitear"
     fi
-    
+
     CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
     if [[ "$CURRENT_BRANCH" == "main" ]]; then
         log_success "En rama main"
@@ -165,7 +166,7 @@ fi
 log_info "Verificando certificados SSL..."
 if [[ -f "nginx/ssl/fullchain.pem" ]] && [[ -f "nginx/ssl/privkey.pem" ]]; then
     log_success "Certificados SSL encontrados"
-    
+
     # Verificar fecha de expiración
     if command -v openssl &> /dev/null; then
         EXPIRY=$(openssl x509 -enddate -noout -in nginx/ssl/fullchain.pem | cut -d= -f2)
