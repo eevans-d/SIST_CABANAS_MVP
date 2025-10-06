@@ -2,9 +2,11 @@
 # Simplifica comandos comunes de desarrollo y deploy
 
 .PHONY: help install test test-unit test-integration test-coverage clean \
-        dev up down logs migrate shell db-shell redis-shell \
-        lint format check deploy smoke-test pre-deploy-check \
-        backup restore docs restart ps status info version
+	dev up down logs migrate shell db-shell redis-shell \
+	lint format check deploy smoke-test pre-deploy-check \
+	backup restore docs restart ps status info version \
+	backup-db backup-redis restore-db restore-redis \
+	monitoring-up monitoring-down monitoring-validate monitoring-test-alert
 
 # Python interpreter path (ajustar si es necesario)
 PYTHON := python3
@@ -188,6 +190,36 @@ restore: ## Restaurar backup (uso: make restore FILE=backup_20251002_120000.sql)
 	@echo "$(YELLOW)Restaurando backup: $(FILE)...$(NC)"
 	cd backend && docker-compose exec -T postgres psql -U alojamientos alojamientos_db < $(FILE)
 	@echo "$(GREEN)✓ Backup restaurado$(NC)"
+
+##@ Backups (scripts ops/backup)
+
+backup-db: ## Backup de PostgreSQL (gzip + rotación)
+	./ops/backup/backup_database.sh --gzip --keep $${BACKUP_KEEP:-7}
+
+backup-redis: ## Backup de Redis (rotación)
+	./ops/backup/backup_redis.sh --keep $${BACKUP_KEEP:-7}
+
+restore-db: ## Restaurar PostgreSQL (uso: make restore-db FILE=path.sql[.gz])
+	@if [ -z "$(FILE)" ]; then echo "$(RED)Error: especificar FILE=$(YELLOW)path.sql[.gz]$(NC)"; exit 1; fi
+	./ops/backup/restore_database.sh "$(FILE)"
+
+restore-redis: ## Restaurar Redis (uso: make restore-redis FILE=path.rdb)
+	@if [ -z "$(FILE)" ]; then echo "$(RED)Error: especificar FILE=$(YELLOW)path.rdb$(NC)"; exit 1; fi
+	./ops/backup/restore_redis.sh "$(FILE)"
+
+##@ Monitoring Tools
+
+monitoring-up: ## Levantar stack de monitoring (Prometheus/Alertmanager/Grafana)
+	cd monitoring && docker-compose up -d
+
+monitoring-down: ## Bajar stack de monitoring
+	cd monitoring && docker-compose down
+
+monitoring-validate: ## Validar configs de Prometheus/Alertmanager y dashboards
+	./ops/monitoring-tools/validate_configs.sh
+
+monitoring-test-alert: ## Enviar alerta de prueba a Alertmanager/Slack
+	ALERTMANAGER_URL=$${ALERTMANAGER_URL:-http://localhost:9093} ./ops/monitoring-tools/test_alert_slack.sh
 
 ##@ Utilities
 
