@@ -1,0 +1,8 @@
+# Ejemplos de cron para backups (instalar con crontab -e)
+# Variables deben estar en .env del proyecto
+
+# Backup diario PostgreSQL a las 02:00, mantener 7
+0 2 * * * cd /home/eevan/ProyectosIA/SIST_CABAÑAS && ./ops/backup/backup_database.sh --gzip --keep 7 >> backups/cron_pg.log 2>&1
+
+# Backup diario Redis a las 02:10, mantener 7
+10 2 * * * cd /home/eevan/ProyectosIA/SIST_CABAÑAS && ./ops/backup/backup_redis.sh --keep 7 >> backups/cron_redis.log 2>&1
