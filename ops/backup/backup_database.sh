@@ -29,15 +29,18 @@ load_env_prefixes() {
   fi
 }
 
-# Cargar .env si existe (solo POSTGRES_ y BACKUP_)
-load_env_prefixes 'POSTGRES_|BACKUP_'
+# Cargar .env si existe (POSTGRES_, BACKUP_ y DB_ para compatibilidad)
+load_env_prefixes 'POSTGRES_|BACKUP_|DB_'
+
+# Mapear variables DB_* a POSTGRES_* si no están definidas
+: "${POSTGRES_DB:=${DB_NAME:-app}}"
+: "${POSTGRES_USER:=${DB_USER:-postgres}}"
+: "${POSTGRES_PASSWORD:=${DB_PASSWORD:-postgres}}"
 
 # Variables requeridas
 : "${POSTGRES_HOST:=localhost}"
-: "${POSTGRES_PORT:=5432}"
-: "${POSTGRES_DB:=app}"
-: "${POSTGRES_USER:=postgres}"
-: "${POSTGRES_PASSWORD:=postgres}"
+# Puerto por defecto: 5433 si usamos docker-compose de raíz, 5432 en otros casos
+: "${POSTGRES_PORT:=${DB_PORT:-5433}}"
 : "${BACKUP_DIR:=./backups/postgres}"
 
 mkdir -p "$BACKUP_DIR"
@@ -57,11 +60,53 @@ FILEPATH="${BACKUP_DIR}/${FILENAME}"
 
 export PGPASSWORD="$POSTGRES_PASSWORD"
 
-echo "[INFO] Iniciando backup ${MODE} de '${POSTGRES_DB}' desde ${POSTGRES_HOST}:${POSTGRES_PORT}"
+echo "[INFO] Iniciando backup ${MODE} de '${POSTGRES_DB}'"
+
+# Construir argumentos comunes de pg_dump
+PG_DUMP_ARGS=("-U" "$POSTGRES_USER" "-d" "$POSTGRES_DB" "-F" "p")
 if [[ "$MODE" == "schema-only" ]]; then
-  pg_dump -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -s -f "$FILEPATH"
-else
-  pg_dump -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -F p -f "$FILEPATH"
+  PG_DUMP_ARGS=("-U" "$POSTGRES_USER" "-d" "$POSTGRES_DB" "-s")
+fi
+
+run_local_pg_dump() {
+  if command -v pg_dump >/dev/null 2>&1; then
+    echo "[INFO] Usando pg_dump local en ${POSTGRES_HOST}:${POSTGRES_PORT}"
+    if [[ "$MODE" == "schema-only" ]]; then
+      pg_dump -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" "${PG_DUMP_ARGS[@]}" -f "$FILEPATH"
+    else
+      pg_dump -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" "${PG_DUMP_ARGS[@]}" -f "$FILEPATH"
+    fi
+    return 0
+  fi
+  return 1
+}
+
+run_docker_pg_dump() {
+  # Intentar con contenedores comunes
+  local candidates=("alojamientos_postgres" "alojamientos_db" "postgres" "db")
+  local container=""
+  for c in "${candidates[@]}"; do
+    if docker ps --format '{{.Names}}' | grep -q "^${c}$"; then
+      container="$c"; break
+    fi
+  done
+  if [ -z "$container" ]; then
+    echo "[ERROR] No se encontró un contenedor de Postgres en ejecución (intentado: ${candidates[*]}). Instala pg_dump o levanta el contenedor." >&2
+    return 1
+  fi
+  echo "[INFO] Usando docker exec en contenedor '${container}'"
+  # Redirigir salida a archivo en host
+  if [[ "$MODE" == "schema-only" ]]; then
+    docker exec -e PGPASSWORD="$POSTGRES_PASSWORD" "$container" \
+      sh -lc "pg_dump -h localhost -p 5432 ${PG_DUMP_ARGS[*]}" > "$FILEPATH"
+  else
+    docker exec -e PGPASSWORD="$POSTGRES_PASSWORD" "$container" \
+      sh -lc "pg_dump -h localhost -p 5432 ${PG_DUMP_ARGS[*]}" > "$FILEPATH"
+  fi
+}
+
+if ! run_local_pg_dump; then
+  run_docker_pg_dump
 fi
 
 if [[ "$COMPRESS" -eq 1 ]]; then
