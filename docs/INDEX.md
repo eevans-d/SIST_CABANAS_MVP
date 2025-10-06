@@ -42,6 +42,8 @@
 | **[docs/monitoring/MONITORING_SETUP.md](monitoring/MONITORING_SETUP.md)** | Stack de monitoring: Prometheus + Grafana + Alertmanager (NUEVO ⭐) | 45 min |
 | **[docs/monitoring/ALERT_RUNBOOK.md](monitoring/ALERT_RUNBOOK.md)** | Runbook de respuesta a alertas, procedimientos (NUEVO ⭐) | 30 min |
 | **[monitoring/README.md](../monitoring/README.md)** | Quick start del stack de monitoring (NUEVO ⭐) | 10 min |
+| **[docs/backup/BACKUP_STRATEGY.md](backup/BACKUP_STRATEGY.md)** | Estrategia de backups (RPO/RTO, retención, seguridad) (NUEVO ⭐) | 20 min |
+| **[docs/backup/DISASTER_RECOVERY.md](backup/DISASTER_RECOVERY.md)** | Procedimientos de DR para DB y Redis (NUEVO ⭐) | 20 min |
 | **[docs/deployment/STAGING_DEPLOY_GUIDE.md](deployment/STAGING_DEPLOY_GUIDE.md)** | Guía completa de deploy a staging | 45 min |
 | **[docs/deployment/ROLLBACK_PLAN.md](deployment/ROLLBACK_PLAN.md)** | Procedimientos de rollback por severidad | 20 min |
 | **[PRODUCTION_SETUP.md](../PRODUCTION_SETUP.md)** | Guía paso a paso de deploy a producción | 30 min |

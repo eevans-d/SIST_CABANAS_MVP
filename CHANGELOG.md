@@ -7,6 +7,31 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+### 🎯 FASE 3.3: Backups & Disaster Recovery (2025-10-06)
+
+#### Added - Backup Scripts
+- `ops/backup/backup_database.sh` - Backup PostgreSQL (full/schema-only, gzip opcional, rotación KEEP)
+- `ops/backup/restore_database.sh` - Restauración PostgreSQL desde SQL/SQL.GZ (recreate DB seguro)
+- `ops/backup/backup_redis.sh` - Backup Redis vía BGSAVE/SAVE con rotación
+- `ops/backup/restore_redis.sh` - Restauración Redis desde RDB
+
+#### Added - Operational Tooling
+- `ops/backup/cron_examples.txt` - Ejemplos de cron (02:00 DB, 02:10 Redis)
+- `ops/monitoring-tools/validate_configs.sh` - Validación de Prometheus/Alertmanager y dashboards JSON
+- `ops/monitoring-tools/test_alert_slack.sh` - Envío de alerta de prueba a Alertmanager/Slack
+
+#### Added - Documentation
+- `docs/backup/BACKUP_STRATEGY.md` - Estrategia de backups (RPO/RTO, retención, seguridad)
+- `docs/backup/DISASTER_RECOVERY.md` - Procedimientos de DR para DB y Redis
+- `docs/FASE3_RESUMEN.md` - Resumen consolidado de Fase 3 (CI/CD, Monitoring, Backups)
+
+#### Quality
+- Scripts ajustados para cumplir ShellCheck (carga segura de .env, quoting, rotación segura)
+
+#### Impact
+- RPO objetivo < 1h y RTO < 30min habilitados
+- Base para agregar almacenamiento remoto (S3) y cifrado en siguiente iteración
+
 ### 🎯 FASE 3.2: Monitoring & Observability (2025-10-04)
 
 #### Added - Monitoring Stack
