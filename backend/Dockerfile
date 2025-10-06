@@ -20,12 +20,12 @@ RUN useradd -m -u 1000 appuser && \
 WORKDIR /app
 
 # Install Python dependencies
-COPY --chown=appuser:appuser backend/requirements.txt .
+COPY --chown=appuser:appuser requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY --chown=appuser:appuser backend /app
+COPY --chown=appuser:appuser . /app
 
 # Switch to non-root user
 USER appuser
@@ -34,10 +34,14 @@ USER appuser
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=5 \
     CMD curl -fsS http://localhost:8000/api/v1/healthz || exit 1
 
-# Run application with Gunicorn (Uvicorn workers)
+# Run application with start script
+COPY --chown=appuser:appuser start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+
+# Default values para gunicorn (pueden ser sobreescritos por environment variables)
 ENV GUNICORN_WORKERS=2 \
     GUNICORN_TIMEOUT=60 \
     GUNICORN_GRACEFUL_TIMEOUT=30 \
     GUNICORN_KEEP_ALIVE=75
 
-CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "${GUNICORN_WORKERS}", "--bind", "0.0.0.0:8000", "--timeout", "${GUNICORN_TIMEOUT}", "--graceful-timeout", "${GUNICORN_GRACEFUL_TIMEOUT}", "--keep-alive", "${GUNICORN_KEEP_ALIVE}", "app.main:app"]
+ENTRYPOINT ["/app/start.sh"]
