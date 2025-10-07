@@ -73,7 +73,7 @@ if command -v redis-cli >/dev/null 2>&1; then
   echo "[INFO] RDB restaurado en ${REDIS_DIR}/dump.rdb"
 else
   # Docker: copiar al contenedor
-  candidates=("alojamientos_postgres" "alojamientos_db" "postgres" "db")
+  candidates=("alojamientos_redis" "redis")
   container=""
   for c in "${candidates[@]}"; do
     if docker ps -a --format '{{.Names}}' | grep -q "^${c}$"; then
