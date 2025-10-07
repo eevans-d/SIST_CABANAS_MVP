@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     
     # Redis
     REDIS_URL: str | None = None
+    REDIS_PASSWORD: str | None = None
     
     # WhatsApp
     WHATSAPP_ACCESS_TOKEN: str | None = None
@@ -83,11 +84,19 @@ class Settings(BaseSettings):
         return v
     
     @field_validator("REDIS_URL", mode="before")
-    def validate_redis_url(cls, v: str | None):
+    def validate_redis_url(cls, v: str | None, info):
         if v is None:
             raise ValueError("REDIS_URL is required")
         if not v.startswith("redis://"):
             raise ValueError("REDIS_URL must be a Redis URL")
+            
+        # Asegurar que la URL de Redis incluya la contraseña si está configurada
+        password = info.data.get("REDIS_PASSWORD")
+        if password and ":@" not in v and f":{password}@" not in v:
+            # Insertar la contraseña en la URL si no está presente
+            # Formato: redis://host:port/db -> redis://:password@host:port/db
+            v = v.replace("redis://", f"redis://:{password}@")
+            
         return v
     
 
