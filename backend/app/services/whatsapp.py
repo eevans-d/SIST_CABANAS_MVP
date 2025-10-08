@@ -28,6 +28,7 @@ async def send_text_message(to_phone: str, body: str) -> Dict[str, Any]:
 
     try:
         import httpx
+
         url = f"https://graph.facebook.com/v17.0/{settings.WHATSAPP_PHONE_ID}/messages"
         headers = {
             "Authorization": f"Bearer {settings.WHATSAPP_ACCESS_TOKEN}",

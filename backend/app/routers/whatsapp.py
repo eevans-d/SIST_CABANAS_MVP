@@ -15,6 +15,8 @@ from app.services.whatsapp import send_text_message
 from app.metrics import NLU_PRE_RESERVE
 
 router = APIRouter()
+
+
 @router.get("/webhooks/whatsapp")
 async def whatsapp_verify(
     hub_mode: str | None = Query(default=None, alias="hub.mode"),
@@ -26,6 +28,7 @@ async def whatsapp_verify(
     Debe comparar el verify_token con WHATSAPP_VERIFY_TOKEN y devolver hub.challenge.
     """
     from app.core.config import get_settings
+
     settings = get_settings()
     if not (hub_mode == "subscribe" and hub_challenge and hub_verify_token):
         return {"error": "invalid_params"}
@@ -33,6 +36,7 @@ async def whatsapp_verify(
         return {"error": "forbidden"}
     # Responder con el challenge como texto plano es el comportamiento esperado
     return hub_challenge
+
 
 # Contrato de salida unificado
 # {
@@ -45,6 +49,7 @@ async def whatsapp_verify(
 #   "media_url": str|None,
 #   "metadata": {...}
 # }
+
 
 @router.post("/webhooks/whatsapp")
 async def whatsapp_webhook(request: Request, db: AsyncSession = Depends(get_db)) -> Dict[str, Any]:
@@ -60,7 +65,7 @@ async def whatsapp_webhook(request: Request, db: AsyncSession = Depends(get_db))
     #   "entry": [ { "changes": [ { "value": { "messages": [ { ... } ], "contacts": [ { ... } ] } } ] } ]
     # }
     entry = (payload.get("entry") or [{}])[0]
-    changes = (entry.get("changes") or [{}])
+    changes = entry.get("changes") or [{}]
     if not changes:
         return {"error": "no_changes"}
     value = (changes[0] or {}).get("value", {})
@@ -74,7 +79,11 @@ async def whatsapp_webhook(request: Request, db: AsyncSession = Depends(get_db))
     from_user = msg.get("from") or (value.get("contacts") or [{}])[0].get("wa_id") or "unknown"
     timestamp = msg.get("timestamp")
     try:
-        ts_iso = datetime.fromtimestamp(int(timestamp), tz=timezone.utc).isoformat() if timestamp else datetime.now(timezone.utc).isoformat()
+        ts_iso = (
+            datetime.fromtimestamp(int(timestamp), tz=timezone.utc).isoformat()
+            if timestamp
+            else datetime.now(timezone.utc).isoformat()
+        )
     except Exception:
         ts_iso = datetime.now(timezone.utc).isoformat()
 
@@ -124,13 +133,17 @@ async def whatsapp_webhook(request: Request, db: AsyncSession = Depends(get_db))
             dates = analysis.get("dates") or []
             guests = analysis.get("guests")
             parsed: list[str] = [d for d in dates if isinstance(d, str)]
-            check_in_iso: Optional[str] = parsed[0] if len(parsed) >= 2 else (parsed[0] if len(parsed) == 1 else None)
+            check_in_iso: Optional[str] = (
+                parsed[0] if len(parsed) >= 2 else (parsed[0] if len(parsed) == 1 else None)
+            )
             check_out_iso: Optional[str] = parsed[1] if len(parsed) >= 2 else None
 
             missing = []
             # Resolver alojamiento: si hay exactamente 1 activo
             acc_id: Optional[int] = None
-            q = await db.execute(select(Accommodation).where(Accommodation.active.is_(True)).limit(2))
+            q = await db.execute(
+                select(Accommodation).where(Accommodation.active.is_(True)).limit(2)
+            )
             accs = q.scalars().all()
             if len(accs) == 1:
                 acc_id = accs[0].id
@@ -154,13 +167,16 @@ async def whatsapp_webhook(request: Request, db: AsyncSession = Depends(get_db))
                 # Enviar prompt simple de slots faltantes (no-op en dev/test)
                 try:
                     missing_human = ", ".join(missing)
-                    await send_text_message(str(from_user), f"Para avanzar necesito: {missing_human}.")
+                    await send_text_message(
+                        str(from_user), f"Para avanzar necesito: {missing_human}."
+                    )
                 except Exception:
                     pass
                 return normalized
 
             # Crear pre-reserva
             from datetime import date as _date
+
             try:
                 ci = _date.fromisoformat(check_in_iso)  # type: ignore[arg-type]
                 co = _date.fromisoformat(check_out_iso)  # type: ignore[arg-type]
@@ -188,7 +204,9 @@ async def whatsapp_webhook(request: Request, db: AsyncSession = Depends(get_db))
                 except Exception:
                     pass
                 try:
-                    await send_text_message(str(from_user), f"No pude crear la pre-reserva: {result['error']}")
+                    await send_text_message(
+                        str(from_user), f"No pude crear la pre-reserva: {result['error']}"
+                    )
                 except Exception:
                     pass
             else:
@@ -201,7 +219,9 @@ async def whatsapp_webhook(request: Request, db: AsyncSession = Depends(get_db))
                 try:
                     code = result.get("code", "")
                     exp = result.get("expires_at", "")
-                    await send_text_message(str(from_user), f"Listo! Pre-reserva {code} creada. Vence: {exp}")
+                    await send_text_message(
+                        str(from_user), f"Listo! Pre-reserva {code} creada. Vence: {exp}"
+                    )
                 except Exception:
                     pass
     except Exception:  # pragma: no cover - no romper webhook ante errores no previstos

@@ -4,6 +4,7 @@ Tests para validar el constraint anti doble-booking.
 CRÍTICO: Estos tests DEBEN usar PostgreSQL real, no SQLite.
 El constraint EXCLUDE USING gist con daterange solo funciona en Postgres.
 """
+
 import pytest
 from datetime import date, timedelta
 from decimal import Decimal

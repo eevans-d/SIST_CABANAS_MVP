@@ -6,6 +6,7 @@ from app.services.reservations import ReservationService
 from app.models import Accommodation, Reservation
 from app.models.enums import ReservationStatus
 
+
 @pytest.mark.asyncio
 async def test_create_prereservation_success(db_session, redis_client):
     if db_session.bind.dialect.name != "postgresql":
@@ -35,6 +36,7 @@ async def test_create_prereservation_success(db_session, redis_client):
     assert "code" in result and result["code"].startswith("RES")
     assert result["nights"] == 2
     assert result["error"] is None if "error" in result else True
+
 
 @pytest.mark.asyncio
 async def test_create_prereservation_overlap_error(db_session, redis_client):

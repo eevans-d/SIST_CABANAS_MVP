@@ -23,6 +23,7 @@ SUMMARY:Reserva externa 2
 END:VEVENT
 END:VCALENDAR"""
 
+
 async def test_import_ical_dedup(test_client, db_session: AsyncSession, accommodation_factory):
     acc = await accommodation_factory()
 

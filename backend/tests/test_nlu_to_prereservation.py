@@ -19,7 +19,9 @@ async def test_nlu_analyze_pre_reserve_flow(test_client, accommodation_factory):
     ci = (date.today() + timedelta(days=10)).strftime("%d/%m/%Y")
     co = (date.today() + timedelta(days=12)).strftime("%d/%m/%Y")
     text = f"Hay libre {ci} al {co} para 3 personas?"
-    r = await test_client.post("/api/v1/nlu/analyze", json={"text": text, "accommodation_id": acc.id})
+    r = await test_client.post(
+        "/api/v1/nlu/analyze", json={"text": text, "accommodation_id": acc.id}
+    )
     assert r.status_code == 200
     d = r.json()
     assert d["action"] in ("pre_reserved", "error")

@@ -47,6 +47,7 @@ RESERVATIONS_CONFIRMED = Counter(
     "reservations_confirmed_total", "Reservas confirmadas", ["channel"]
 )
 
+
 class ReservationService:
     def __init__(self, db: AsyncSession):
         self.db = db
@@ -84,7 +85,7 @@ class ReservationService:
 
         nights = (check_out - check_in).days
         base_price = Decimal(acc.base_price)  # asume field NUMERIC
-        weekend_mult = Decimal(getattr(acc, 'weekend_multiplier', Decimal('1.2')))
+        weekend_mult = Decimal(getattr(acc, "weekend_multiplier", Decimal("1.2")))
         # Calcular noches weekend (sábado=5, domingo=6) dentro del rango [check_in, check_out)
         weekend_nights = 0
         for i in range(nights):
@@ -94,7 +95,9 @@ class ReservationService:
         weekday_nights = nights - weekend_nights
         total_price = (base_price * weekday_nights) + (base_price * weekend_mult * weekend_nights)
         deposit_percentage = DEPOSIT_PERCENTAGE_DEFAULT
-        deposit_amount = (total_price * Decimal(deposit_percentage) / Decimal(100)).quantize(Decimal('0.01'))
+        deposit_amount = (total_price * Decimal(deposit_percentage) / Decimal(100)).quantize(
+            Decimal("0.01")
+        )
 
         lock_key = f"lock:acc:{accommodation_id}:{check_in.isoformat()}:{check_out.isoformat()}"
         lock_value = str(uuid.uuid4())
@@ -104,7 +107,9 @@ class ReservationService:
         redis_client = redis.Redis(connection_pool=pool)
         try:
             try:
-                locked = await acquire_lock(redis_client, lock_key, lock_value, ttl=LOCK_TTL_SECONDS)
+                locked = await acquire_lock(
+                    redis_client, lock_key, lock_value, ttl=LOCK_TTL_SECONDS
+                )
             except Exception:  # Fallback: en entorno de test sin Redis operativo
                 locked = True  # confiamos en constraint DB para anti solapamiento
             if not locked:
@@ -151,7 +156,11 @@ class ReservationService:
             RESERVATIONS_CREATED.labels(channel=channel).inc()
             return {
                 "code": reservation.code,
-                "expires_at": reservation.expires_at.isoformat() if reservation.expires_at is not None else None,
+                "expires_at": (
+                    reservation.expires_at.isoformat()
+                    if reservation.expires_at is not None
+                    else None
+                ),
                 "deposit_amount": str(reservation.deposit_amount),
                 "total_price": str(reservation.total_price),
                 "nights": reservation.nights,
@@ -163,8 +172,6 @@ class ReservationService:
                 await redis_client.aclose()  # type: ignore[attr-defined]
             except AttributeError:  # pragma: no cover
                 await redis_client.close()
-        
-
 
     async def confirm_reservation(self, code: str) -> Dict[str, Any]:
         """Confirmación atómica de una pre-reserva.
@@ -173,6 +180,7 @@ class ReservationService:
         Compatible con SQLite (sin FOR UPDATE) y Postgres.
         """
         from sqlalchemy import select, update
+
         sel = select(Reservation).where(Reservation.code == code)
         result = await self.db.execute(sel)
         reservation = result.scalar_one_or_none()
@@ -182,11 +190,16 @@ class ReservationService:
         original_code = reservation.code
         original_status = reservation.reservation_status
         now = datetime.now(timezone.utc)
-        expires_at = getattr(reservation, 'expires_at', None)
+        expires_at = getattr(reservation, "expires_at", None)
         if isinstance(expires_at, datetime) and expires_at.tzinfo is None:
             expires_at = expires_at.replace(tzinfo=timezone.utc)
         if str(original_status) != ReservationStatus.PRE_RESERVED.value:
-            return {"code": original_code, "status": original_status, "confirmed_at": None, "error": "invalid_state"}
+            return {
+                "code": original_code,
+                "status": original_status,
+                "confirmed_at": None,
+                "error": "invalid_state",
+            }
         if isinstance(expires_at, datetime) and expires_at < now:
             upd_expired = (
                 update(Reservation)
@@ -196,7 +209,12 @@ class ReservationService:
             )
             await self.db.execute(upd_expired)
             await self.db.commit()
-            return {"code": original_code, "status": ReservationStatus.CANCELLED.value, "confirmed_at": None, "error": "expired"}
+            return {
+                "code": original_code,
+                "status": ReservationStatus.CANCELLED.value,
+                "confirmed_at": None,
+                "error": "expired",
+            }
         upd_confirm = (
             update(Reservation)
             .where(Reservation.id == reservation.id)
@@ -206,7 +224,12 @@ class ReservationService:
         res = await self.db.execute(upd_confirm)
         if res.rowcount == 0:
             await self.db.rollback()
-            return {"code": original_code, "status": original_status, "confirmed_at": None, "error": "invalid_state"}
+            return {
+                "code": original_code,
+                "status": original_status,
+                "confirmed_at": None,
+                "error": "invalid_state",
+            }
         await self.db.commit()
         # Realizar un SELECT ligero para obtener confirmed_at sin depender de estado expirado
         sel_after = select(Reservation.confirmed_at).where(Reservation.code == original_code)
@@ -214,31 +237,47 @@ class ReservationService:
         confirmed_at_val = after_row.scalar_one_or_none()
         confirmed_iso = confirmed_at_val.isoformat() if confirmed_at_val else None
         try:
-            channel = getattr(reservation, 'channel_source', 'unknown') or 'unknown'
+            channel = getattr(reservation, "channel_source", "unknown") or "unknown"
             RESERVATIONS_CONFIRMED.labels(channel=channel).inc()
         except Exception:  # pragma: no cover
             pass
         # Enviar email de confirmación si hay email y SMTP está configurado (best-effort)
         try:
-            if getattr(reservation, 'guest_email', None):
+            if getattr(reservation, "guest_email", None):
                 try:
-                    html = email_service.render("confirmation.html", {
-                        "guest_name": getattr(reservation, 'guest_name', 'Cliente'),
-                        "code": original_code,
-                        "accommodation_name": getattr(reservation, 'accommodation', None).name if getattr(reservation, 'accommodation', None) else str(reservation.accommodation_id),
-                        "check_in": str(reservation.check_in),
-                        "check_out": str(reservation.check_out),
-                        "total_price": str(getattr(reservation, 'total_price', '')),
-                    })
+                    html = email_service.render(
+                        "confirmation.html",
+                        {
+                            "guest_name": getattr(reservation, "guest_name", "Cliente"),
+                            "code": original_code,
+                            "accommodation_name": (
+                                getattr(reservation, "accommodation", None).name
+                                if getattr(reservation, "accommodation", None)
+                                else str(reservation.accommodation_id)
+                            ),
+                            "check_in": str(reservation.check_in),
+                            "check_out": str(reservation.check_out),
+                            "total_price": str(getattr(reservation, "total_price", "")),
+                        },
+                    )
                 except Exception:
                     html = (
                         f"<h3>Reserva confirmada {original_code}</h3>"
                         f"<p>Check-in: {reservation.check_in} - Check-out: {reservation.check_out}</p>"
                     )
-                email_service.send_html(reservation.guest_email, f"Reserva {original_code} confirmada", html, email_type="confirmed")
+                email_service.send_html(
+                    reservation.guest_email,
+                    f"Reserva {original_code} confirmada",
+                    html,
+                    email_type="confirmed",
+                )
         except Exception:  # pragma: no cover
             pass
-        return {"code": original_code, "status": ReservationStatus.CONFIRMED.value, "confirmed_at": confirmed_iso}
+        return {
+            "code": original_code,
+            "status": ReservationStatus.CONFIRMED.value,
+            "confirmed_at": confirmed_iso,
+        }
 
     async def cancel_reservation(self, code: str, reason: Optional[str] = None) -> Dict[str, Any]:
         """Cancela una reserva (pre_reserved o confirmed)."""
@@ -246,7 +285,10 @@ class ReservationService:
         if not reservation:
             return {"error": "not_found"}
 
-        if reservation.reservation_status not in [ReservationStatus.PRE_RESERVED.value, ReservationStatus.CONFIRMED.value]:
+        if reservation.reservation_status not in [
+            ReservationStatus.PRE_RESERVED.value,
+            ReservationStatus.CONFIRMED.value,
+        ]:
             return {"error": "invalid_state"}
 
         reservation.reservation_status = ReservationStatus.CANCELLED.value  # type: ignore
@@ -256,4 +298,8 @@ class ReservationService:
             existing = reservation.internal_notes or ""
             reservation.internal_notes = (existing + f"\nCancelled: {reason}").strip()  # type: ignore
         await self.db.commit()
-        return {"code": reservation.code, "status": reservation.reservation_status, "cancelled_at": reservation.cancelled_at.isoformat()}
+        return {
+            "code": reservation.code,
+            "status": reservation.reservation_status,
+            "cancelled_at": reservation.cancelled_at.isoformat(),
+        }

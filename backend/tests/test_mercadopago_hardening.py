@@ -4,8 +4,10 @@ pytestmark = pytest.mark.asyncio
 
 ENDPOINT = "/api/v1/mercadopago/webhook"
 
+
 async def test_mp_missing_signature_when_secret_set(test_client):  # type: ignore
     from app.core.config import get_settings
+
     settings = get_settings()
     settings.MERCADOPAGO_WEBHOOK_SECRET = "mpsecret"  # type: ignore[attr-defined]
 
@@ -17,9 +19,11 @@ async def test_mp_missing_signature_when_secret_set(test_client):  # type: ignor
     d = resp.json()
     assert d["detail"] == "Invalid signature"
 
+
 async def test_mp_idempotent_update_fields(test_client):  # type: ignore
     # Sin exigir firma (modo dev)
     from app.core.config import get_settings
+
     settings = get_settings()
     settings.MERCADOPAGO_WEBHOOK_SECRET = None  # type: ignore[attr-defined]
 

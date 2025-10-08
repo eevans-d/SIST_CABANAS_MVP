@@ -23,6 +23,7 @@ import os
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy import text
 from sqlalchemy.ext.compiler import compiles
+
 try:
     from sqlalchemy.dialects.postgresql import UUID as PG_UUID  # type: ignore
 except Exception:  # pragma: no cover
@@ -30,9 +31,12 @@ except Exception:  # pragma: no cover
 
 # Permitir usar columnas UUID (dialecto Postgres) cuando caemos a SQLite en tests
 if PG_UUID is not None:
-    @compiles(PG_UUID, 'sqlite')  # type: ignore
+
+    @compiles(PG_UUID, "sqlite")  # type: ignore
     def compile_uuid_sqlite(type_, compiler, **kw):  # pragma: no cover - simple shim
         return "CHAR(36)"
+
+
 from sqlalchemy.pool import NullPool
 
 try:
@@ -54,15 +58,16 @@ except Exception:  # pragma: no cover
 try:
     from app.core.config import Settings  # type: ignore
 except Exception:  # pragma: no cover
+
     class Settings:  # fallback mínimo para no romper tests iniciales
         def __init__(self, **kwargs):
             for k, v in kwargs.items():
                 setattr(self, k, v)
 
+
 # Test database URL (Postgres preferido; fallback a SQLite si no accesible)
 TEST_DATABASE_URL = os.getenv(
-    "TEST_DATABASE_URL",
-    "postgresql+asyncpg://test:test@localhost:5432/test_db"
+    "TEST_DATABASE_URL", "postgresql+asyncpg://test:test@localhost:5432/test_db"
 )
 SQLITE_FALLBACK_URL = "sqlite+aiosqlite:///./test_fallback.db"
 TEST_REDIS_URL = os.getenv("TEST_REDIS_URL", "redis://localhost:6379/1")
@@ -75,6 +80,7 @@ async def _can_connect(engine) -> bool:
         return True
     except Exception:
         return False
+
 
 @pytest.fixture(scope="session")
 async def test_engine():  # type: ignore
@@ -111,7 +117,9 @@ async def test_engine():  # type: ignore
             await conn.execute(text("CREATE EXTENSION IF NOT EXISTS btree_gist"))
             # Alinear columna generada y constraint según ADR-0001 (rango half-open '[)')
             # Eliminar si existieran de una corrida previa
-            await conn.execute(text("""
+            await conn.execute(
+                text(
+                    """
                 DO $$
                 BEGIN
                     IF EXISTS (
@@ -121,27 +129,40 @@ async def test_engine():  # type: ignore
                         ALTER TABLE reservations DROP COLUMN period;
                     END IF;
                 END$$;
-            """))
-            await conn.execute(text("""
+            """
+                )
+            )
+            await conn.execute(
+                text(
+                    """
                 ALTER TABLE reservations 
                 ADD COLUMN period daterange 
                 GENERATED ALWAYS AS (daterange(check_in, check_out, '[)')) STORED
-            """))
+            """
+                )
+            )
             # Constraint de exclusión (eliminar si existe y recrear)
-            await conn.execute(text("ALTER TABLE reservations DROP CONSTRAINT IF EXISTS no_overlap_reservations"))
-            await conn.execute(text("""
+            await conn.execute(
+                text("ALTER TABLE reservations DROP CONSTRAINT IF EXISTS no_overlap_reservations")
+            )
+            await conn.execute(
+                text(
+                    """
                 ALTER TABLE reservations 
                 ADD CONSTRAINT no_overlap_reservations 
                 EXCLUDE USING gist (
                     accommodation_id WITH =,
                     period WITH &&
                 ) WHERE (reservation_status IN ('pre_reserved','confirmed'))
-            """))
+            """
+                )
+            )
     yield engine
     async with engine.begin() as conn:
         # Drop all tables (también elimina constraint/columnas derivadas)
         await conn.run_sync(Base.metadata.drop_all)
     await engine.dispose()
+
 
 @pytest.fixture()
 async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
@@ -159,6 +180,7 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
         try:
             if test_engine.dialect.name == "sqlite":
                 from app.models.base import Base as _Base
+
                 async with test_engine.begin() as _conn:
                     await _conn.run_sync(_Base.metadata.drop_all)
                     await _conn.run_sync(_Base.metadata.create_all)
@@ -171,6 +193,7 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
         finally:
             if trans.is_active:
                 await trans.rollback()
+
 
 @pytest.fixture(scope="session")
 async def redis_client() -> AsyncGenerator["redis.Redis", None]:  # type: ignore
@@ -198,6 +221,7 @@ async def redis_client() -> AsyncGenerator["redis.Redis", None]:  # type: ignore
     await client.flushdb()
     await client.close()
 
+
 @pytest.fixture()
 def test_settings():  # type: ignore
     """Instancia de Settings sobreescribible.
@@ -217,9 +241,11 @@ def test_settings():  # type: ignore
         JWT_SECRET="test_jwt_secret",
     )
 
+
 # ---------------------------------------------------------------------------
 # Factories de modelos (auto-skip si aún no existen)
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture()
 async def accommodation_factory(db_session):  # type: ignore
@@ -243,6 +269,7 @@ async def accommodation_factory(db_session):  # type: ignore
         return obj
 
     return _create
+
 
 @pytest.fixture()
 async def reservation_factory(db_session, accommodation_factory):  # type: ignore
@@ -280,6 +307,7 @@ async def reservation_factory(db_session, accommodation_factory):  # type: ignor
 
     return _create
 
+
 # ---------------------------------------------------------------------------
 # Cliente HTTP para tests de API (se activa cuando exista app.main:app)
 # ---------------------------------------------------------------------------
@@ -314,6 +342,7 @@ async def test_client(test_engine):  # type: ignore
 
     # Evitar deprecation usando transporte explícito
     from httpx import ASGITransport
+
     transport = ASGITransport(app=app)  # type: ignore[arg-type]
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         yield client

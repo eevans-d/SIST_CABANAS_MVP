@@ -3,8 +3,17 @@ from __future__ import annotations
 from decimal import Decimal
 import uuid
 from sqlalchemy import (
-    Column, Integer, String, ForeignKey, Date, DateTime, Text,
-    NUMERIC, CheckConstraint, Index, Boolean
+    Column,
+    Integer,
+    String,
+    ForeignKey,
+    Date,
+    DateTime,
+    Text,
+    NUMERIC,
+    CheckConstraint,
+    Index,
+    Boolean,
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -20,7 +29,9 @@ class Reservation(Base, TimestampMixin):
     uuid = Column(UUID(as_uuid=True), unique=True, nullable=False, default=uuid.uuid4)
     code = Column(String(20), unique=True, nullable=False, index=True)
 
-    accommodation_id = Column(Integer, ForeignKey("accommodations.id", ondelete="CASCADE"), nullable=False, index=True)
+    accommodation_id = Column(
+        Integer, ForeignKey("accommodations.id", ondelete="CASCADE"), nullable=False, index=True
+    )
 
     check_in = Column(Date, nullable=False)
     check_out = Column(Date, nullable=False)
@@ -36,9 +47,11 @@ class Reservation(Base, TimestampMixin):
     total_price = Column(NUMERIC(12, 2), nullable=False)
     deposit_percentage = Column(Integer, nullable=False, default=30)
     deposit_amount = Column(NUMERIC(12, 2), nullable=False)
-    paid_amount = Column(NUMERIC(12, 2), nullable=False, default=Decimal('0'))
+    paid_amount = Column(NUMERIC(12, 2), nullable=False, default=Decimal("0"))
 
-    reservation_status = Column(String(20), nullable=False, default=ReservationStatus.PRE_RESERVED.value)
+    reservation_status = Column(
+        String(20), nullable=False, default=ReservationStatus.PRE_RESERVED.value
+    )
     payment_status = Column(String(20), nullable=False, default=PaymentStatus.PENDING.value)
 
     channel_source = Column(String(50))
@@ -57,11 +70,11 @@ class Reservation(Base, TimestampMixin):
     accommodation = relationship("Accommodation", backref="reservations")
 
     __table_args__ = (
-        CheckConstraint('check_in < check_out', name='ck_reservation_dates'),
-        CheckConstraint('guests_count > 0', name='ck_guests_positive'),
-        CheckConstraint('total_price >= 0', name='ck_total_price_positive'),
-        Index('idx_reservation_dates', 'accommodation_id', 'check_in', 'check_out'),
-        Index('idx_reservation_expires', 'expires_at'),
+        CheckConstraint("check_in < check_out", name="ck_reservation_dates"),
+        CheckConstraint("guests_count > 0", name="ck_guests_positive"),
+        CheckConstraint("total_price >= 0", name="ck_total_price_positive"),
+        Index("idx_reservation_dates", "accommodation_id", "check_in", "check_out"),
+        Index("idx_reservation_expires", "expires_at"),
     )
 
     def __repr__(self) -> str:  # pragma: no cover

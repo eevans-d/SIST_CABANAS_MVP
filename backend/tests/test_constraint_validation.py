@@ -2,6 +2,7 @@
 Tests adicionales para validación completa del constraint anti doble-booking.
 Estos tests complementan test_double_booking.py con casos más específicos.
 """
+
 import pytest
 from datetime import date, timedelta
 from decimal import Decimal
@@ -28,7 +29,7 @@ class TestDoubleBookingConstraintExtended:
             photos=["test_cabin_1.jpg", "test_cabin_2.jpg"],
             location={"lat": -31.4201, "lng": -64.1888, "address": "Test 123"},
             policies={"check_in": "15:00", "check_out": "11:00", "min_stay": 2},
-            active=True
+            active=True,
         )
         db_session.add(accommodation)
         await db_session.flush()
@@ -57,7 +58,7 @@ class TestDoubleBookingConstraintExtended:
             deposit_percentage=30,
             deposit_amount=Decimal("108000.00"),
             reservation_status=ReservationStatus.PRE_RESERVED,
-            channel_source="whatsapp"
+            channel_source="whatsapp",
         )
         db_session.add(pre_reservation)
         await db_session.flush()
@@ -76,15 +77,17 @@ class TestDoubleBookingConstraintExtended:
             deposit_percentage=30,
             deposit_amount=Decimal("108000.00"),
             reservation_status=ReservationStatus.CONFIRMED,
-            channel_source="email"
+            channel_source="email",
         )
         db_session.add(confirmed_reservation)
 
         with pytest.raises(IntegrityError) as exc_info:
             await db_session.commit()
-        
+
         error_msg = str(exc_info.value).lower()
-        assert any(keyword in error_msg for keyword in ["no_overlap_reservations", "overlaps", "exclude"])
+        assert any(
+            keyword in error_msg for keyword in ["no_overlap_reservations", "overlaps", "exclude"]
+        )
 
     @pytest.mark.asyncio
     async def test_partial_overlap_scenarios(self, db_session, sample_accommodation):
@@ -93,7 +96,7 @@ class TestDoubleBookingConstraintExtended:
             pytest.skip("Constraint EXCLUDE sólo soportado en PostgreSQL")
 
         base_date = date.today() + timedelta(days=10)
-        
+
         # Reserva base: días 10-15
         base_reservation = Reservation(
             code="BASE240924001",
@@ -108,7 +111,7 @@ class TestDoubleBookingConstraintExtended:
             deposit_percentage=30,
             deposit_amount=Decimal("180000.00"),
             reservation_status=ReservationStatus.CONFIRMED,
-            channel_source="whatsapp"
+            channel_source="whatsapp",
         )
         db_session.add(base_reservation)
         await db_session.flush()
@@ -127,13 +130,13 @@ class TestDoubleBookingConstraintExtended:
             deposit_percentage=30,
             deposit_amount=Decimal("144000.00"),
             reservation_status=ReservationStatus.CONFIRMED,
-            channel_source="email"
+            channel_source="email",
         )
         db_session.add(left_overlap)
 
         with pytest.raises(IntegrityError):
             await db_session.commit()
-        
+
         # Rollback automático, continúa con el siguiente test
         await db_session.rollback()
 
@@ -151,7 +154,7 @@ class TestDoubleBookingConstraintExtended:
             deposit_percentage=30,
             deposit_amount=Decimal("180000.00"),
             reservation_status=ReservationStatus.PRE_RESERVED,
-            channel_source="whatsapp"
+            channel_source="whatsapp",
         )
         db_session.add(right_overlap)
 
@@ -175,9 +178,9 @@ class TestDoubleBookingConstraintExtended:
             photos=["north_cabin.jpg"],
             location={"lat": -31.4201, "lng": -64.1888},
             policies={"check_in": "15:00", "check_out": "11:00"},
-            active=True
+            active=True,
         )
-        
+
         acc2 = Accommodation(
             name="Cabaña Sur",
             type="cabin",
@@ -188,9 +191,9 @@ class TestDoubleBookingConstraintExtended:
             photos=["south_cabin.jpg"],
             location={"lat": -31.4301, "lng": -64.1988},
             policies={"check_in": "15:00", "check_out": "11:00"},
-            active=True
+            active=True,
         )
-        
+
         db_session.add_all([acc1, acc2])
         await db_session.flush()
 
@@ -211,9 +214,9 @@ class TestDoubleBookingConstraintExtended:
             deposit_percentage=30,
             deposit_amount=Decimal("90000.00"),
             reservation_status=ReservationStatus.CONFIRMED,
-            channel_source="whatsapp"
+            channel_source="whatsapp",
         )
-        
+
         # Reserva en alojamiento 2 - mismas fechas
         reservation2 = Reservation(
             code="DIFF240924002",
@@ -228,14 +231,14 @@ class TestDoubleBookingConstraintExtended:
             deposit_percentage=30,
             deposit_amount=Decimal("90000.00"),
             reservation_status=ReservationStatus.CONFIRMED,
-            channel_source="email"
+            channel_source="email",
         )
-        
+
         db_session.add_all([reservation1, reservation2])
-        
+
         # Debe ser exitoso - diferentes alojamientos
         await db_session.commit()
-        
+
         # Verificar que ambas reservas existen
         result = await db_session.execute(select(Reservation))
         reservations = result.scalars().all()
@@ -265,7 +268,7 @@ class TestDoubleBookingConstraintExtended:
             deposit_amount=Decimal("108000.00"),
             reservation_status=ReservationStatus.CONFIRMED,
             channel_source="whatsapp",
-            notes="Reserva que será cancelada"
+            notes="Reserva que será cancelada",
         )
         db_session.add(original_reservation)
         await db_session.flush()
@@ -289,22 +292,20 @@ class TestDoubleBookingConstraintExtended:
             deposit_amount=Decimal("108000.00"),
             reservation_status=ReservationStatus.PRE_RESERVED,
             channel_source="email",
-            notes="Nueva reserva después de cancelación"
+            notes="Nueva reserva después de cancelación",
         )
         db_session.add(new_reservation)
-        
+
         # Debe ser exitoso
         await db_session.commit()
-        
+
         # Verificar que ambas reservas existen
         result = await db_session.execute(
-            select(Reservation).where(
-                Reservation.accommodation_id == sample_accommodation.id
-            )
+            select(Reservation).where(Reservation.accommodation_id == sample_accommodation.id)
         )
         reservations = result.scalars().all()
         assert len(reservations) == 2
-        
+
         # Verificar estados
         states = [r.reservation_status for r in reservations]
         assert ReservationStatus.CANCELLED in states
@@ -332,7 +333,7 @@ class TestDoubleBookingConstraintExtended:
             deposit_percentage=30,
             deposit_amount=Decimal("108000.00"),
             reservation_status=ReservationStatus.CONFIRMED,
-            channel_source="whatsapp"
+            channel_source="whatsapp",
         )
         db_session.add(first_reservation)
         await db_session.flush()
@@ -351,18 +352,16 @@ class TestDoubleBookingConstraintExtended:
             deposit_percentage=30,
             deposit_amount=Decimal("108000.00"),
             reservation_status=ReservationStatus.CONFIRMED,
-            channel_source="email"
+            channel_source="email",
         )
         db_session.add(second_reservation)
-        
+
         # CRÍTICO: Debe ser exitoso por el daterange '[)' half-open
         await db_session.commit()
-        
+
         # Verificar que ambas reservas existen
         result = await db_session.execute(
-            select(Reservation).where(
-                Reservation.accommodation_id == sample_accommodation.id
-            )
+            select(Reservation).where(Reservation.accommodation_id == sample_accommodation.id)
         )
         reservations = result.scalars().all()
         assert len(reservations) == 2
@@ -390,7 +389,7 @@ class TestDoubleBookingConstraintExtended:
             deposit_percentage=30,
             deposit_amount=Decimal("108000.00"),
             reservation_status=ReservationStatus.CONFIRMED,
-            channel_source="whatsapp"
+            channel_source="whatsapp",
         )
         db_session.add(first)
         await db_session.flush()
@@ -409,23 +408,18 @@ class TestDoubleBookingConstraintExtended:
             deposit_percentage=30,
             deposit_amount=Decimal("108000.00"),
             reservation_status=ReservationStatus.PRE_RESERVED,
-            channel_source="email"
+            channel_source="email",
         )
         db_session.add(second)
 
         with pytest.raises(IntegrityError) as exc_info:
             await db_session.commit()
-        
+
         error_str = str(exc_info.value).lower()
-        
+
         # Verificar que el error contiene información del constraint
-        constraint_indicators = [
-            "no_overlap_reservations",
-            "overlaps", 
-            "exclude",
-            "gist",
-            "period"
-        ]
-        
-        assert any(indicator in error_str for indicator in constraint_indicators), \
-            f"Error no contiene indicadores del constraint esperados. Error: {error_str}"
+        constraint_indicators = ["no_overlap_reservations", "overlaps", "exclude", "gist", "period"]
+
+        assert any(
+            indicator in error_str for indicator in constraint_indicators
+        ), f"Error no contiene indicadores del constraint esperados. Error: {error_str}"

@@ -5,20 +5,20 @@
  *.pyd
  *.pytest_cache/
  .pytest_cache/
- 
+
  # Envs
  .venv/
  .env
- 
+
  # Editor/OS
  .DS_Store
  .vscode/
  .idea/
- 
+
  # Build
  build/
  dist/
- 
+
  # Project
  backend/temp/
  ssl/

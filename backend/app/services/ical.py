@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """Servicio iCal MVP.
 
 Export: Genera un feed ICS con reservas confirmed (y opcionalmente pre_reserved no expirada) para un accommodation.
@@ -20,9 +21,11 @@ from app.models.enums import ReservationStatus, ChannelSource
 ICS_HEADER = """BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//MVP Alojamientos//ES\nCALSCALE:GREGORIAN"""
 ICS_FOOTER = "END:VCALENDAR"
 
+
 def _format_dt(d: date) -> str:
     # Usamos formato date sin horas (alojamientos por noche)
     return f"{d:%Y%m%d}"  # DTSTART;VALUE=DATE:YYYYMMDD
+
 
 class ICalService:
     def __init__(self, db: AsyncSession):
@@ -42,7 +45,10 @@ class ICalService:
         rows: List[Reservation] = result.scalars().all()
         lines = [ICS_HEADER]
         for r in rows:
-            if r.reservation_status not in (ReservationStatus.CONFIRMED.value, ReservationStatus.PRE_RESERVED.value):
+            if r.reservation_status not in (
+                ReservationStatus.CONFIRMED.value,
+                ReservationStatus.PRE_RESERVED.value,
+            ):
                 continue
             if r.reservation_status == ReservationStatus.PRE_RESERVED.value and r.expires_at:
                 exp = r.expires_at
@@ -52,18 +58,20 @@ class ICalService:
                     continue
             uid = f"{r.code}@acc{accommodation_id}"
             dtstamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-            lines.extend([
-                "BEGIN:VEVENT",
-                f"UID:{uid}",
-                f"DTSTAMP:{dtstamp}",
-                f"DTSTART;VALUE=DATE:{_format_dt(r.check_in)}",
-                f"DTEND;VALUE=DATE:{_format_dt(r.check_out)}",
-                f"SUMMARY:RESERVA {r.code}",
-                # Propiedades custom para trazabilidad (ignoradas por clientes estándar)
-                f"X-CODE:{r.code}",
-                f"X-SOURCE:{(r.channel_source or '').upper()}",
-                "END:VEVENT",
-            ])
+            lines.extend(
+                [
+                    "BEGIN:VEVENT",
+                    f"UID:{uid}",
+                    f"DTSTAMP:{dtstamp}",
+                    f"DTSTART;VALUE=DATE:{_format_dt(r.check_in)}",
+                    f"DTEND;VALUE=DATE:{_format_dt(r.check_out)}",
+                    f"SUMMARY:RESERVA {r.code}",
+                    # Propiedades custom para trazabilidad (ignoradas por clientes estándar)
+                    f"X-CODE:{r.code}",
+                    f"X-SOURCE:{(r.channel_source or '').upper()}",
+                    "END:VEVENT",
+                ]
+            )
         lines.append(ICS_FOOTER)
         return "\n".join(lines)
 
@@ -88,22 +96,22 @@ class ICalService:
             data = {}
             for line in lines:
                 if line.startswith("UID:"):
-                    data['uid'] = line[4:].strip()
+                    data["uid"] = line[4:].strip()
                 elif line.startswith("DTSTART"):
-                    _, val = line.split(":",1)
-                    data['start'] = datetime.strptime(val.strip(), "%Y%m%d").date()
+                    _, val = line.split(":", 1)
+                    data["start"] = datetime.strptime(val.strip(), "%Y%m%d").date()
                 elif line.startswith("DTEND"):
-                    _, val = line.split(":",1)
-                    data['end'] = datetime.strptime(val.strip(), "%Y%m%d").date()
-            if not data.get('uid') or not data.get('start') or not data.get('end'):
+                    _, val = line.split(":", 1)
+                    data["end"] = datetime.strptime(val.strip(), "%Y%m%d").date()
+            if not data.get("uid") or not data.get("start") or not data.get("end"):
                 continue
-            uid = data['uid']
-            check_in = data['start']
-            check_out = data['end']
+            uid = data["uid"]
+            check_in = data["start"]
+            check_out = data["end"]
             # Dedupe por UID ya en internal_notes
             existing_stmt = select(Reservation).where(
-                Reservation.accommodation_id==accommodation_id,
-                Reservation.internal_notes.contains(uid)  # type: ignore
+                Reservation.accommodation_id == accommodation_id,
+                Reservation.internal_notes.contains(uid),  # type: ignore
             )
             existing = await self.db.execute(existing_stmt)
             first = existing.scalar_one_or_none()
@@ -129,7 +137,7 @@ class ICalService:
                 payment_status="pending",
                 channel_source=source,
                 expires_at=now + timedelta(days=365),  # mantener bloqueo largo
-                internal_notes=f"UID:{uid}"
+                internal_notes=f"UID:{uid}",
             )
             self.db.add(reservation)
             try:

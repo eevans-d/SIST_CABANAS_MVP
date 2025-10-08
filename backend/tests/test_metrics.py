@@ -2,6 +2,7 @@ import pytest
 import re
 from datetime import date
 
+
 def _extract_metric(body: str, channel: str) -> int:
     # Aceptar valores como 1 o 1.0
     pattern = rf'^reservations_created_total\{{channel="{channel}"}} (\d+)(?:\.\d+)?$'
@@ -10,6 +11,7 @@ def _extract_metric(body: str, channel: str) -> int:
         if m:
             return int(m.group(1))
     return 0
+
 
 @pytest.mark.asyncio
 async def test_metrics_reservation_counter(test_client, accommodation_factory, db_session):  # type: ignore
@@ -26,7 +28,7 @@ async def test_metrics_reservation_counter(test_client, accommodation_factory, d
         "guests": 2,
         "channel": "whatsapp",
         "contact_name": "Tester",
-        "contact_phone": "+5491100000000"
+        "contact_phone": "+5491100000000",
     }
     r = await test_client.post("/api/v1/reservations/pre-reserve", json=payload)
     assert r.status_code == 200

@@ -38,8 +38,8 @@ def extract_dates(text: str) -> Dict[str, Any]:
     m = RANGE_PATTERN.search(text)
     if m:
         d1_raw, d2_raw = m.group(1), m.group(2)
-        d1 = dateparse(d1_raw, settings={'DATE_ORDER': 'DMY'})
-        d2 = dateparse(d2_raw, settings={'DATE_ORDER': 'DMY'})
+        d1 = dateparse(d1_raw, settings={"DATE_ORDER": "DMY"})
+        d2 = dateparse(d2_raw, settings={"DATE_ORDER": "DMY"})
         results = []
         if d1:
             results.append(d1.date().isoformat())
@@ -51,7 +51,7 @@ def extract_dates(text: str) -> Dict[str, Any]:
     matches = DATE_PATTERN.findall(text)
     results = []
     for m, _ in matches:
-        parsed = dateparse(m, settings={'DATE_ORDER': 'DMY'})
+        parsed = dateparse(m, settings={"DATE_ORDER": "DMY"})
         if parsed:
             results.append(parsed.date().isoformat())
     return {"dates": results}

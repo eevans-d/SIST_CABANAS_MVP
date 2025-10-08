@@ -12,6 +12,7 @@ def _extract_confirmed(body: str, channel: str) -> int:
             return int(m.group(1))
     return 0
 
+
 async def test_metrics_reservation_confirmed_counter(test_client, accommodation_factory, db_session):  # type: ignore
     m_before = await test_client.get("/metrics")
     before_val = _extract_confirmed(m_before.text, "whatsapp")
@@ -24,7 +25,7 @@ async def test_metrics_reservation_confirmed_counter(test_client, accommodation_
         "guests": 2,
         "channel": "whatsapp",
         "contact_name": "Tester",
-        "contact_phone": "+5491100000000"
+        "contact_phone": "+5491100000000",
     }
     r1 = await test_client.post("/api/v1/reservations/pre-reserve", json=payload)
     code = r1.json()["code"]

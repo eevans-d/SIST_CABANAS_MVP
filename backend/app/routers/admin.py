@@ -94,31 +94,35 @@ async def export_reservations_csv(
 
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow([
-        "code",
-        "accommodation_id",
-        "guest_name",
-        "guest_email",
-        "guest_phone",
-        "check_in",
-        "check_out",
-        "status",
-        "total_price",
-        "created_at",
-    ])
+    writer.writerow(
+        [
+            "code",
+            "accommodation_id",
+            "guest_name",
+            "guest_email",
+            "guest_phone",
+            "check_in",
+            "check_out",
+            "status",
+            "total_price",
+            "created_at",
+        ]
+    )
     for r in rows:
-        writer.writerow([
-            r.code,
-            r.accommodation_id,
-            r.guest_name,
-            r.guest_email,
-            r.guest_phone,
-            r.check_in,
-            r.check_out,
-            r.reservation_status,
-            r.total_price,
-            r.created_at,
-        ])
+        writer.writerow(
+            [
+                r.code,
+                r.accommodation_id,
+                r.guest_name,
+                r.guest_email,
+                r.guest_phone,
+                r.check_in,
+                r.check_out,
+                r.reservation_status,
+                r.total_price,
+                r.created_at,
+            ]
+        )
     output.seek(0)
     return StreamingResponse(iter([output.getvalue()]), media_type="text/csv")
 
@@ -140,14 +144,21 @@ async def resend_email(
         raise HTTPException(status_code=400, detail="Reservation has no guest_email")
     subject = f"Reserva {r.code} - Estado {r.reservation_status}"
     try:
-        html = email_service.render("confirmation.html", {
-            "guest_name": r.guest_name or "Cliente",
-            "code": r.code,
-            "accommodation_name": getattr(r, 'accommodation', None).name if getattr(r, 'accommodation', None) else str(r.accommodation_id),
-            "check_in": str(r.check_in),
-            "check_out": str(r.check_out),
-            "total_price": str(getattr(r, 'total_price', '')),
-        })
+        html = email_service.render(
+            "confirmation.html",
+            {
+                "guest_name": r.guest_name or "Cliente",
+                "code": r.code,
+                "accommodation_name": (
+                    getattr(r, "accommodation", None).name
+                    if getattr(r, "accommodation", None)
+                    else str(r.accommodation_id)
+                ),
+                "check_in": str(r.check_in),
+                "check_out": str(r.check_out),
+                "total_price": str(getattr(r, "total_price", "")),
+            },
+        )
     except Exception:
         html = f"""
         <h3>Detalle de reserva {r.code}</h3>

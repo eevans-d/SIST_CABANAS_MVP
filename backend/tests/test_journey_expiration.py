@@ -4,7 +4,10 @@ from datetime import date, timedelta, datetime, UTC
 
 pytestmark = pytest.mark.anyio
 
-async def test_prereservation_expires_and_confirm_fails(test_client, accommodation_factory, db_session):
+
+async def test_prereservation_expires_and_confirm_fails(
+    test_client, accommodation_factory, db_session
+):
     client: AsyncClient = test_client
     acc = await accommodation_factory()
 
@@ -16,7 +19,7 @@ async def test_prereservation_expires_and_confirm_fails(test_client, accommodati
         "channel": "api",
         "contact_name": "Expire Tester",
         "contact_phone": "+5491100000000",
-        "contact_email": "expire@example.com"
+        "contact_email": "expire@example.com",
     }
     r = await client.post("/api/v1/reservations/pre-reserve", json=payload)
     assert r.status_code == 200
@@ -26,8 +29,11 @@ async def test_prereservation_expires_and_confirm_fails(test_client, accommodati
     # Forzar expiración inmediata en DB
     from sqlalchemy import select
     from app.models import Reservation
+
     # Buscar reserva por code y actualizar expires_at para forzar expiración
-    res = (await db_session.execute(select(Reservation).where(Reservation.code == code))).scalar_one()
+    res = (
+        await db_session.execute(select(Reservation).where(Reservation.code == code))
+    ).scalar_one()
     obj = res
     now = datetime.now(UTC)
     obj.expires_at = now - timedelta(minutes=1)

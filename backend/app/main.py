@@ -28,20 +28,21 @@ logger = structlog.get_logger()
 
 settings = get_settings()
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage application lifecycle"""
     logger.info("application_startup", environment=settings.ENVIRONMENT)
-    
+
     # Startup tasks
     from app.core.database import engine
     from app.models.base import Base
-    
+
     # Create tables if not exist (development only)
     if settings.ENVIRONMENT == "development":
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
-    
+
     # Background tasks: expiración/reminders e import iCal
     stop_flag = False
 
@@ -65,6 +66,7 @@ async def lifespan(app: FastAPI):
         logger.info("expiration_worker_stop")
 
     import asyncio
+
     task = asyncio.create_task(expiration_worker())
 
     async def ical_worker():
@@ -94,10 +96,11 @@ async def lifespan(app: FastAPI):
         await task2
     except Exception:
         pass
-    
+
     # Shutdown tasks
     logger.info("application_shutdown")
     await engine.dispose()
+
 
 app = FastAPI(
     title="Sistema de Reservas API",
@@ -114,11 +117,14 @@ Instrumentator().instrument(app).expose(app, include_in_schema=False, endpoint="
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if settings.ENVIRONMENT == "development" else settings.ALLOWED_ORIGINS.split(","),
+    allow_origins=(
+        ["*"] if settings.ENVIRONMENT == "development" else settings.ALLOWED_ORIGINS.split(",")
+    ),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # Rate limit middleware (simple per-IP + path, Redis-based). Bypass in development.
 @app.middleware("http")
@@ -135,6 +141,7 @@ async def rate_limit(request: Request, call_next):
         key = f"ratelimit:{client_ip}:{path}"
         pool = get_redis_pool()
         import redis.asyncio as redis
+
         r = redis.Redis(connection_pool=pool)
         # incrementar y setear TTL si clave nueva
         count = await r.incr(key)
@@ -148,6 +155,7 @@ async def rate_limit(request: Request, call_next):
         # fallback: no bloquear si redis falla
         return await call_next(request)
 
+
 # Request ID middleware (sin context manager erróneo)
 @app.middleware("http")
 async def add_request_id(request: Request, call_next):
@@ -156,6 +164,7 @@ async def add_request_id(request: Request, call_next):
     try:
         # bind_contextvars no es context manager; simplemente establece valores
         import structlog.contextvars as ctxvars  # type: ignore
+
         ctxvars.bind_contextvars(request_id=request_id)
     except Exception:  # pragma: no cover
         pass
@@ -168,18 +177,17 @@ async def add_request_id(request: Request, call_next):
         method=request.method,
         path=request.url.path,
         status_code=response.status_code,
-        duration_ms=round(duration_ms, 2)
+        duration_ms=round(duration_ms, 2),
     )
     response.headers["X-Request-ID"] = request_id
     return response
 
+
 # Exception handlers
 @app.exception_handler(400)
 async def bad_request_handler(request: Request, exc):
-    return JSONResponse(
-        status_code=400,
-        content={"error": "Bad Request", "detail": str(exc)}
-    )
+    return JSONResponse(status_code=400, content={"error": "Bad Request", "detail": str(exc)})
+
 
 @app.exception_handler(403)
 async def forbidden_handler(request: Request, exc):
@@ -187,25 +195,24 @@ async def forbidden_handler(request: Request, exc):
     detail = getattr(exc, "detail", None)
     if not detail:
         detail = "Access denied"
-    return JSONResponse(
-        status_code=403,
-        content={"error": "Forbidden", "detail": detail}
-    )
+    return JSONResponse(status_code=403, content={"error": "Forbidden", "detail": detail})
+
 
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exc):
     return JSONResponse(
-        status_code=404,
-        content={"error": "Not Found", "detail": "Resource not found"}
+        status_code=404, content={"error": "Not Found", "detail": "Resource not found"}
     )
+
 
 @app.exception_handler(500)
 async def internal_error_handler(request: Request, exc):
     logger.error("internal_server_error", error=str(exc), exc_info=True)
     return JSONResponse(
         status_code=500,
-        content={"error": "Internal Server Error", "detail": "An unexpected error occurred"}
+        content={"error": "Internal Server Error", "detail": "An unexpected error occurred"},
     )
+
 
 # Include routers
 app.include_router(health.router, prefix="/api/v1")
@@ -216,6 +223,7 @@ app.include_router(ical_router.router, prefix="/api/v1")
 app.include_router(audio_router.router, prefix="/api/v1")
 app.include_router(admin_router.router, prefix="/api/v1")
 app.include_router(nlu_router.router, prefix="/api/v1")
+
 
 @app.get("/")
 async def root():

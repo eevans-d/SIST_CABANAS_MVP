@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """Servicio mínimo de integración Mercado Pago (MVP).
 
 Función principal: procesar webhook idempotente.
@@ -24,6 +25,7 @@ from sqlalchemy import select
 from app.models import Payment, Reservation
 from app.models.enums import ReservationStatus, PaymentStatus
 
+
 class MercadoPagoService:
     def __init__(self, db: AsyncSession):
         self.db = db
@@ -43,7 +45,7 @@ class MercadoPagoService:
         try:
             amount = Decimal(str(amount_raw))
         except Exception:
-            amount = Decimal('0')
+            amount = Decimal("0")
         currency = payload.get("currency", "ARS")
         external_reference = payload.get("external_reference")
 
@@ -61,7 +63,12 @@ class MercadoPagoService:
             payment.amount = amount
             await self.db.commit()
             await self.db.refresh(payment)
-            return {"status": "ok", "idempotent": True, "payment_id": payment_id, "events_count": payment.events_count}
+            return {
+                "status": "ok",
+                "idempotent": True,
+                "payment_id": payment_id,
+                "events_count": payment.events_count,
+            }
 
         # Nuevo payment
         reservation_id = None
@@ -70,7 +77,10 @@ class MercadoPagoService:
             if reservation:
                 reservation_id = reservation.id
                 # Si aprobado y reserva pre_reserved -> marcar como confirmed (depósito simplificado)
-                if status == "approved" and reservation.reservation_status == ReservationStatus.PRE_RESERVED.value:
+                if (
+                    status == "approved"
+                    and reservation.reservation_status == ReservationStatus.PRE_RESERVED.value
+                ):
                     reservation.reservation_status = ReservationStatus.CONFIRMED.value
                     reservation.confirmed_at = now
                     reservation.payment_status = PaymentStatus.PAID.value
@@ -88,4 +98,9 @@ class MercadoPagoService:
         self.db.add(payment)
         await self.db.commit()
         await self.db.refresh(payment)
-        return {"status": "ok", "idempotent": False, "payment_id": payment_id, "reservation_id": reservation_id}
+        return {
+            "status": "ok",
+            "idempotent": False,
+            "payment_id": payment_id,
+            "reservation_id": reservation_id,
+        }

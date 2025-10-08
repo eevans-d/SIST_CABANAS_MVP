@@ -8,8 +8,10 @@ services:
       POSTGRES_DB: ${DB_NAME:-alojamientos}
       POSTGRES_USER: ${DB_USER:-alojamientos}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-supersecret}
-    ports:
-      - "5433:5432"
+    # SECURITY: Ports commented for production - DB only accessible via Docker network
+    # Uncomment for local development/debugging if needed:
+    # ports:
+    #   - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -25,8 +27,10 @@ services:
     image: redis:7-alpine
     container_name: alojamientos_redis
     command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redispass}
-    ports:
-      - "6379:6379"
+    # SECURITY: Ports commented for production - Redis only accessible via Docker network
+    # Uncomment for local development/debugging if needed:
+    # ports:
+    #   - "6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:

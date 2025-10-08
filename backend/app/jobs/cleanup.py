@@ -19,7 +19,10 @@ from app.services.email import email_service
 
 # Métricas
 PRE_RES_EXPIRED = Counter("prereservations_expired_total", "Pre-reservas expiradas por job")
-PRE_RES_REMINDERS = Counter("prereservation_reminders_processed_total", "Recordatorios de pre-reservas procesados")
+PRE_RES_REMINDERS = Counter(
+    "prereservation_reminders_processed_total", "Recordatorios de pre-reservas procesados"
+)
+
 
 async def expire_prereservations(db: AsyncSession, batch_size: int = 200) -> int:
     """Marca como canceladas las pre-reservas vencidas.
@@ -47,7 +50,7 @@ async def expire_prereservations(db: AsyncSession, batch_size: int = 200) -> int
         .values(
             reservation_status=ReservationStatus.CANCELLED.value,
             cancelled_at=now,
-            internal_notes="auto-expired"
+            internal_notes="auto-expired",
         )
     )
     await db.execute(upd)
@@ -62,16 +65,21 @@ async def expire_prereservations(db: AsyncSession, batch_size: int = 200) -> int
         result2 = await db.execute(select(Reservation).where(Reservation.id.in_(ids)))
         rows = result2.scalars().all()
         for r in rows:
-            if getattr(r, 'guest_email', None):
+            if getattr(r, "guest_email", None):
                 try:
-                    html = email_service.render("expiration.html", {
-                        "guest_name": getattr(r, 'guest_name', 'Cliente'),
-                        "code": r.code,
-                    })
+                    html = email_service.render(
+                        "expiration.html",
+                        {
+                            "guest_name": getattr(r, "guest_name", "Cliente"),
+                            "code": r.code,
+                        },
+                    )
                 except Exception:
                     html = f"<h3>Pre-reserva {r.code} expirada</h3>"
                 try:
-                    email_service.send_html(r.guest_email, f"Pre-reserva {r.code} expirada", html, email_type="expired")
+                    email_service.send_html(
+                        r.guest_email, f"Pre-reserva {r.code} expirada", html, email_type="expired"
+                    )
                 except Exception:
                     pass
     except Exception:
@@ -80,7 +88,9 @@ async def expire_prereservations(db: AsyncSession, batch_size: int = 200) -> int
     return len(ids)
 
 
-async def send_prereservation_reminders(db: AsyncSession, window_minutes: int = 15, batch_size: int = 200) -> int:
+async def send_prereservation_reminders(
+    db: AsyncSession, window_minutes: int = 15, batch_size: int = 200
+) -> int:
     """Envía recordatorios de pre-reservas que expiran pronto y marca para no duplicar.
 
     Selecciona pre-reservas con expires_at entre ahora y ahora+ventana que aún no fueron
@@ -104,20 +114,25 @@ async def send_prereservation_reminders(db: AsyncSession, window_minutes: int = 
     processed = 0
     for r in rows:
         # Evitar duplicados si ya fue marcado
-        notes = (r.internal_notes or "")
+        notes = r.internal_notes or ""
         if "reminder_sent" in notes:
             continue
         # Enviar email best-effort
-        if getattr(r, 'guest_email', None):
+        if getattr(r, "guest_email", None):
             try:
                 try:
-                    html = email_service.render("reminder.html", {
-                        "guest_name": getattr(r, 'guest_name', 'Cliente'),
-                        "code": r.code,
-                    })
+                    html = email_service.render(
+                        "reminder.html",
+                        {
+                            "guest_name": getattr(r, "guest_name", "Cliente"),
+                            "code": r.code,
+                        },
+                    )
                 except Exception:
                     html = f"<h3>Recordatorio: confirmá tu reserva {r.code}</h3>"
-                email_service.send_html(r.guest_email, f"Recordatorio reserva {r.code}", html, email_type="pre_reserved")
+                email_service.send_html(
+                    r.guest_email, f"Recordatorio reserva {r.code}", html, email_type="pre_reserved"
+                )
             except Exception:
                 pass
         # Marcar como recordatorio enviado en internal_notes

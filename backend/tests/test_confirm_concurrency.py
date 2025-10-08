@@ -2,6 +2,7 @@ import pytest
 from datetime import date
 import asyncio
 
+
 @pytest.mark.asyncio
 async def test_double_confirm_concurrency(test_client, accommodation_factory):  # type: ignore
     acc = await accommodation_factory()
@@ -13,7 +14,7 @@ async def test_double_confirm_concurrency(test_client, accommodation_factory):  
         "guests": 2,
         "channel": "whatsapp",
         "contact_name": "Tester",
-        "contact_phone": "+5491100000000"
+        "contact_phone": "+5491100000000",
     }
     r = await test_client.post("/api/v1/reservations/pre-reserve", json=payload)
     assert r.status_code == 200

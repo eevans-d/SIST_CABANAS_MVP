@@ -6,7 +6,10 @@ from app.models.enums import ReservationStatus
 
 pytestmark = pytest.mark.asyncio
 
-async def test_confirm_then_cancel_reservation(test_client, db_session: AsyncSession, accommodation_factory):
+
+async def test_confirm_then_cancel_reservation(
+    test_client, db_session: AsyncSession, accommodation_factory
+):
     acc = await accommodation_factory()
     payload = {
         "accommodation_id": acc.id,
@@ -26,9 +29,12 @@ async def test_confirm_then_cancel_reservation(test_client, db_session: AsyncSes
     data2 = r2.json()
     assert data2.get("status") == ReservationStatus.CONFIRMED.value
 
-    r3 = await test_client.post(f"/api/v1/reservations/{code}/cancel", json={"reason": "cliente pidió"})
+    r3 = await test_client.post(
+        f"/api/v1/reservations/{code}/cancel", json={"reason": "cliente pidió"}
+    )
     data3 = r3.json()
     assert data3.get("status") == ReservationStatus.CANCELLED.value
+
 
 async def test_cannot_confirm_expired(test_client, db_session: AsyncSession, accommodation_factory):
     acc = await accommodation_factory()
@@ -47,7 +53,9 @@ async def test_cannot_confirm_expired(test_client, db_session: AsyncSession, acc
 
     # Forzar expiración editando directamente expires_at en DB (simplificación)
     q = await db_session.execute(
-    Reservation.__table__.update().where(Reservation.code == code).values(expires_at=datetime.now(UTC) - timedelta(minutes=1))
+        Reservation.__table__.update()
+        .where(Reservation.code == code)
+        .values(expires_at=datetime.now(UTC) - timedelta(minutes=1))
     )
     await db_session.commit()
 
@@ -55,7 +63,10 @@ async def test_cannot_confirm_expired(test_client, db_session: AsyncSession, acc
     data2 = r2.json()
     assert data2.get("error") == "expired"
 
-async def test_invalid_state_transitions(test_client, db_session: AsyncSession, accommodation_factory):
+
+async def test_invalid_state_transitions(
+    test_client, db_session: AsyncSession, accommodation_factory
+):
     acc = await accommodation_factory()
     payload = {
         "accommodation_id": acc.id,

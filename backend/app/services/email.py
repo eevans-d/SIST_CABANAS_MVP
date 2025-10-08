@@ -11,7 +11,10 @@ from prometheus_client import Counter
 try:  # opcional: usar plantillas si Jinja2 está instalada
     from jinja2 import Environment, FileSystemLoader, select_autoescape  # type: ignore
     import os
-    TEMPLATES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "templates", "email"))
+
+    TEMPLATES_DIR = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "..", "templates", "email")
+    )
     _jinja_env: Optional[Environment] = Environment(
         loader=FileSystemLoader(TEMPLATES_DIR),
         autoescape=select_autoescape(["html", "xml"]),
@@ -24,7 +27,9 @@ logger = structlog.get_logger()
 settings = get_settings()
 
 # Métricas de email
-EMAIL_SENT = Counter("email_sent_total", "Emails enviados", ["type"])  # type: pre_reserved|confirmed|expired|custom
+EMAIL_SENT = Counter(
+    "email_sent_total", "Emails enviados", ["type"]
+)  # type: pre_reserved|confirmed|expired|custom
 EMAIL_FAILED = Counter("email_failed_total", "Emails fallidos", ["type"])  # idem
 
 
@@ -44,7 +49,9 @@ class EmailService:
 
     def _ensure_config(self):
         if not all([self.host, self.port, self.user, self.password, self.sender]):
-            raise RuntimeError("SMTP configuration missing. Set SMTP_HOST/PORT/USER/PASS/FROM in environment")
+            raise RuntimeError(
+                "SMTP configuration missing. Set SMTP_HOST/PORT/USER/PASS/FROM in environment"
+            )
 
     def render(self, template_name: str, context: Dict) -> str:
         if _jinja_env is None:
@@ -52,7 +59,14 @@ class EmailService:
         tpl = _jinja_env.get_template(template_name)
         return tpl.render(**context)
 
-    def send_html(self, to_email: str, subject: str, html_body: str, headers: Optional[Dict[str, str]] = None, email_type: str = "custom") -> bool:
+    def send_html(
+        self,
+        to_email: str,
+        subject: str,
+        html_body: str,
+        headers: Optional[Dict[str, str]] = None,
+        email_type: str = "custom",
+    ) -> bool:
         """Envía un email HTML. Retorna True si fue enviado."""
         self._ensure_config()
         msg = MIMEMultipart("alternative")
@@ -81,13 +95,21 @@ class EmailService:
                 return True
             except Exception as e:  # pragma: no cover (se testea con mock)
                 last_error = e
-                logger.warning("email_send_retry", to=to_email, subject=subject, attempt=attempt, error=str(e))
+                logger.warning(
+                    "email_send_retry", to=to_email, subject=subject, attempt=attempt, error=str(e)
+                )
                 try:
                     import time
+
                     time.sleep(delay)
                 except Exception:
                     pass
-        logger.error("email_send_failed", to=to_email, subject=subject, error=str(last_error) if last_error else "unknown")
+        logger.error(
+            "email_send_failed",
+            to=to_email,
+            subject=subject,
+            error=str(last_error) if last_error else "unknown",
+        )
         try:
             EMAIL_FAILED.labels(type=email_type).inc()
         except Exception:

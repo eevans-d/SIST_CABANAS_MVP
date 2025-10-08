@@ -4,9 +4,11 @@ pytestmark = pytest.mark.asyncio
 
 ENDPOINT = "/api/v1/mercadopago/webhook"
 
+
 async def test_mp_invalid_signature(test_client, monkeypatch):  # type: ignore
     # Configurar secreto
     from app.core.config import get_settings
+
     settings = get_settings()
     settings.MERCADOPAGO_WEBHOOK_SECRET = "mpsecret"  # type: ignore[attr-defined]
 
@@ -19,8 +21,10 @@ async def test_mp_invalid_signature(test_client, monkeypatch):  # type: ignore
     data = resp.json()
     assert data["detail"] == "Invalid signature"
 
+
 async def test_mp_valid_signature(test_client, monkeypatch):  # type: ignore
     from app.core.config import get_settings
+
     settings = get_settings()
     settings.MERCADOPAGO_WEBHOOK_SECRET = "mpsecret"  # type: ignore[attr-defined]
 

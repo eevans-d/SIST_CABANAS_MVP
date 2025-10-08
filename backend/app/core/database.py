@@ -32,6 +32,7 @@ async_session_maker = async_sessionmaker(
     autoflush=False,
 )
 
+
 # Dependency for FastAPI
 async def get_db():
     """Get database session for dependency injection"""
@@ -44,6 +45,7 @@ async def get_db():
             raise
         finally:
             await session.close()
+
 
 # Health check function
 async def check_database_health() -> dict:

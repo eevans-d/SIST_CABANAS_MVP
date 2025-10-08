@@ -15,8 +15,6 @@ from app.metrics import NLU_PRE_RESERVE
 
 router = APIRouter(prefix="/nlu", tags=["nlu"])
 
- 
-
 
 class AnalyzeRequest(BaseModel):
     text: str = Field(..., min_length=2)

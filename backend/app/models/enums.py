@@ -1,11 +1,13 @@
 from enum import Enum
 
+
 class ReservationStatus(str, Enum):
     PRE_RESERVED = "pre_reserved"
     CONFIRMED = "confirmed"
     CANCELLED = "cancelled"
     COMPLETED = "completed"
     NO_SHOW = "no_show"
+
 
 class PaymentStatus(str, Enum):
     PENDING = "pending"
@@ -14,11 +16,13 @@ class PaymentStatus(str, Enum):
     REFUNDED = "refunded"
     FAILED = "failed"
 
+
 class AccommodationType(str, Enum):
     CABIN = "cabin"
     APARTMENT = "apartment"
     HOUSE = "house"
     ROOM = "room"
+
 
 class MessageType(str, Enum):
     TEXT = "text"
@@ -27,6 +31,7 @@ class MessageType(str, Enum):
     DOCUMENT = "document"
     LOCATION = "location"
     INTERACTIVE = "interactive"
+
 
 class ChannelSource(str, Enum):
     WHATSAPP = "whatsapp"

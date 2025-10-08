@@ -13,12 +13,14 @@ settings = get_settings()
 
 _model_instance: Optional[WhisperModel] = None  # type: ignore
 
+
 def get_model() -> Optional[WhisperModel]:  # type: ignore
     global _model_instance
     if _model_instance is None and WhisperModel is not None:
         # Uso CPU por simplicidad MVP
         _model_instance = WhisperModel(settings.AUDIO_MODEL, device="cpu", compute_type="int8")
     return _model_instance
+
 
 async def transcribe_audio(file: UploadFile) -> Dict[str, Any]:
     """Transcribe audio OGG/OPUS -> texto
@@ -44,6 +46,7 @@ async def transcribe_audio(file: UploadFile) -> Dict[str, Any]:
         # Para mantener simple y sin IO adicional intentamos usar decode con bytes buffer.
         # Si falla (raise) devolvemos error genérico.
         import tempfile, os
+
         with tempfile.NamedTemporaryFile(suffix=".ogg", delete=False) as tmp:
             tmp.write(raw)
             tmp_path = tmp.name
@@ -56,10 +59,11 @@ async def transcribe_audio(file: UploadFile) -> Dict[str, Any]:
     confidences = []
     for seg in segments:  # type: ignore
         text_parts.append(seg.text.strip())
-        if hasattr(seg, 'avg_logprob') and seg.avg_logprob is not None:
+        if hasattr(seg, "avg_logprob") and seg.avg_logprob is not None:
             # Convertir logprob aprox (heurística) a pseudo confidence 0-1
             # logprob suele estar negativo; aplicamos exp limitado
             import math
+
             conf = max(0.0, min(1.0, math.exp(seg.avg_logprob)))
             confidences.append(conf)
     transcript = " ".join(t for t in text_parts if t)

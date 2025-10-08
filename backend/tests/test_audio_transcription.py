@@ -1,6 +1,7 @@
 import pytest
 from io import BytesIO
 
+
 @pytest.mark.asyncio
 async def test_low_confidence_audio(test_client):  # type: ignore
     # Simula entorno sin modelo (si modelo no está instalado retornará audio_unclear)

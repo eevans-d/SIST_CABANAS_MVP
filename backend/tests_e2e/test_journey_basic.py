@@ -1,7 +1,11 @@
 import pytest
-pytestmark = pytest.mark.skip(reason="Duplicado E2E: usar tests/test_journey_basic.py con fixtures compartidas")
+
+pytestmark = pytest.mark.skip(
+    reason="Duplicado E2E: usar tests/test_journey_basic.py con fixtures compartidas"
+)
 from httpx import AsyncClient
 from datetime import date, timedelta
+
 
 @pytest.mark.anyio
 async def test_pre_reserve_confirm_and_ical_export(test_client, accommodation_factory):
@@ -17,7 +21,7 @@ async def test_pre_reserve_confirm_and_ical_export(test_client, accommodation_fa
         "channel": "api",
         "contact_name": "E2E Tester",
         "contact_phone": "+5491100000000",
-        "contact_email": "e2e@example.com"
+        "contact_email": "e2e@example.com",
     }
     r = await client.post("/api/v1/reservations/pre-reserve", json=payload)
     assert r.status_code == 200

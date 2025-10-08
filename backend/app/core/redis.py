@@ -11,6 +11,7 @@ settings = get_settings()
 # Redis connection pool
 redis_pool: Optional[redis.ConnectionPool] = None
 
+
 def get_redis_pool() -> redis.ConnectionPool:
     """Get or create Redis connection pool"""
     global redis_pool
@@ -23,12 +24,15 @@ def get_redis_pool() -> redis.ConnectionPool:
                 decode_responses=True,
             )
             # Log con URL segura (sin mostrar contraseña)
-            safe_url = redis_url.replace(":redispass@", ":***@") if "redispass" in redis_url else redis_url
+            safe_url = (
+                redis_url.replace(":redispass@", ":***@") if "redispass" in redis_url else redis_url
+            )
             logger.info("Redis connection pool created", url=safe_url)
         else:
             logger.error("Redis URL no configurada")
             raise ValueError("REDIS_URL no configurada")
     return redis_pool
+
 
 async def get_redis() -> AsyncGenerator[redis.Redis, None]:
     """Get Redis client for dependency injection"""
@@ -39,21 +43,14 @@ async def get_redis() -> AsyncGenerator[redis.Redis, None]:
     finally:
         await client.close()
 
+
 # Utility functions for locks
-async def acquire_lock(
-    redis_client: redis.Redis,
-    key: str,
-    value: str,
-    ttl: int = 1800
-) -> bool:
+async def acquire_lock(redis_client: redis.Redis, key: str, value: str, ttl: int = 1800) -> bool:
     """Acquire a distributed lock with TTL"""
     return await redis_client.set(key, value, nx=True, ex=ttl)
 
-async def release_lock(
-    redis_client: redis.Redis,
-    key: str,
-    value: str
-) -> bool:
+
+async def release_lock(redis_client: redis.Redis, key: str, value: str) -> bool:
     """Release a lock only if we own it"""
     lua_script = """
     if redis.call("GET", KEYS[1]) == ARGV[1] then
@@ -67,12 +64,8 @@ async def release_lock(
     result = await script(keys=[key], args=[value])
     return bool(result)
 
-async def extend_lock(
-    redis_client: redis.Redis,
-    key: str,
-    value: str,
-    ttl: int = 900
-) -> bool:
+
+async def extend_lock(redis_client: redis.Redis, key: str, value: str, ttl: int = 900) -> bool:
     """Extend a lock TTL only if we own it"""
     lua_script = """
     if redis.call("GET", KEYS[1]) == ARGV[1] then
@@ -86,6 +79,7 @@ async def extend_lock(
     result = await script(keys=[key], args=[value, str(ttl)])
     return bool(result)
 
+
 # Health check function
 async def check_redis_health() -> dict:
     """Check Redis connectivity and return status"""
@@ -98,7 +92,7 @@ async def check_redis_health() -> dict:
         return {
             "status": "ok",
             "connected_clients": info.get("connected_clients", 0),
-            "used_memory_human": info.get("used_memory_human", "unknown")
+            "used_memory_human": info.get("used_memory_human", "unknown"),
         }
     except Exception as e:
         logger.error("redis_health_check_failed", error=str(e))

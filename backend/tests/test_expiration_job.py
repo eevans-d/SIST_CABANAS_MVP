@@ -7,6 +7,7 @@ from app.jobs.cleanup import expire_prereservations
 
 pytestmark = pytest.mark.asyncio
 
+
 async def test_expire_prereservations(db_session: AsyncSession, reservation_factory):
     # Crear pre-reserva vencida
     r = await reservation_factory(expires_at=datetime.now(UTC) - timedelta(minutes=5))
@@ -18,6 +19,7 @@ async def test_expire_prereservations(db_session: AsyncSession, reservation_fact
     refreshed = await db_session.get(Reservation, r.id)
     assert refreshed.reservation_status == ReservationStatus.CANCELLED.value
     assert refreshed.cancelled_at is not None
+
 
 async def test_no_expire_future(db_session: AsyncSession, reservation_factory):
     r = await reservation_factory(expires_at=datetime.now(UTC) + timedelta(minutes=10))

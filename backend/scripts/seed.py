@@ -8,6 +8,7 @@ from datetime import date
 from app.core.database import async_session_maker
 from app.models import Accommodation
 
+
 async def main():
     async with async_session_maker() as db:
         acc = Accommodation(
@@ -20,6 +21,7 @@ async def main():
         await db.commit()
         await db.refresh(acc)
         print({"accommodation_id": acc.id})
+
 
 if __name__ == "__main__":
     asyncio.run(main())

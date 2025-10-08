@@ -1,0 +1,1 @@
+# Notas para continuar mañana\n\n1. Ejecutar ./supervisor.sh para gestionar el sistema\n2. Prioridad: Configurar SSL y WhatsApp\n3. Revisar ESTADO_ACTUAL.md para más detalles\n\n¡El sistema está listo para continuar el desarrollo!

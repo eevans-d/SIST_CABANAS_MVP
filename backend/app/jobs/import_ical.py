@@ -58,12 +58,24 @@ async def run_ical_sync(logger: Optional[structlog.stdlib.BoundLogger] = None) -
                         continue
                     try:
                         accommodation_id = int(getattr(acc, "id"))
-                        created = await ICalService(session).import_events(accommodation_id, ics_text, source)
+                        created = await ICalService(session).import_events(
+                            accommodation_id, ics_text, source
+                        )
                         total_created += int(created or 0)
                         if created:
-                            log.info("ical_events_imported", accommodation_id=accommodation_id, source=source, created=created)
+                            log.info(
+                                "ical_events_imported",
+                                accommodation_id=accommodation_id,
+                                source=source,
+                                created=created,
+                            )
                     except Exception as e:  # pragma: no cover
-                        log.error("ical_import_error", accommodation_id=int(getattr(acc, "id")), source=source, error=str(e))
+                        log.error(
+                            "ical_import_error",
+                            accommodation_id=int(getattr(acc, "id")),
+                            source=source,
+                            error=str(e),
+                        )
                         # continuar con el siguiente
                         await session.rollback()
                         continue

@@ -1,16 +1,16 @@
 # Instrucciones para Agentes de IA - Sistema Agéntico MVP de Alojamientos
 
-## ⚡ TL;DR para agentes (actualizado 2025-09-29)
+## ⚡ TL;DR para agentes (actualizado 2025-10-08)
 - Código monolito FastAPI + SQLAlchemy Async + PostgreSQL 16 + Redis 7. Evitar microservicios y abstracciones innecesarias.
 - Tests: pytest con fallback a SQLite para unitarios; las pruebas de overlap requieren Postgres real con btree_gist (ver `backend/tests/test_double_booking.py`, `test_constraint_validation.py`). Pytest está configurado en `pytest.ini` y fixtures en `backend/tests/conftest.py` (inyecta DB/Redis y cliente HTTP con entorno de test).
-- Constraint anti doble-booking: columna `period` `[)` y `EXCLUDE USING gist` filtrando estados pre_reserved/confirmed; esperá IntegrityError en solapes concurrentes. Llaves Redis de lock: `lock:acc:{id}:{checkin}:{checkout}` TTL 1800s.
+- Constraint anti doble-booking: columna `period` generada como `daterange(check_in, check_out, '[)')` con `EXCLUDE USING gist` filtrando estados pre_reserved/confirmed; esperá IntegrityError en solapes concurrentes. Llaves Redis de lock: `lock:acc:{id}:{checkin}:{checkout}` TTL 1800s.
 - Webhooks críticos: validar firmas siempre.
   - WhatsApp: header `X-Hub-Signature-256` (HMAC-SHA256). Normalizar mensaje a contrato unificado.
   - Mercado Pago: header `x-signature` (ts, v1). Manejo idempotente de eventos de pago.
-- Background jobs: en `app/main.py` se lanzan workers de expiración de pre-reserva y sync iCal (también hay `jobs/scheduler.py`). iCal import/export en `services/ical.py` (export añade `X-CODE` y `X-SOURCE`).
+- Background jobs: en `app/main.py` se lanzan workers de expiración de pre-reserva y sync iCal (usando asyncio.create_task). iCal import/export en `services/ical.py` (export añade `X-CODE` y `X-SOURCE`).
 - Observabilidad: `prometheus-fastapi-instrumentator` expone `/metrics`. Gauge `ical_last_sync_age_minutes` y health `/api/v1/healthz` considera DB/Redis y max age iCal (configurable). Rate limit middleware Redis per-IP+path, bypass en `/api/v1/healthz` y `/metrics` y fail-open ante error de Redis.
 - Rutas principales (prefijo `/api/v1`): `health`, `reservations`, `mercadopago`, `whatsapp`, `ical`, `audio`, `admin`, `nlu` (ver `app/routers/*`).
-- Config por entorno en `app/core/config.py` y `.env.template` (e.g., `JOB_ICAL_INTERVAL_SECONDS`, `ICAL_SYNC_MAX_AGE_MINUTES`, `RATE_LIMIT_*`). CI: GitHub Actions corre tests en SQLite y Postgres+Redis.
+- Comandos de desarrollo: Ver `Makefile` para comandos comunes (make test, make up, make logs, make migrate). Útil: `make test-e2e` para probar el flujo completo.
 
 
 ## 🎯 Contexto Central
@@ -68,28 +68,93 @@ backend/
 @router.post("/webhooks/whatsapp")
 async def webhook_whatsapp(request: Request):
     signature = request.headers.get("X-Hub-Signature-256")
-    # Validar HMAC SHA256 - CRÍTICO para seguridad
+    payload = await request.body()
+    if not verify_whatsapp_signature(signature, payload, settings.WHATSAPP_APP_SECRET):
+        logger.error("invalid_whatsapp_signature")
+        return JSONResponse(status_code=403, content={"error": "Invalid signature"})
     # Normalizar a contrato unificado: {message_id, canal, user_id, timestamp_iso, tipo, texto, media_url}
 ```
 
 ### Pre-Reserva Service Pattern
 ```python
 class ReservationService:
-    async def create_prereservation(accommodation_id, check_in, check_out, guests, channel, contact):
-        # 1. Lock Redis: SET lock:acc:{id}:{checkin}:{checkout} value NX EX 1800
-        # 2. Si lock falla → {"error": "En proceso o no disponible"}
-        # 3. Calcular precio: base_price * noches * multiplicadores
-        # 4. INSERT reservation (pre_reserved, expires_at=now+30min)
-        # 5. Si DB constraint falla → DELETE lock, return error
-        # 6. Return {"code": "RES240915001", "expires_at": ..., "deposit": ...}
+    async def create_prereservation(
+        self,
+        accommodation_id: int,
+        check_in: date,
+        check_out: date,
+        guests: int,
+        channel: str,
+        contact_name: str,
+        contact_phone: str,
+        contact_email: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        # Validaciones básicas (fecha, huéspedes, existencia alojamiento)
+
+        # Calcular precio con multiplicadores de fin de semana
+        nights = (check_out - check_in).days
+        base_price = Decimal(acc.base_price)
+        weekend_mult = Decimal(getattr(acc, 'weekend_multiplier', Decimal('1.2')))
+        # Calcular noches weekend (sábado=5, domingo=6)
+        weekend_nights = 0
+        for i in range(nights):
+            if (check_in + timedelta(days=i)).weekday() in (5, 6):
+                weekend_nights += 1
+        weekday_nights = nights - weekend_nights
+        total_price = (base_price * weekday_nights) + (base_price * weekend_mult * weekend_nights)
+
+        # Adquirir lock Redis
+        lock_key = f"lock:acc:{accommodation_id}:{check_in.isoformat()}:{check_out.isoformat()}"
+        lock_value = str(uuid.uuid4())
+        lock_acquired = await acquire_lock(lock_key, lock_value, LOCK_TTL_SECONDS)
+
+        # Manejar fallos y constraint DB
+        if not lock_acquired:
+            RESERVATIONS_LOCK_FAILED.labels(channel=channel).inc()
+            return {"error": "processing_or_unavailable"}
+
+        try:
+            # Crear reserva y manejar constraint violations
+            # ...
+        except IntegrityError:
+            await release_lock(lock_key, lock_value)
+            RESERVATIONS_DATE_OVERLAP.labels(channel=channel).inc()
+            return {"error": "date_overlap"}
 ```
 
 ### Audio Pipeline Pattern
 ```python
-# FFmpeg: OGG → WAV 16kHz mono
-# ffmpeg -i input.ogg -ar 16000 -ac 1 output.wav
-# faster-whisper: model="base", language="es", compute_type="int8"
-# Si confidence < 0.6 → {"error": "audio_unclear"}
+class AudioProcessor:
+    @staticmethod
+    async def transcribe_audio(audio_path: str) -> Dict[str, Any]:
+        """
+        Transcribir audio usando faster-whisper
+
+        1. Convertir a WAV 16kHz mono
+        2. Procesar con modelo whisper
+        3. Evaluar confianza
+
+        Returns:
+            Dict con "text" y "confidence"
+        """
+        wav_path = f"{audio_path}.wav"
+
+        # Convertir a WAV usando ffmpeg
+        try:
+            subprocess.run([
+                "ffmpeg", "-y", "-i", audio_path,
+                "-ar", "16000", "-ac", "1", wav_path
+            ], check=True, capture_output=True)
+        except subprocess.CalledProcessError as e:
+            logger.error("ffmpeg_conversion_failed", error=str(e), stderr=e.stderr)
+            return {"error": "audio_processing_failed"}
+
+        # Transcribir con whisper
+        model = WhisperModel("base", language="es", compute_type="int8")
+        segments, _ = model.transcribe(wav_path, beam_size=5)
+
+        # Procesar resultado
+        # ...
 ```
 
 ## 📋 Modelos de Datos Core
@@ -105,7 +170,7 @@ class ReservationService:
 ```json
 {
   "message_id": "str",
-  "canal": "whatsapp|email", 
+  "canal": "whatsapp|email",
   "user_id": "telefono|email",
   "timestamp_iso": "2025-09-23T12:00:00Z",
   "tipo": "text|audio|image|pdf",
@@ -119,7 +184,7 @@ class ReservationService:
 ```python
 # Keywords classification básico:
 # "disponib|libre|hay" → disponibilidad
-# "precio|costo|sale|cuanto" → precio  
+# "precio|costo|sale|cuanto" → precio
 # "reserv|apart|tomo" → reservar
 # "servicio|incluye|wifi" → servicios
 # dateparser + regex para fechas argentinas
@@ -135,17 +200,70 @@ class ReservationService:
 
 ## 🎛️ Observabilidad y Health Checks
 ```python
-# /healthz DEBE incluir:
-# - DB connection: SELECT 1
-# - Redis: PING
-# - iCal last sync age < 20min
-# - WhatsApp/MP API reachable
+@router.get("/healthz", response_model=HealthResponse)
+async def health_check():
+    """Health check endpoint.
+
+    Verifica todos los sistemas críticos:
+    - Conexión a base de datos
+    - Conexión a Redis
+    - Última sincronización iCal < umbral
+    - Estado de APIs externas
+
+    Returns:
+        HealthResponse: Estado general del sistema y detalles por componente
+    """
+    health_status = "healthy"
+    checks = {}
+
+    # 1. Database health
+    db_status = "ok"
+    db_latency = 0
+    try:
+        start_time = time.monotonic()
+        async with async_session_maker() as session:
+            await session.execute(text("SELECT 1"))
+        db_latency = round((time.monotonic() - start_time) * 1000)
+        if db_latency > 500:  # ms
+            health_status = "degraded"
+            db_status = "slow"
+    except Exception as e:
+        db_status = "error"
+        health_status = "unhealthy"
+        logger.error("health_db_error", error=str(e))
+
+    checks["database"] = {"status": db_status, "latency_ms": db_latency}
+
+    # 2. Redis health
+    redis_status = "ok"
+    redis_info = {}
+    try:
+        start_time = time.monotonic()
+        pool = await get_redis_pool()
+        redis_conn = pool.client()
+        await redis_conn.ping()
+        redis_latency = round((time.monotonic() - start_time) * 1000)
+        if redis_latency > 200:  # ms
+            health_status = "degraded"
+            redis_status = "slow"
+        # Más info
+    except Exception as e:
+        redis_status = "error"
+        health_status = "unhealthy"
+        logger.error("health_redis_error", error=str(e))
+
+    checks["redis"] = {"status": redis_status, **redis_info}
+
+    # 3. iCal sync age
+    # ...
+
+    return {"status": health_status, "checks": checks}
 ```
 
 ## 🚫 Anti-Patrones Prohibidos
 - ❌ Microservicios o arquitectura compleja
 - ❌ ORM abstractions innecesarias
-- ❌ Cache sin evidencia de lentitud  
+- ❌ Cache sin evidencia de lentitud
 - ❌ Múltiples providers de pago
 - ❌ Channel manager propio
 - ❌ Optimizaciones prematuras

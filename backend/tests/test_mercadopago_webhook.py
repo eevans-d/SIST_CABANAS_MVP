@@ -6,9 +6,11 @@ from datetime import date, timedelta
 
 pytestmark = pytest.mark.asyncio
 
+
 async def test_webhook_idempotent(test_client, db_session: AsyncSession, accommodation_factory):
     # Forzar modo dev: no exigir firma en este test
     from app.core.config import get_settings
+
     get_settings().MERCADOPAGO_WEBHOOK_SECRET = None  # type: ignore[attr-defined]
     acc = await accommodation_factory()
     # Crear pre-reserva
@@ -29,7 +31,7 @@ async def test_webhook_idempotent(test_client, db_session: AsyncSession, accommo
         "status": "approved",
         "amount": 50000.0,
         "currency": "ARS",
-        "external_reference": code
+        "external_reference": code,
     }
 
     r1 = await test_client.post("/api/v1/mercadopago/webhook", json=webhook_payload)
@@ -48,16 +50,18 @@ async def test_webhook_idempotent(test_client, db_session: AsyncSession, accommo
     row = q.first()
     assert row is not None
 
+
 async def test_webhook_payment_without_reservation(test_client, db_session: AsyncSession):
     # Forzar modo dev: no exigir firma en este test
     from app.core.config import get_settings
+
     get_settings().MERCADOPAGO_WEBHOOK_SECRET = None  # type: ignore[attr-defined]
     payload = {
         "id": "MPORPHAN1",
         "status": "pending",
         "amount": 1000,
         "currency": "ARS",
-        "external_reference": "UNKNOWNCODE"
+        "external_reference": "UNKNOWNCODE",
     }
     r = await test_client.post("/api/v1/mercadopago/webhook", json=payload)
     d = r.json()

@@ -10,12 +10,14 @@ from app.core.config import get_settings
 
 router = APIRouter()
 
+
 class MPWebhookPayload(BaseModel):
     id: str
     status: Optional[str] = None
     amount: Optional[float] = 0
     currency: Optional[str] = "ARS"
     external_reference: Optional[str] = None
+
 
 class MPWebhookResponse(BaseModel):
     status: str
@@ -24,6 +26,7 @@ class MPWebhookResponse(BaseModel):
     reservation_id: Optional[int] = None
     events_count: Optional[int] = None
     error: Optional[str] = None
+
 
 @router.post("/webhook", response_model=MPWebhookResponse)
 async def mercadopago_webhook(request: Request, db: AsyncSession = Depends(get_db)):
@@ -48,7 +51,9 @@ async def mercadopago_webhook(request: Request, db: AsyncSession = Depends(get_d
     service = MercadoPagoService(db)
     result: Dict[str, Any] = await service.process_webhook(payload.model_dump())
     if result.get("error"):
-        return MPWebhookResponse(status="error", payment_id=payload.id, idempotent=False, error=result["error"])
+        return MPWebhookResponse(
+            status="error", payment_id=payload.id, idempotent=False, error=result["error"]
+        )
     return MPWebhookResponse(
         status="ok",
         payment_id=result["payment_id"],

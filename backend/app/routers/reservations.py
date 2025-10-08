@@ -9,6 +9,7 @@ from app.services.reservations import ReservationService
 
 router = APIRouter(prefix="/reservations", tags=["reservations"])
 
+
 class PreReservationRequest(BaseModel):
     accommodation_id: int = Field(..., gt=0)
     check_in: date
@@ -19,6 +20,7 @@ class PreReservationRequest(BaseModel):
     contact_phone: str
     contact_email: Optional[str] = None
 
+
 class PreReservationResponse(BaseModel):
     code: Optional[str] = None
     expires_at: Optional[str] = None
@@ -26,6 +28,7 @@ class PreReservationResponse(BaseModel):
     total_price: Optional[str] = None
     nights: Optional[int] = None
     error: Optional[str] = None
+
 
 class ConfirmReservationResponse(BaseModel):
     code: Optional[str]
@@ -40,8 +43,10 @@ class ConfirmReservationResponse(BaseModel):
         "populate_by_name": True,
     }
 
+
 class CancelReservationRequest(BaseModel):
     reason: Optional[str] = None
+
 
 class CancelReservationResponse(BaseModel):
     code: Optional[str]
@@ -49,8 +54,11 @@ class CancelReservationResponse(BaseModel):
     cancelled_at: Optional[str] = None
     error: Optional[str] = None
 
+
 @router.post("/pre-reserve", response_model=PreReservationResponse)
-async def create_pre_reservation(payload: PreReservationRequest, db: AsyncSession = Depends(get_db)):
+async def create_pre_reservation(
+    payload: PreReservationRequest, db: AsyncSession = Depends(get_db)
+):
     service = ReservationService(db)
     result: Dict[str, Any] = await service.create_prereservation(
         accommodation_id=payload.accommodation_id,
@@ -64,12 +72,18 @@ async def create_pre_reservation(payload: PreReservationRequest, db: AsyncSessio
     )
     return result
 
-@router.post("/{code}/confirm", response_model=ConfirmReservationResponse, response_model_exclude_none=True)
+
+@router.post(
+    "/{code}/confirm", response_model=ConfirmReservationResponse, response_model_exclude_none=True
+)
 async def confirm_reservation(code: str, db: AsyncSession = Depends(get_db)):
     service = ReservationService(db)
     return await service.confirm_reservation(code)
 
+
 @router.post("/{code}/cancel", response_model=CancelReservationResponse)
-async def cancel_reservation(code: str, payload: CancelReservationRequest, db: AsyncSession = Depends(get_db)):
+async def cancel_reservation(
+    code: str, payload: CancelReservationRequest, db: AsyncSession = Depends(get_db)
+):
     service = ReservationService(db)
     return await service.cancel_reservation(code, reason=payload.reason)
