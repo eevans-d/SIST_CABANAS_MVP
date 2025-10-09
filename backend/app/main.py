@@ -1,26 +1,26 @@
+import uuid
+from contextlib import asynccontextmanager
+from datetime import UTC, datetime
+
+import structlog
+from app.core.config import get_settings
+from app.core.database import async_session_maker
+from app.core.logging import setup_logging
+from app.core.redis import get_redis_pool
+from app.jobs.cleanup import expire_prereservations, send_prereservation_reminders
+from app.jobs.import_ical import run_ical_sync
+from app.routers import admin as admin_router
+from app.routers import audio as audio_router
+from app.routers import health
+from app.routers import ical as ical_router
+from app.routers import mercadopago as mercadopago_router
+from app.routers import nlu as nlu_router
+from app.routers import reservations as reservations_router
+from app.routers import whatsapp as whatsapp_router
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from contextlib import asynccontextmanager
-import structlog
-import uuid
-from datetime import datetime, UTC
-
-from app.core.config import get_settings
-from app.core.logging import setup_logging
-from app.routers import health
-from app.routers import reservations as reservations_router
-from app.routers import mercadopago as mercadopago_router
-from app.routers import whatsapp as whatsapp_router
-from app.routers import ical as ical_router
-from app.routers import audio as audio_router
-from app.routers import nlu as nlu_router
-from app.routers import admin as admin_router
-from app.jobs.cleanup import expire_prereservations, send_prereservation_reminders
-from app.jobs.import_ical import run_ical_sync
 from prometheus_fastapi_instrumentator import Instrumentator
-from app.core.database import async_session_maker
-from app.core.redis import get_redis_pool
 
 # Setup logging
 setup_logging()
@@ -94,7 +94,7 @@ async def lifespan(app: FastAPI):
     try:
         await task
         await task2
-    except Exception:
+    except Exception:  # nosec B110  # Task cancellation expected
         pass
 
     # Shutdown tasks
@@ -133,8 +133,8 @@ async def rate_limit(request: Request, call_next):
         if not settings.RATE_LIMIT_ENABLED or settings.ENVIRONMENT == "development":
             return await call_next(request)
         path = request.url.path
-        # No limitar healthz ni metrics para no afectar observabilidad
-        if path in ("/api/v1/healthz", "/metrics"):
+        # No limitar healthz, readyz ni metrics para no afectar observabilidad
+        if path in ("/api/v1/healthz", "/api/v1/readyz", "/metrics"):
             return await call_next(request)
         # clave por IP + path, ventana deslizante básica (fixed window)
         client_ip = request.client.host if request.client else "unknown"
@@ -166,7 +166,7 @@ async def add_request_id(request: Request, call_next):
         import structlog.contextvars as ctxvars  # type: ignore
 
         ctxvars.bind_contextvars(request_id=request_id)
-    except Exception:  # pragma: no cover
+    except Exception:  # pragma: no cover  # nosec B110  # Contextvars optional
         pass
     # Usar datetime UTC aware para evitar deprecation warnings
     start_time = datetime.now(UTC)

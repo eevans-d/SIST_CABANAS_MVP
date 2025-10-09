@@ -1,17 +1,19 @@
-from fastapi import APIRouter, Depends
-from typing import Dict, Optional
+"""Health check endpoints para monitoreo de sistema."""
+import os
+import time
 from datetime import datetime, timezone
-import structlog
+from typing import Dict, Optional
 
-from app.core.database import check_database_health
-from app.core.redis import check_redis_health
+import redis.asyncio as redis
+import structlog
 from app.core.config import get_settings
 from app.core.database import get_db
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from app.models import Accommodation
+from app.core.redis import get_redis_pool
 from app.metrics import ICAL_LAST_SYNC_AGE_MIN
-import os
+from app.models import Accommodation
+from fastapi import APIRouter, Depends
+from sqlalchemy import select, text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 settings = get_settings()
 
@@ -21,20 +23,67 @@ logger = structlog.get_logger()
 
 @router.get("/healthz")
 async def health_check(db: AsyncSession = Depends(get_db)) -> Dict:
-    """
-    Comprehensive health check endpoint.
+    """Comprehensive health check endpoint with latency measurements.
+
     Returns system status and component health.
     """
     now = datetime.now(timezone.utc)
     health_status = {"status": "healthy", "timestamp": now.isoformat(), "checks": {}}
 
-    # Check database
-    db_health = await check_database_health()
-    health_status["checks"]["database"] = db_health
+    # Check database with latency
+    db_start = time.monotonic()
+    try:
+        await db.execute(text("SELECT 1"))
+        db_latency_ms = round((time.monotonic() - db_start) * 1000, 2)
+        db_status = "ok"
+        if db_latency_ms > 500:
+            db_status = "slow"
+            health_status["status"] = "degraded"
+        health_status["checks"]["database"] = {
+            "status": db_status,
+            "latency_ms": db_latency_ms,
+        }
+    except Exception as e:
+        db_latency_ms = round((time.monotonic() - db_start) * 1000, 2)
+        health_status["checks"]["database"] = {
+            "status": "error",
+            "latency_ms": db_latency_ms,
+            "error": str(e),
+        }
+        health_status["status"] = "unhealthy"
+        logger.error("health_db_error", error=str(e))
 
-    # Check Redis
-    redis_health = await check_redis_health()
-    health_status["checks"]["redis"] = redis_health
+    # Check Redis with latency
+    redis_start = time.monotonic()
+    try:
+        pool = get_redis_pool()
+        redis_conn = redis.Redis(connection_pool=pool)
+        await redis_conn.ping()
+        redis_latency_ms = round((time.monotonic() - redis_start) * 1000, 2)
+        redis_status = "ok"
+        if redis_latency_ms > 200:
+            redis_status = "slow"
+            if health_status["status"] == "healthy":
+                health_status["status"] = "degraded"
+
+        # Info adicional de Redis
+        info = await redis_conn.info()
+        health_status["checks"]["redis"] = {
+            "status": redis_status,
+            "latency_ms": redis_latency_ms,
+            "connected_clients": info.get("connected_clients"),
+            "used_memory_human": info.get("used_memory_human"),
+        }
+        await redis_conn.close()
+    except Exception as e:
+        redis_latency_ms = round((time.monotonic() - redis_start) * 1000, 2)
+        health_status["checks"]["redis"] = {
+            "status": "error",
+            "latency_ms": redis_latency_ms,
+            "error": str(e),
+        }
+        health_status["status"] = "unhealthy"
+        logger.error("health_redis_error", error=str(e))
 
     # Check disk space
     import shutil
@@ -74,7 +123,7 @@ async def health_check(db: AsyncSession = Depends(get_db)) -> Dict:
         age_min = (now - last_ical_sync).total_seconds() / 60
         try:
             ICAL_LAST_SYNC_AGE_MIN.set(age_min)
-        except Exception:
+        except Exception:  # nosec B110  # Metric failure non-critical
             pass
         max_ok = getattr(settings, "ICAL_SYNC_MAX_AGE_MINUTES", 20)
         health_status["checks"]["ical"] = {
@@ -121,3 +170,16 @@ async def health_check(db: AsyncSession = Depends(get_db)) -> Dict:
             health_status["status"] = "degraded"
 
     return health_status
+
+
+@router.get("/readyz")
+async def readiness_check() -> Dict:
+    """Readiness check endpoint for Kubernetes/Docker health checks.
+
+    Quick check that the app is ready to receive traffic.
+    Does NOT check external dependencies.
+    """
+    return {
+        "status": "ready",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
