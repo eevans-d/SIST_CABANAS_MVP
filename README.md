@@ -1,127 +1,250 @@
-# Sistema MVP Reservas Alojamientos
+# Sistema MVP de Alojamientos - Cabañas# Sistema MVP Reservas Alojamientos
 
-[![CI](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci.yml)
+
+
+Sistema completo de reservas con automatización WhatsApp, pagos Mercado Pago y anti-doble booking robusto.[![CI](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci.yml)
+
 [![Deploy Staging](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/deploy-staging.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/deploy-staging.yml)
-[![Security Scan](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/security-scan.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/security-scan.yml)
+
+## 🚀 Estado del Proyecto[![Security Scan](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/security-scan.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/security-scan.yml)
+
 [![Production Ready](https://img.shields.io/badge/production-10.0%2F10-brightgreen)](https://github.com/eevans-d/SIST_CABANAS_MVP)
-[![Python](https://img.shields.io/badge/python-3.12-blue)](https://www.python.org/)
+
+✅ **MVP COMPLETAMENTE FUNCIONAL** - Fase 3: Testing Integral finalizada[![Python](https://img.shields.io/badge/python-3.12-blue)](https://www.python.org/)
+
 [![FastAPI](https://img.shields.io/badge/fastapi-0.115-009688)](https://fastapi.tiangolo.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
+### Funcionalidades Implementadas[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 
-> **Filosofía:** SHIPPING > PERFECCIÓN. Sistema agéntico MVP de alojamientos con automatización completa para WhatsApp, anti-doble-booking y pagos.
+- ✅ **Anti-doble booking**: Constraint PostgreSQL EXCLUDE + locks Redis[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 
-## 🎯 Estado Actual: **10.0/10 PRODUCTION PERFECT** ✨ (2025-10-04)
+- ✅ **WhatsApp Integration**: Webhook + NLU + respuestas automáticas
 
-✅ **MVP Completado** - Todos los componentes críticos implementados y funcionando
+- ✅ **Mercado Pago**: Webhooks + verificación firmas + idempotencia> **Filosofía:** SHIPPING > PERFECCIÓN. Sistema agéntico MVP de alojamientos con automatización completa para WhatsApp, anti-doble-booking y pagos.
+
+- ✅ **NLU Básico**: Detección intenciones (disponibilidad, reservar, precios)
+
+- ✅ **Pre-reservas**: Sistema de expiración automática## 🎯 Estado Actual: **10.0/10 PRODUCTION PERFECT** ✨ (2025-10-04)
+
+- ✅ **Confirmación automática**: Pre-reserva → Pago → Confirmación
+
+- ✅ **Tests integrales**: Anti-doble booking, end-to-end, idempotencia✅ **MVP Completado** - Todos los componentes críticos implementados y funcionando
+
 ✅ **P0 Gaps Resueltos** - 5/5 gaps críticos solucionados
-✅ **37 Tests Pasando** - Suite completa de tests unitarios y de integración (87% coverage)
+
+### Tests Disponibles✅ **37 Tests Pasando** - Suite completa de tests unitarios y de integración (87% coverage)
+
 ✅ **CI/CD Automatizado** - GitHub Actions con tests, linting, security scan y deploy
-✅ **Deploy Automatizado** - Scripts de validación, deploy y smoke testing con rollback
-✅ **Documentación Exhaustiva** - 32 archivos, 14,000+ líneas de documentación
+
+```bash✅ **Deploy Automatizado** - Scripts de validación, deploy y smoke testing con rollback
+
+# Test crítico anti-doble booking✅ **Documentación Exhaustiva** - 32 archivos, 14,000+ líneas de documentación
+
+./test_anti_double_booking.sh
 
 ### 🚀 Características Principales
 
-- **Anti-Doble-Booking:** Constraint PostgreSQL `EXCLUDE USING gist` + locks Redis distribuidos
-- **WhatsApp Business:** Webhook con firma HMAC SHA-256, normalización de mensajes, audio STT
-- **Mercado Pago:** Integración con validación de firmas y manejo idempotente
-- **iCal Import/Export:** Sincronización automática con Airbnb/Booking
-- **NLU Básico:** Detección de intención y extracción de entidades (fechas, huéspedes)
-- **Observabilidad:** Métricas Prometheus, health checks, logs estructurados
-- **Jobs Background:** Expiración de pre-reservas, sync iCal, recordatorios
+# Test constraint específico
 
-## 📚 Documentación Esencial
+./test_constraint_specific.sh  - **Anti-Doble-Booking:** Constraint PostgreSQL `EXCLUDE USING gist` + locks Redis distribuidos
+
+- **WhatsApp Business:** Webhook con firma HMAC SHA-256, normalización de mensajes, audio STT
+
+# Test flujo completo end-to-end- **Mercado Pago:** Integración con validación de firmas y manejo idempotente
+
+./test_end_to_end.sh- **iCal Import/Export:** Sincronización automática con Airbnb/Booking
+
+- **NLU Básico:** Detección de intención y extracción de entidades (fechas, huéspedes)
+
+# Test idempotencia webhooks- **Observabilidad:** Métricas Prometheus, health checks, logs estructurados
+
+./test_idempotency.sh- **Jobs Background:** Expiración de pre-reservas, sync iCal, recordatorios
+
+
+
+# Test integración Mercado Pago## 📚 Documentación Esencial
+
+./test_mercadopago.sh
 
 | Documento | Propósito |
-|-----------|-----------|
-| **[PRODUCTION_SETUP.md](PRODUCTION_SETUP.md)** | Guía completa para deploy en producción (210 líneas) |
-| **[scripts/README.md](scripts/README.md)** | Documentación de scripts de automatización |
+
+# Test integración WhatsApp|-----------|-----------|
+
+./test_whatsapp_webhook.sh| **[PRODUCTION_SETUP.md](PRODUCTION_SETUP.md)** | Guía completa para deploy en producción (210 líneas) |
+
+```| **[scripts/README.md](scripts/README.md)** | Documentación de scripts de automatización |
+
 | **[SESION_COMPLETADA.md](SESION_COMPLETADA.md)** | Último resumen de progreso |
-| **[PARA_MAÑANA.md](PARA_MAÑANA.md)** | Guía rápida para continuar desarrollo |
+
+## 🛠️ Configuración Rápida| **[PARA_MAÑANA.md](PARA_MAÑANA.md)** | Guía rápida para continuar desarrollo |
+
 | **[STATUS_ACTUAL_2025-10-02.md](STATUS_ACTUAL_2025-10-02.md)** | Estado detallado del proyecto |
 
-## 📦 Stack Tecnológico
+```bash
+
+# 1. Levantar servicios## 📦 Stack Tecnológico
+
+make up
 
 **Backend:** FastAPI 0.115 + SQLAlchemy Async + Alembic
-**Database:** PostgreSQL 16 (btree_gist) + Redis 7
-**Deploy:** Docker + Docker Compose + Nginx
+
+# 2. Verificar salud**Database:** PostgreSQL 16 (btree_gist) + Redis 7
+
+curl http://localhost:8000/api/v1/healthz**Deploy:** Docker + Docker Compose + Nginx
+
 **Observability:** Prometheus + structlog
-**Testing:** pytest + asyncio (37 tests)
-**CI/CD:** GitHub Actions
 
-## 🎯 Repositorio Oficial
+# 3. Ejecutar tests**Testing:** pytest + asyncio (37 tests)
 
-- **Código e issues:** https://github.com/eevans-d/SIST_CABANAS_MVP
+./test_constraint_specific.sh**CI/CD:** GitHub Actions
+
+./test_end_to_end.sh
+
+```## 🎯 Repositorio Oficial
+
+
+
+## 📋 Configuración de Integraciones- **Código e issues:** https://github.com/eevans-d/SIST_CABANAS_MVP
+
 - **Política:** Este es el único repositorio oficial del proyecto
-- **Consolidación:** Ver `docs/CONSOLIDATION_STATUS.md`
+
+### WhatsApp Business API- **Consolidación:** Ver `docs/CONSOLIDATION_STATUS.md`
+
+Ver: `CONFIGURACION_WHATSAPP.md`
 
 ## 🏗️ Estado de Implementación (Actualizado 2025-10-02)
 
-✅ **Core MVP Completo:**
+### Mercado Pago
+
+Ver: `CONFIGURACION_MERCADOPAGO.md`✅ **Core MVP Completo:**
+
 - Modelos: `accommodations`, `reservations`, `payments`, `messages`, `audio_transcriptions`
-- Constraint anti-doble-booking: `no_overlap_reservations` (PostgreSQL daterange + EXCLUDE gist)
-- ReservationService con locks Redis + pricing con multiplicadores
-- Jobs: expiración pre-reservas, sync iCal, recordatorios
-- Tests: 37 passed, 11 skipped (requieren Postgres real)
 
-✅ **Integraciones:**
+### ngrok (para webhooks en desarrollo)- Constraint anti-doble-booking: `no_overlap_reservations` (PostgreSQL daterange + EXCLUDE gist)
+
+```bash- ReservationService con locks Redis + pricing con multiplicadores
+
+./setup_ngrok.sh- Jobs: expiración pre-reservas, sync iCal, recordatorios
+
+```- Tests: 37 passed, 11 skipped (requieren Postgres real)
+
+
+
+## 🏗️ Arquitectura✅ **Integraciones:**
+
 - WhatsApp Business Cloud API (webhook + firma HMAC)
-- Mercado Pago (preferencias + webhook idempotente)
-- iCal import/export con deduplicación
-- Audio pipeline: FFmpeg + faster-whisper
-- NLU: regex + dateparser para intención y entidades
 
-✅ **Automatización y Deploy:**
+- **Backend**: FastAPI + SQLAlchemy Async + PostgreSQL 16- Mercado Pago (preferencias + webhook idempotente)
+
+- **Cache/Locks**: Redis 7- iCal import/export con deduplicación
+
+- **Pagos**: Mercado Pago Webhooks  - Audio pipeline: FFmpeg + faster-whisper
+
+- **Mensajería**: WhatsApp Business Cloud API- NLU: regex + dateparser para intención y entidades
+
+- **Audio**: Whisper STT + FFmpeg
+
+- **Deploy**: Docker Compose + Nginx✅ **Automatización y Deploy:**
+
 - Scripts: pre-deploy-check.sh, smoke-test-prod.sh, deploy.sh
-- Nginx template con variables
-- Health checks DB/Redis/iCal
-- Rate limiting por endpoint
-- Security headers configurados
 
+## 🔒 Seguridad- Nginx template con variables
+
+- Health checks DB/Redis/iCal
+
+- Verificación firmas HMAC-SHA256 (WhatsApp, Mercado Pago)- Rate limiting por endpoint
+
+- Locks Redis para prevenir condiciones de carrera- Security headers configurados
+
+- Constraint PostgreSQL EXCLUDE para anti-doble booking
+
+- Rate limiting por IP
 
 ## ⚡ Quick Start (3 minutos)
 
+## 📊 Constraint Anti-Doble Booking
+
 ### Desarrollo Local
 
-```bash
-# 1. Clonar y configurar
+```sql
+
+-- Extensión requerida```bash
+
+CREATE EXTENSION IF NOT EXISTS btree_gist;# 1. Clonar y configurar
+
 git clone https://github.com/eevans-d/SIST_CABANAS_MVP.git
-cd SIST_CABANAS_MVP
-cp backend/.env.template backend/.env
 
-# 2. Levantar servicios con Docker
+-- Columna period generadacd SIST_CABANAS_MVP
+
+ALTER TABLE reservations cp backend/.env.template backend/.env
+
+ADD COLUMN period daterange
+
+GENERATED ALWAYS AS (daterange(check_in, check_out, '[)')) STORED;# 2. Levantar servicios con Docker
+
 cd backend
-docker-compose up -d
 
-# 3. Ejecutar migraciones
-docker-compose exec api alembic upgrade head
+-- Constraint EXCLUDEdocker-compose up -d
 
-# 4. Verificar
-curl http://localhost:8000/api/v1/healthz
-# Respuesta esperada: {"status": "healthy", ...}
+ALTER TABLE reservations
+
+ADD CONSTRAINT no_overlap_reservations # 3. Ejecutar migraciones
+
+EXCLUDE USING gist (docker-compose exec api alembic upgrade head
+
+    accommodation_id WITH =,
+
+    period WITH &&# 4. Verificar
+
+) WHERE (reservation_status IN ('pre_reserved','confirmed'));curl http://localhost:8000/api/v1/healthz
+
+```# Respuesta esperada: {"status": "healthy", ...}
+
 ```
+
+## 🧪 Testing
 
 **API disponible en:** http://localhost:8000
-**Documentación OpenAPI:** http://localhost:8000/docs
+
+El sistema ha pasado todos los tests críticos:**Documentación OpenAPI:** http://localhost:8000/docs
+
 **Métricas Prometheus:** http://localhost:8000/metrics
 
-### Deploy a Producción
+- ✅ **Prevención doble-booking**: Solicitudes simultáneas correctamente rechazadas
 
-```bash
+- ✅ **Flujo end-to-end**: WhatsApp → NLU → Reserva → Pago → Confirmación### Deploy a Producción
+
+- ✅ **Idempotencia**: Webhooks duplicados sin efectos secundarios
+
+- ✅ **Integraciones**: WhatsApp y Mercado Pago funcionando al 100%```bash
+
 # 1. Configurar variables de entorno
-cd backend
+
+## 📝 Próximos Pasos (Fase 4)cd backend
+
 cp .env.template .env
-nano .env  # Completar con valores reales
 
-# 2. Ejecutar deploy automatizado
-cd ..
-./scripts/deploy.sh
+- Background jobs (expiración pre-reservas, sync iCal)nano .env  # Completar con valores reales
 
-# 3. Configurar SSL y webhooks
+- Métricas Prometheus
+
+- Health checks avanzados# 2. Ejecutar deploy automatizado
+
+- Rate limiting configurablecd ..
+
+- Observabilidad completa./scripts/deploy.sh
+
+
+
+---# 3. Configurar SSL y webhooks
+
 # Seguir guía en PRODUCTION_SETUP.md
-```
 
+**Desarrollo**: Octubre 2025  ```
+
+**Estado**: MVP Fase 3 completada ✅
 **Guía Completa:** Ver [PRODUCTION_SETUP.md](PRODUCTION_SETUP.md)
 
 ## 🧪 Testing
