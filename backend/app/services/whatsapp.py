@@ -7,17 +7,20 @@ from typing import Any, Dict, Optional
 import structlog
 
 from app.core.config import get_settings
-from app.services.messages import (
-    format_availability_response,
-    format_error_capacity_exceeded,
-    format_error_date_overlap,
-    format_error_generic,
-    format_error_invalid_dates,
-    format_error_no_availability,
-    format_payment_reminder,
+from .messages import (
     format_prereservation_confirmation,
-    format_reservation_confirmed,
+    format_reservation_confirmed, 
+    format_error_date_overlap,
+    format_error_no_availability,
+    format_error_invalid_dates,
+    format_error_capacity_exceeded,
+    format_error_generic,
+    format_availability_response,
+    format_payment_reminder,
     format_reservation_expired,
+    format_payment_approved,
+    format_payment_rejected,
+    format_payment_pending,
 )
 
 logger = structlog.get_logger()
@@ -368,4 +371,61 @@ async def send_accommodation_info_with_photo(
         status=result.get("status"),
     )
 
+    return result
+
+
+# Funciones específicas para estados de pago
+async def send_payment_approved(phone: str, guest_name: str, reservation_code: str, check_in: str, check_out: str, accommodation_name: str) -> Dict[str, Any]:
+    """Envía notificación de pago aprobado exitosamente.
+    
+    Args:
+        phone: Número de teléfono del huésped
+        guest_name: Nombre del huésped
+        reservation_code: Código de la reserva
+        check_in: Fecha de entrada (formato dd/mm/yyyy)
+        check_out: Fecha de salida (formato dd/mm/yyyy) 
+        accommodation_name: Nombre del alojamiento
+        
+    Returns:
+        Dict con resultado del envío
+    """
+    message = format_payment_approved(guest_name, reservation_code, check_in, check_out, accommodation_name)
+    result = await send_text_message(phone, message)
+    logger.info("payment_approved_sent", phone=phone, reservation_code=reservation_code, status=result.get("status"))
+    return result
+
+
+async def send_payment_rejected(phone: str, guest_name: str, reservation_code: str, amount: str) -> Dict[str, Any]:
+    """Envía notificación de pago rechazado.
+    
+    Args:
+        phone: Número de teléfono del huésped
+        guest_name: Nombre del huésped
+        reservation_code: Código de la reserva
+        amount: Monto del pago rechazado (formato con separador de miles)
+        
+    Returns:
+        Dict con resultado del envío
+    """
+    message = format_payment_rejected(guest_name, reservation_code, amount)
+    result = await send_text_message(phone, message)
+    logger.info("payment_rejected_sent", phone=phone, reservation_code=reservation_code, status=result.get("status"))
+    return result
+
+
+async def send_payment_pending(phone: str, guest_name: str, reservation_code: str, amount: str) -> Dict[str, Any]:
+    """Envía notificación de pago pendiente de procesamiento.
+    
+    Args:
+        phone: Número de teléfono del huésped
+        guest_name: Nombre del huésped
+        reservation_code: Código de la reserva
+        amount: Monto del pago pendiente (formato con separador de miles)
+        
+    Returns:
+        Dict con resultado del envío
+    """
+    message = format_payment_pending(guest_name, reservation_code, amount)
+    result = await send_text_message(phone, message)
+    logger.info("payment_pending_sent", phone=phone, reservation_code=reservation_code, status=result.get("status"))
     return result

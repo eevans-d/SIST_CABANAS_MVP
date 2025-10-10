@@ -307,3 +307,76 @@ def format_reservation_expired(reservation_code: str) -> str:
 Las fechas han quedado liberadas nuevamente.
 
 ¿Quieres volver a reservar? Puedo ayudarte a verificar disponibilidad 😊"""
+
+
+def format_payment_approved(guest_name: str, reservation_code: str, check_in: str, check_out: str, accommodation_name: str) -> str:
+    """Mensaje cuando el pago fue aprobado exitosamente.
+
+    Args:
+        guest_name: Nombre del huésped
+        reservation_code: Código de la reserva
+        check_in: Fecha de entrada (formato dd/mm/yyyy)
+        check_out: Fecha de salida (formato dd/mm/yyyy)
+        accommodation_name: Nombre del alojamiento
+
+    Returns:
+        str: Mensaje de confirmación de pago aprobado
+    """
+    return (
+        f"🎉 *¡Pago confirmado!*\n\n"
+        f"¡Hola {guest_name}! Tu pago fue procesado exitosamente.\n\n"
+        f"📋 *Reserva confirmada: {reservation_code}*\n"
+        f"🏠 {accommodation_name}\n"
+        f"📅 {check_in} al {check_out}\n\n"
+        f"✅ *Ya tenés tu alojamiento asegurado*\n\n"
+        f"Te estaremos enviando los detalles de acceso unos días antes del check-in.\n\n"
+        f"¡Gracias por elegirnos! 😊"
+    )
+
+
+def format_payment_rejected(guest_name: str, reservation_code: str, amount: str) -> str:
+    """Mensaje cuando el pago fue rechazado.
+
+    Args:
+        guest_name: Nombre del huésped
+        reservation_code: Código de la reserva
+        amount: Monto del pago rechazado (formato con separador de miles)
+
+    Returns:
+        str: Mensaje informando el rechazo del pago
+    """
+    return (
+        f"❌ *Problema con el pago*\n\n"
+        f"Hola {guest_name}, no pudimos procesar tu pago de *${amount}* para la reserva *{reservation_code}*.\n\n"
+        f"💳 *Posibles causas:*\n"
+        f"• Fondos insuficientes\n"
+        f"• Límite de la tarjeta excedido\n"
+        f"• Problema temporal del banco\n\n"
+        f"🔄 *¿Qué hacer ahora?*\n"
+        f"Podés intentar nuevamente con la misma tarjeta o usar otro método de pago.\n\n"
+        f"¿Necesitás ayuda? ¡Escribinos!"
+    )
+
+
+def format_payment_pending(guest_name: str, reservation_code: str, amount: str) -> str:
+    """Mensaje cuando el pago está pendiente de procesamiento.
+
+    Args:
+        guest_name: Nombre del huésped
+        reservation_code: Código de la reserva
+        amount: Monto del pago pendiente (formato con separador de miles)
+
+    Returns:
+        str: Mensaje informando el estado pendiente del pago
+    """
+    return (
+        f"⏳ *Pago en proceso*\n\n"
+        f"Hola {guest_name}, recibimos tu pago de *${amount}* para la reserva *{reservation_code}*.\n\n"
+        f"🔍 *Estado actual: En revisión*\n\n"
+        f"Esto puede suceder por:\n"
+        f"• Verificaciones de seguridad del banco\n"
+        f"• Pagos con transferencia bancaria\n"
+        f"• Horarios de procesamiento\n\n"
+        f"⏱️ *Tiempo estimado: 24-48 horas*\n\n"
+        f"Te avisaremos apenas se confirme. ¡Gracias por tu paciencia! 😊"
+    )
