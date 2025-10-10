@@ -190,14 +190,14 @@ ICAL_LAST_SYNC_AGE_MIN (Gauge)
 ## 🔍 Documentos Clave del Proyecto
 
 ### Documentación Técnica
-- **`SESSION_SUMMARY_2025-10-09.md`** - Resumen de última sesión
-- **`AUDITORIA_TECNICA_COMPLETA.md`** - Auditoría técnica exhaustiva (RECIÉN COMPLETADA)
-- **`.github/copilot-instructions.md`** - Instrucciones para agentes IA
-- **`README.md`** - Documentación principal del proyecto
+- **`SESSION_SUMMARY_2025-10-09.md`** - Resumen de última sesión (archivado en docs/archive/)
+- **`AUDITORIA_TECNICA_COMPLETA.md`** - Auditoría técnica exhaustiva + correcciones terminología
+- **`.github/copilot-instructions.md`** - Instrucciones para desarrollo AI-assisted (Copilot, etc.)
+- **`README.md`** - Documentación principal del proyecto (REESCRITO con terminología correcta)
 
 ### Estado y Progreso
-- **`FASE_4_1_COMPLETADA.md`** - Detalle de Fase 4.1
-- **`CIERRE_JORNADA_2025-10-09.md`** - Cierre de sesión anterior
+- **`FASE_4_1_COMPLETADA.md`** - Detalle de Fase 4.1 (archivado en docs/archive/)
+- **`CIERRE_JORNADA_2025-10-09.md`** - Cierre de sesión anterior (archivado en docs/archive/)
 - **`STATUS_ACTUAL_2025-10-02.md`** - Estado histórico
 
 ### Deployment
@@ -287,14 +287,14 @@ pytest backend/tests/test_health_checks.py -v
 
 ---
 
-## ⚠️ IMPORTANTE: Hallazgos de la Auditoría
+## ✅ IMPORTANTE: Hallazgos de la Auditoría → RESUELTOS
 
-**Terminología incorrecta identificada:**
-- ❌ El sistema NO es "agéntico" en sentido de AI agents
+**Terminología incorrecta identificada y CORREGIDA:**
+- ✅ El sistema NO es "agéntico" - **CORREGIDO en toda la documentación**
 - ✅ Es un sistema de **automatización sofisticado** con NLU básico (regex)
-- 📝 Requiere corrección de documentación pública
+- ✅ Documentación pública corregida (README.md, copilot-instructions.md)
 
-**Recomendación:** Corregir terminología en próxima sesión después de completar Fase 4.
+**Estado:** ✅ COMPLETADO el 2025-10-10 - Terminología alineada con realidad técnica
 
 ---
 

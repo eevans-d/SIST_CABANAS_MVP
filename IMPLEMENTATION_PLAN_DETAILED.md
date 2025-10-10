@@ -1,5 +1,5 @@
 # 🔬 Plan de Implementación Técnico Detallado
-## Sistema Agéntico MVP - Fases 4.3 a 6.3
+## Sistema de Automatización MVP - Fases 4.3 a 6.3
 
 > **Fecha de Análisis:** 9 de Octubre 2025
 > **Basado en:** Análisis exhaustivo del código actual
@@ -1451,7 +1451,7 @@ alembic revision --autogenerate -m "fix: ..."
 ### Documentos del Proyecto
 - `.github/copilot-instructions.md` - Filosofía y reglas de implementación
 - `ROADMAP_MVP_PRIORIDAD_ALTA.md` - Plan de 15 features priorizadas
-- `Sistema_Agentico_MVP_Documentacion.markdown` - Spec técnica completa
+- `docs/archive/Sistema_Agentico_MVP_Documentacion.markdown` - Spec técnica inicial (histórico)
 
 ### Código Crítico para Consultar
 - `backend/app/main.py` - Middleware stack y lifespan
