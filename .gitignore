@@ -63,3 +63,15 @@ nginx/ssl/*.crt
 /tmp/whatsapp_media/
 /tmp/audio_processing/
 test_fallback.db*.code-workspace
+
+# Archived documentation
+docs/archive/
+archive/
+
+# Zone.Identifier files from Windows
+*.Zone.Identifier
+
+# Session summaries (historical)
+SESSION_SUMMARY_*.md
+CIERRE_JORNADA_*.md
+FASE_*_COMPLETADA.md

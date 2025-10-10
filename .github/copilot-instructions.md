@@ -1,6 +1,7 @@
-# Instrucciones para Agentes de IA - Sistema Agéntico MVP de Alojamientos
+# Instrucciones para Agentes de IA - Sistema MVP de Automatización de Reservas
 
-## ⚡ TL;DR para agentes (actualizado 2025-10-08)
+## ⚡ TL;DR para agentes (actualizado 2025-10-10)
+- **Sistema de automatización** (NO agéntico/AI agents): rule-based con NLU regex + dateparser
 - Código monolito FastAPI + SQLAlchemy Async + PostgreSQL 16 + Redis 7. Evitar microservicios y abstracciones innecesarias.
 - Tests: pytest con fallback a SQLite para unitarios; las pruebas de overlap requieren Postgres real con btree_gist (ver `backend/tests/test_double_booking.py`, `test_constraint_validation.py`). Pytest está configurado en `pytest.ini` y fixtures en `backend/tests/conftest.py` (inyecta DB/Redis y cliente HTTP con entorno de test).
 - Constraint anti doble-booking: columna `period` generada como `daterange(check_in, check_out, '[)')` con `EXCLUDE USING gist` filtrando estados pre_reserved/confirmed; esperá IntegrityError en solapes concurrentes. Llaves Redis de lock: `lock:acc:{id}:{checkin}:{checkout}` TTL 1800s.
@@ -12,6 +13,16 @@
 - Rutas principales (prefijo `/api/v1`): `health`, `reservations`, `mercadopago`, `whatsapp`, `ical`, `audio`, `admin`, `nlu` (ver `app/routers/*`).
 - Comandos de desarrollo: Ver `Makefile` para comandos comunes (make test, make up, make logs, make migrate). Útil: `make test-e2e` para probar el flujo completo.
 
+## ⚠️ IMPORTANTE: Sobre la Terminología
+Este sistema es un **sistema de automatización sofisticado con NLU básico**, NO un sistema "agéntico" con AI agents autónomos (LangChain, CrewAI, etc.).
+
+**Realidad técnica:**
+- ✅ Automatización rule-based con patrones regex
+- ✅ NLU básico con dateparser + keywords
+- ✅ Templates de respuesta predefinidos
+- ❌ NO hay LLM reasoning ni autonomous decision making
+- ❌ NO hay RAG ni vector stores
+- ❌ NO hay multi-agent orchestration
 
 ## 🎯 Contexto Central
 Este es un **Sistema MVP de reservas de alojamientos** con automatización completa para WhatsApp y email, diseñado para construirse en **10-12 días**. La filosofía es **SHIPPING > PERFECCIÓN**.

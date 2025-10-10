@@ -1,401 +1,853 @@
-# Sistema MVP de Alojamientos - Cabañas# Sistema MVP Reservas Alojamientos
+# Sistema MVP de Reservas de Alojamientos# Sistema MVP de Reservas de Alojamientos
 
 
 
-Sistema completo de reservas con automatización WhatsApp, pagos Mercado Pago y anti-doble booking robusto.[![CI](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci.yml)
+[![CI](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci.yml)[![CI](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci.yml)
 
-[![Deploy Staging](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/deploy-staging.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/deploy-staging.yml)
+[![Deploy Staging](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/deploy-staging.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/deploy-staging.yml)[![Deploy Staging](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/deploy-staging.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/deploy-staging.yml)
 
-## 🚀 Estado del Proyecto[![Security Scan](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/security-scan.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/security-scan.yml)
+[![Security Scan](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/security-scan.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/security-scan.yml)[![Security Scan](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/security-scan.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/security-scan.yml)
 
-[![Production Ready](https://img.shields.io/badge/production-10.0%2F10-brightgreen)](https://github.com/eevans-d/SIST_CABANAS_MVP)
+[![Python](https://img.shields.io/badge/python-3.12-blue)](https://www.python.org/)[![Production Ready](https://img.shields.io/badge/production-ready-brightgreen)](https://github.com/eevans-d/SIST_CABANAS_MVP)
 
-✅ **MVP COMPLETAMENTE FUNCIONAL** - Fase 3: Testing Integral finalizada[![Python](https://img.shields.io/badge/python-3.12-blue)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/fastapi-0.115-009688)](https://fastapi.tiangolo.com/)[![Python](https://img.shields.io/badge/python-3.12-blue)](https://www.python.org/)
 
-[![FastAPI](https://img.shields.io/badge/fastapi-0.115-009688)](https://fastapi.tiangolo.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)[![FastAPI](https://img.shields.io/badge/fastapi-0.115-009688)](https://fastapi.tiangolo.com/)
 
-### Funcionalidades Implementadas[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-- ✅ **Anti-doble booking**: Constraint PostgreSQL EXCLUDE + locks Redis[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
+> **Sistema de automatización completo** para reservas de alojamientos con WhatsApp Business, anti-doble-booking garantizado y pagos integrados con Mercado Pago.[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 
-- ✅ **WhatsApp Integration**: Webhook + NLU + respuestas automáticas
 
-- ✅ **Mercado Pago**: Webhooks + verificación firmas + idempotencia> **Filosofía:** SHIPPING > PERFECCIÓN. Sistema agéntico MVP de alojamientos con automatización completa para WhatsApp, anti-doble-booking y pagos.
 
-- ✅ **NLU Básico**: Detección intenciones (disponibilidad, reservar, precios)
+---> **Sistema de automatización completo** para reservas de alojamientos con WhatsApp Business, anti-doble-booking garantizado y pagos integrados.
 
-- ✅ **Pre-reservas**: Sistema de expiración automática## 🎯 Estado Actual: **10.0/10 PRODUCTION PERFECT** ✨ (2025-10-04)
 
-- ✅ **Confirmación automática**: Pre-reserva → Pago → Confirmación
 
-- ✅ **Tests integrales**: Anti-doble booking, end-to-end, idempotencia✅ **MVP Completado** - Todos los componentes críticos implementados y funcionando
+## 🎯 Estado del Proyecto---
 
-✅ **P0 Gaps Resueltos** - 5/5 gaps críticos solucionados
 
-### Tests Disponibles✅ **37 Tests Pasando** - Suite completa de tests unitarios y de integración (87% coverage)
 
-✅ **CI/CD Automatizado** - GitHub Actions con tests, linting, security scan y deploy
+✅ **MVP Core Completado** - Todos los componentes críticos funcionando  ## 🎯 Estado del Proyecto
 
-```bash✅ **Deploy Automatizado** - Scripts de validación, deploy y smoke testing con rollback
+✅ **Fase 4 en Progreso** - 60% completada (4.1 ✅, 4.2 ✅, 4.3 → siguiente)
 
-# Test crítico anti-doble booking✅ **Documentación Exhaustiva** - 32 archivos, 14,000+ líneas de documentación
+✅ **37 Tests Pasando** - Suite completa con 87% coverage  ✅ **MVP COMPLETAMENTE FUNCIONAL** - Fase 4 en progreso (60% completada)
 
-./test_anti_double_booking.sh
+✅ **CI/CD Automatizado** - GitHub Actions con deploy automático  ✅ **37 Tests Pasando** - Suite completa con 87% coverage
 
-### 🚀 Características Principales
+✅ **Production Ready** - Listo para deployment  ✅ **CI/CD Automatizado** - GitHub Actions con tests, linting, security scan
 
-# Test constraint específico
+✅ **Deploy Automatizado** - Scripts de validación, deploy y rollback
 
-./test_constraint_specific.sh  - **Anti-Doble-Booking:** Constraint PostgreSQL `EXCLUDE USING gist` + locks Redis distribuidos
+---✅ **Documentación Exhaustiva** - 32 archivos, 14,000+ líneas
 
-- **WhatsApp Business:** Webhook con firma HMAC SHA-256, normalización de mensajes, audio STT
+
+
+## 🚀 Características Principales---
+
+
+
+### 🔒 Anti-Doble-Booking Garantizado## 🚀 Características Principales
+
+- **PostgreSQL Constraint:** `EXCLUDE USING gist` con daterange
+
+- **Redis Locks:** Locks distribuidos con TTL 30 minutos### Anti-Doble-Booking Garantizado
+
+- **Prevención multicapa:** Race condition handling DB + aplicación- **PostgreSQL Constraint:** `EXCLUDE USING gist` con daterange
+
+- **Redis Locks:** Locks distribuidos con TTL 30 minutos
+
+### 📱 Integración WhatsApp Business- **Prevención multicapa:** Race condition handling a nivel DB y aplicación
+
+- **Webhooks seguros:** Validación HMAC-SHA256
+
+- **Audio STT:** Transcripción con Whisper + FFmpeg### Integración WhatsApp Business
+
+- **NLU básico:** Detección de intenciones (regex + dateparser)- **Webhooks seguros:** Validación HMAC-SHA256
+
+- **Respuestas automáticas:** Templates contextuales- **Audio STT:** Transcripción con Whisper + FFmpeg
+
+- **NLU básico:** Detección de intenciones (regex + dateparser)
+
+### 💳 Pagos Mercado Pago- **Respuestas automáticas:** Templates contextuales
+
+- **Webhooks idempotentes:** Manejo de duplicados
+
+- **Validación de firmas:** x-signature header### Pagos Mercado Pago
+
+- **Flujo completo:** Pre-reserva → Pago → Confirmación automática- **Webhooks idempotentes:** Manejo de duplicados
+
+- **Validación de firmas:** x-signature header
+
+### 📅 Sincronización iCal- **Flujo completo:** Pre-reserva → Pago → Confirmación automática
+
+- **Import/Export:** Compatible con Airbnb, Booking.com
+
+- **Deduplicación:** Por UID de evento### Sincronización iCal
+
+- **Background jobs:** Sync automático cada 15 minutos- **Import/Export:** Compatible con Airbnb, Booking.com
+
+- **Deduplicación:** Por UID de evento
+
+### 📊 Observabilidad- **Background jobs:** Sync automático cada 15 minutos
+
+- **Prometheus metrics:** 17+ métricas custom de negocio
+
+- **Health checks:** `/healthz` y `/readyz` con latencias### Observabilidad
+
+- **Structured logging:** JSON logs con trace IDs- **Prometheus metrics:** 17+ métricas custom de negocio
+
+- **Rate limiting:** Por IP + endpoint con métricas- **Health checks:** `/healthz` y `/readyz` con latencias
+
+- **Structured logging:** JSON logs con trace IDs
+
+---- **Rate limiting:** Por IP + endpoint con métricas
+
+
+
+## ⚡ Quick Start (3 minutos)---
+
+
+
+### Desarrollo Local## ⚡ Quick Start (3 minutos)
+
+
+
+```bash### Desarrollo Local
+
+# 1. Clonar y configurar
+
+git clone https://github.com/eevans-d/SIST_CABANAS_MVP.git```bash
+
+cd SIST_CABANAS_MVP# 1. Clonar y configurar
+
+cp backend/.env.template backend/.envgit clone https://github.com/eevans-d/SIST_CABANAS_MVP.git
+
+cd SIST_CABANAS_MVP
+
+# 2. Levantar servicioscp backend/.env.template backend/.env
+
+cd backend
+
+docker-compose up -d# 2. Levantar servicios con Docker
+
+cd backend
+
+# 3. Ejecutar migracionesdocker-compose up -d
+
+docker-compose exec api alembic upgrade head
+
+# 3. Ejecutar migraciones
+
+# 4. Verificardocker-compose exec api alembic upgrade head
+
+curl http://localhost:8000/api/v1/healthz
+
+# Respuesta esperada: {"status": "healthy", ...}# 4. Verificar
+
+```curl http://localhost:8000/api/v1/healthz
+
+
+
+**Accesos:**./test_constraint_specific.sh  - **Anti-Doble-Booking:** Constraint PostgreSQL `EXCLUDE USING gist` + locks Redis distribuidos
+
+- **API:** http://localhost:8000
+
+- **Docs:** http://localhost:8000/docs- **WhatsApp Business:** Webhook con firma HMAC SHA-256, normalización de mensajes, audio STT
+
+- **Métricas:** http://localhost:8000/metrics
 
 # Test flujo completo end-to-end- **Mercado Pago:** Integración con validación de firmas y manejo idempotente
 
+### Deploy a Producción
+
 ./test_end_to_end.sh- **iCal Import/Export:** Sincronización automática con Airbnb/Booking
 
-- **NLU Básico:** Detección de intención y extracción de entidades (fechas, huéspedes)
+```bash
 
-# Test idempotencia webhooks- **Observabilidad:** Métricas Prometheus, health checks, logs estructurados
+# 1. Configurar variables de entorno- **NLU Básico:** Detección de intención y extracción de entidades (fechas, huéspedes)
 
-./test_idempotency.sh- **Jobs Background:** Expiración de pre-reservas, sync iCal, recordatorios
+cp backend/.env.template backend/.env
+
+nano backend/.env  # Completar con valores reales# Test idempotencia webhooks- **Observabilidad:** Métricas Prometheus, health checks, logs estructurados
 
 
 
-# Test integración Mercado Pago## 📚 Documentación Esencial
+# 2. Deploy automatizado./test_idempotency.sh- **Jobs Background:** Expiración de pre-reservas, sync iCal, recordatorios
+
+./scripts/deploy.sh
+
+
+
+# 3. Configurar SSL y webhooks
+
+# Seguir guía en docs/deployment/STAGING_DEPLOY_GUIDE.md# Test integración Mercado Pago## 📚 Documentación Esencial
+
+```
 
 ./test_mercadopago.sh
 
+---
+
 | Documento | Propósito |
+
+## 🧪 Testing
 
 # Test integración WhatsApp|-----------|-----------|
 
-./test_whatsapp_webhook.sh| **[PRODUCTION_SETUP.md](PRODUCTION_SETUP.md)** | Guía completa para deploy en producción (210 líneas) |
-
-```| **[scripts/README.md](scripts/README.md)** | Documentación de scripts de automatización |
-
-| **[SESION_COMPLETADA.md](SESION_COMPLETADA.md)** | Último resumen de progreso |
-
-## 🛠️ Configuración Rápida| **[PARA_MAÑANA.md](PARA_MAÑANA.md)** | Guía rápida para continuar desarrollo |
-
-| **[STATUS_ACTUAL_2025-10-02.md](STATUS_ACTUAL_2025-10-02.md)** | Estado detallado del proyecto |
-
 ```bash
 
-# 1. Levantar servicios## 📦 Stack Tecnológico
+# Tests unitarios (SQLite fallback)./test_whatsapp_webhook.sh| **[PRODUCTION_SETUP.md](PRODUCTION_SETUP.md)** | Guía completa para deploy en producción (210 líneas) |
 
-make up
+cd backend
 
-**Backend:** FastAPI 0.115 + SQLAlchemy Async + Alembic
+pytest tests/ -v```| **[scripts/README.md](scripts/README.md)** | Documentación de scripts de automatización |
 
-# 2. Verificar salud**Database:** PostgreSQL 16 (btree_gist) + Redis 7
 
-curl http://localhost:8000/api/v1/healthz**Deploy:** Docker + Docker Compose + Nginx
+
+# Tests con Postgres real (constraint validation)| **[SESION_COMPLETADA.md](SESION_COMPLETADA.md)** | Último resumen de progreso |
+
+docker-compose up -d postgres redis
+
+pytest tests/test_double_booking.py tests/test_constraint_validation.py -v## 🛠️ Configuración Rápida| **[PARA_MAÑANA.md](PARA_MAÑANA.md)** | Guía rápida para continuar desarrollo |
+
+
+
+# Coverage| **[STATUS_ACTUAL_2025-10-02.md](STATUS_ACTUAL_2025-10-02.md)** | Estado detallado del proyecto |
+
+pytest tests/ --cov=app --cov-report=html
+
+``````bash
+
+
+
+**Resultado esperado:** 37 passed, 11 skipped (SQLite mode)# 1. Levantar servicios## 📦 Stack Tecnológico
+
+
+
+### Tests Críticos Disponiblesmake up
+
+
+
+```bash**Backend:** FastAPI 0.115 + SQLAlchemy Async + Alembic
+
+# Anti-doble booking con concurrencia
+
+./test_anti_double_booking.sh# 2. Verificar salud**Database:** PostgreSQL 16 (btree_gist) + Redis 7
+
+
+
+# Constraint PostgreSQL específicocurl http://localhost:8000/api/v1/healthz**Deploy:** Docker + Docker Compose + Nginx
+
+./test_constraint_specific.sh
 
 **Observability:** Prometheus + structlog
 
-# 3. Ejecutar tests**Testing:** pytest + asyncio (37 tests)
+# Flujo completo end-to-end
 
-./test_constraint_specific.sh**CI/CD:** GitHub Actions
+./test_end_to_end.sh# 3. Ejecutar tests**Testing:** pytest + asyncio (37 tests)
+
+
+
+# Idempotencia webhooks./test_constraint_specific.sh**CI/CD:** GitHub Actions
+
+./test_idempotency.sh
 
 ./test_end_to_end.sh
 
-```## 🎯 Repositorio Oficial
+# Integración Mercado Pago
+
+./test_mercadopago.sh```## 🎯 Repositorio Oficial
 
 
 
-## 📋 Configuración de Integraciones- **Código e issues:** https://github.com/eevans-d/SIST_CABANAS_MVP
+# Integración WhatsApp
 
-- **Política:** Este es el único repositorio oficial del proyecto
+./test_whatsapp_webhook.sh
 
-### WhatsApp Business API- **Consolidación:** Ver `docs/CONSOLIDATION_STATUS.md`
+```## 📋 Configuración de Integraciones- **Código e issues:** https://github.com/eevans-d/SIST_CABANAS_MVP
 
-Ver: `CONFIGURACION_WHATSAPP.md`
 
-## 🏗️ Estado de Implementación (Actualizado 2025-10-02)
+
+---- **Política:** Este es el único repositorio oficial del proyecto
+
+
+
+## 📦 Stack Tecnológico### WhatsApp Business API- **Consolidación:** Ver `docs/CONSOLIDATION_STATUS.md`
+
+
+
+**Backend:**Ver: `CONFIGURACION_WHATSAPP.md`
+
+- FastAPI 0.115 + SQLAlchemy Async + Alembic
+
+- PostgreSQL 16 (btree_gist extension)## 🏗️ Estado de Implementación (Actualizado 2025-10-02)
+
+- Redis 7 (locks + cache)
 
 ### Mercado Pago
 
-Ver: `CONFIGURACION_MERCADOPAGO.md`✅ **Core MVP Completo:**
+**Integraciones:**
 
-- Modelos: `accommodations`, `reservations`, `payments`, `messages`, `audio_transcriptions`
+- WhatsApp Business Cloud APIVer: `CONFIGURACION_MERCADOPAGO.md`✅ **Core MVP Completo:**
+
+- Mercado Pago API
+
+- Whisper STT (faster-whisper)- Modelos: `accommodations`, `reservations`, `payments`, `messages`, `audio_transcriptions`
+
+- iCal RFC5545
 
 ### ngrok (para webhooks en desarrollo)- Constraint anti-doble-booking: `no_overlap_reservations` (PostgreSQL daterange + EXCLUDE gist)
 
-```bash- ReservationService con locks Redis + pricing con multiplicadores
+**Deploy:**
 
-./setup_ngrok.sh- Jobs: expiración pre-reservas, sync iCal, recordatorios
+- Docker + Docker Compose + Nginx```bash- ReservationService con locks Redis + pricing con multiplicadores
 
-```- Tests: 37 passed, 11 skipped (requieren Postgres real)
+- GitHub Actions CI/CD
+
+- Prometheus metrics./setup_ngrok.sh- Jobs: expiración pre-reservas, sync iCal, recordatorios
 
 
 
-## 🏗️ Arquitectura✅ **Integraciones:**
+---```- Tests: 37 passed, 11 skipped (requieren Postgres real)
 
-- WhatsApp Business Cloud API (webhook + firma HMAC)
 
-- **Backend**: FastAPI + SQLAlchemy Async + PostgreSQL 16- Mercado Pago (preferencias + webhook idempotente)
 
-- **Cache/Locks**: Redis 7- iCal import/export con deduplicación
+## 🏗️ Arquitectura del Sistema
 
-- **Pagos**: Mercado Pago Webhooks  - Audio pipeline: FFmpeg + faster-whisper
 
-- **Mensajería**: WhatsApp Business Cloud API- NLU: regex + dateparser para intención y entidades
 
-- **Audio**: Whisper STT + FFmpeg
+```## 🏗️ Arquitectura✅ **Integraciones:**
 
-- **Deploy**: Docker Compose + Nginx✅ **Automatización y Deploy:**
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
 
-- Scripts: pre-deploy-check.sh, smoke-test-prod.sh, deploy.sh
+│   WhatsApp      │    │   Mercado Pago   │    │   iCal Sources  │- WhatsApp Business Cloud API (webhook + firma HMAC)
 
-## 🔒 Seguridad- Nginx template con variables
+│   Webhooks      │    │   Webhooks       │    │   (Airbnb/Bkng) │
 
-- Health checks DB/Redis/iCal
+└─────────────────┘    └──────────────────┘    └─────────────────┘- **Backend**: FastAPI + SQLAlchemy Async + PostgreSQL 16- Mercado Pago (preferencias + webhook idempotente)
 
-- Verificación firmas HMAC-SHA256 (WhatsApp, Mercado Pago)- Rate limiting por endpoint
+         │                       │                       │
 
-- Locks Redis para prevenir condiciones de carrera- Security headers configurados
+         ▼                       ▼                       ▼- **Cache/Locks**: Redis 7- iCal import/export con deduplicación
 
-- Constraint PostgreSQL EXCLUDE para anti-doble booking
+┌─────────────────────────────────────────────────────────────────┐
 
-- Rate limiting por IP
+│                     FastAPI Router Layer                        │- **Pagos**: Mercado Pago Webhooks  - Audio pipeline: FFmpeg + faster-whisper
 
-## ⚡ Quick Start (3 minutos)
+│  /whatsapp  │  /mercadopago  │  /admin  │  /ical  │  /health   │
 
-## 📊 Constraint Anti-Doble Booking
+└─────────────────────────────────────────────────────────────────┘- **Mensajería**: WhatsApp Business Cloud API- NLU: regex + dateparser para intención y entidades
 
-### Desarrollo Local
+         │                       │                       │
 
-```sql
+         ▼                       ▼                       ▼- **Audio**: Whisper STT + FFmpeg
+
+┌─────────────────────────────────────────────────────────────────┐
+
+│                     Service Layer                               │- **Deploy**: Docker Compose + Nginx✅ **Automatización y Deploy:**
+
+│   NLU Service  │  Reservation Service  │  Payment Service      │
+
+│   Audio STT    │  Email Service       │  iCal Sync Service    │- Scripts: pre-deploy-check.sh, smoke-test-prod.sh, deploy.sh
+
+└─────────────────────────────────────────────────────────────────┘
+
+         │                       │                       │## 🔒 Seguridad- Nginx template con variables
+
+         ▼                       ▼                       ▼
+
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐- Health checks DB/Redis/iCal
+
+│   PostgreSQL    │    │     Redis       │    │  Background     │
+
+│   (Data + Locks)│    │  (Cache + RT)   │    │  Workers        │- Verificación firmas HMAC-SHA256 (WhatsApp, Mercado Pago)- Rate limiting por endpoint
+
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+
+```- Locks Redis para prevenir condiciones de carrera- Security headers configurados
+
+
+
+---- Constraint PostgreSQL EXCLUDE para anti-doble booking
+
+
+
+## 🔐 Anti-Doble-Booking: Cómo Funciona- Rate limiting por IP
+
+
+
+### Capa 1: Lock Redis (Prevención Optimista)## ⚡ Quick Start (3 minutos)
+
+```python
+
+lock_key = f"lock:acc:{accommodation_id}:{check_in}:{checkout}"## 📊 Constraint Anti-Doble Booking
+
+await redis.set(lock_key, "locked", ex=1800, nx=True)
+
+```### Desarrollo Local
+
+- TTL: 30 minutos (1800s)
+
+- NX: Only if Not eXists```sql
+
+- Si falla: `{"error": "En proceso o no disponible"}`
 
 -- Extensión requerida```bash
 
-CREATE EXTENSION IF NOT EXISTS btree_gist;# 1. Clonar y configurar
+### Capa 2: Constraint PostgreSQL (Garantía Pesimista)
+
+```sqlCREATE EXTENSION IF NOT EXISTS btree_gist;# 1. Clonar y configurar
+
+CREATE EXTENSION btree_gist;
 
 git clone https://github.com/eevans-d/SIST_CABANAS_MVP.git
 
--- Columna period generadacd SIST_CABANAS_MVP
+ALTER TABLE reservations
+
+ADD COLUMN period daterange-- Columna period generadacd SIST_CABANAS_MVP
+
+GENERATED ALWAYS AS (daterange(check_in, check_out, '[)')) STORED;
 
 ALTER TABLE reservations cp backend/.env.template backend/.env
 
-ADD COLUMN period daterange
+ALTER TABLE reservations
 
-GENERATED ALWAYS AS (daterange(check_in, check_out, '[)')) STORED;# 2. Levantar servicios con Docker
+ADD CONSTRAINT no_overlap_reservationsADD COLUMN period daterange
 
-cd backend
+EXCLUDE USING gist (
+
+    accommodation_id WITH =,GENERATED ALWAYS AS (daterange(check_in, check_out, '[)')) STORED;# 2. Levantar servicios con Docker
+
+    period WITH &&
+
+) WHERE (reservation_status IN ('pre_reserved','confirmed'));cd backend
+
+```
 
 -- Constraint EXCLUDEdocker-compose up -d
 
-ALTER TABLE reservations
+**Características:**
 
-ADD CONSTRAINT no_overlap_reservations # 3. Ejecutar migraciones
+- Fechas half-open: `[check_in, check_out)` → checkout mismo día permitidoALTER TABLE reservations
 
-EXCLUDE USING gist (docker-compose exec api alembic upgrade head
+- Solo aplica a: `pre_reserved`, `confirmed`
 
-    accommodation_id WITH =,
+- Si falla: `IntegrityError` → respuesta clara al clienteADD CONSTRAINT no_overlap_reservations # 3. Ejecutar migraciones
 
-    period WITH &&# 4. Verificar
 
-) WHERE (reservation_status IN ('pre_reserved','confirmed'));curl http://localhost:8000/api/v1/healthz
 
-```# Respuesta esperada: {"status": "healthy", ...}
+### Testing de ConcurrenciaEXCLUDE USING gist (docker-compose exec api alembic upgrade head
 
-```
+```bash
 
-## 🧪 Testing
+pytest tests/test_double_booking.py::test_overlapping_reservation_blocked -v    accommodation_id WITH =,
 
-**API disponible en:** http://localhost:8000
+# DEBE fallar con IntegrityError esperado
 
-El sistema ha pasado todos los tests críticos:**Documentación OpenAPI:** http://localhost:8000/docs
+```    period WITH &&# 4. Verificar
 
-**Métricas Prometheus:** http://localhost:8000/metrics
 
-- ✅ **Prevención doble-booking**: Solicitudes simultáneas correctamente rechazadas
 
-- ✅ **Flujo end-to-end**: WhatsApp → NLU → Reserva → Pago → Confirmación### Deploy a Producción
+---) WHERE (reservation_status IN ('pre_reserved','confirmed'));curl http://localhost:8000/api/v1/healthz
+
+
+
+## 📊 Observabilidad y Monitoreo```# Respuesta esperada: {"status": "healthy", ...}
+
+
+
+### Health Checks```
+
+
+
+```bash## 🧪 Testing
+
+# Health check completo con latencias
+
+curl http://localhost:8000/api/v1/healthz**API disponible en:** http://localhost:8000
+
+
+
+# Readiness check para KubernetesEl sistema ha pasado todos los tests críticos:**Documentación OpenAPI:** http://localhost:8000/docs
+
+curl http://localhost:8000/api/v1/readyz
+
+```**Métricas Prometheus:** http://localhost:8000/metrics
+
+
+
+**Status levels:**- ✅ **Prevención doble-booking**: Solicitudes simultáneas correctamente rechazadas
+
+- `healthy` - Todos los sistemas OK
+
+- `degraded` - Latencias altas pero funcionando- ✅ **Flujo end-to-end**: WhatsApp → NLU → Reserva → Pago → Confirmación### Deploy a Producción
+
+- `unhealthy` - Algún sistema crítico falló
 
 - ✅ **Idempotencia**: Webhooks duplicados sin efectos secundarios
 
+### Métricas Prometheus
+
 - ✅ **Integraciones**: WhatsApp y Mercado Pago funcionando al 100%```bash
 
-# 1. Configurar variables de entorno
+```bash
+
+curl http://localhost:8000/metrics# 1. Configurar variables de entorno
+
+```
 
 ## 📝 Próximos Pasos (Fase 4)cd backend
 
-cp .env.template .env
+**Métricas disponibles:**
 
-- Background jobs (expiración pre-reservas, sync iCal)nano .env  # Completar con valores reales
+- `http_requests_total` - Total requests por endpointcp .env.template .env
 
-- Métricas Prometheus
+- `http_request_duration_seconds` - Latencia por endpoint
+
+- `reservations_total` - Reservas por estado- Background jobs (expiración pre-reservas, sync iCal)nano .env  # Completar con valores reales
+
+- `prereservations_expired_total` - Pre-reservas expiradas
+
+- `ical_last_sync_age_minutes` - Edad último sync iCal- Métricas Prometheus
+
+- `rate_limit_exceeded_total` - Rate limits superados
 
 - Health checks avanzados# 2. Ejecutar deploy automatizado
 
-- Rate limiting configurablecd ..
+### SLOs Target
 
-- Observabilidad completa./scripts/deploy.sh
+- **Texto P95:** < 3s (warning > 4s, critical > 6s)- Rate limiting configurablecd ..
+
+- **Audio P95:** < 15s (warning > 20s, critical > 30s)
+
+- **iCal sync:** < 20min desfase (warning > 30min)- Observabilidad completa./scripts/deploy.sh
+
+- **Error rate:** < 1% (critical > 5%)
 
 
+
+---
 
 ---# 3. Configurar SSL y webhooks
 
+## 📚 Documentación
+
 # Seguir guía en PRODUCTION_SETUP.md
 
-**Desarrollo**: Octubre 2025  ```
+### Documentos Principales
 
-**Estado**: MVP Fase 3 completada ✅
-**Guía Completa:** Ver [PRODUCTION_SETUP.md](PRODUCTION_SETUP.md)
+| Documento | Propósito |**Desarrollo**: Octubre 2025  ```
 
-## 🧪 Testing
+|-----------|-----------|
 
-```bash
-# Tests unitarios (SQLite fallback)
-cd backend
-pytest tests/ -v
+| **[ESTADO_ACTUAL_2025-10-10.md](ESTADO_ACTUAL_2025-10-10.md)** | Estado completo del proyecto y tareas pendientes |**Estado**: MVP Fase 3 completada ✅
 
-# Tests con Postgres real (constraint validation)
-docker-compose up -d postgres redis
-export TEST_DATABASE_URL=postgresql+asyncpg://alojamientos:password@localhost:5432/alojamientos_test_db
-pytest tests/test_double_booking.py tests/test_constraint_validation.py -v
+| **[ROADMAP_MVP_PRIORIDAD_ALTA.md](ROADMAP_MVP_PRIORIDAD_ALTA.md)** | Roadmap de desarrollo (Fase 4-6) |**Guía Completa:** Ver [PRODUCTION_SETUP.md](PRODUCTION_SETUP.md)
 
-# Coverage
+| **[IMPLEMENTATION_PLAN_DETAILED.md](IMPLEMENTATION_PLAN_DETAILED.md)** | Plan detallado Fase 4.3 |
+
+| **[AUDITORIA_TECNICA_COMPLETA.md](AUDITORIA_TECNICA_COMPLETA.md)** | Auditoría técnica exhaustiva |## 🧪 Testing
+
+
+
+### Documentación Técnica```bash
+
+| Documento | Propósito |# Tests unitarios (SQLite fallback)
+
+|-----------|-----------|cd backend
+
+| **[docs/INDEX.md](docs/INDEX.md)** | Índice completo de documentación |pytest tests/ -v
+
+| **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** | Solución de problemas comunes |
+
+| **[docs/API_REFERENCE.md](docs/API_REFERENCE.md)** | Referencia de API |# Tests con Postgres real (constraint validation)
+
+| **[docs/architecture/TECHNICAL_ARCHITECTURE.md](docs/architecture/TECHNICAL_ARCHITECTURE.md)** | Arquitectura técnica |docker-compose up -d postgres redis
+
+| **[docs/deployment/STAGING_DEPLOY_GUIDE.md](docs/deployment/STAGING_DEPLOY_GUIDE.md)** | Guía de deploy paso a paso |export TEST_DATABASE_URL=postgresql+asyncpg://alojamientos:password@localhost:5432/alojamientos_test_db
+
+| **[docs/adr/](docs/adr/)** | Architecture Decision Records |pytest tests/test_double_booking.py tests/test_constraint_validation.py -v
+
+
+
+---# Coverage
+
 pytest tests/ --cov=app --cov-report=html
-```
 
-**Resultado esperado:** 37 passed, 11 skipped (SQLite mode)
+## 🛠️ Scripts de Automatización```
 
-## 🔐 Convenciones Anti-Doble-Booking
 
-La prevención de doble-booking es **CRÍTICA** y se implementa en dos capas:
+
+```bash**Resultado esperado:** 37 passed, 11 skipped (SQLite mode)
+
+# Validación pre-deploy (200+ checks)
+
+./scripts/pre-deploy-check.sh## 🔐 Convenciones Anti-Doble-Booking
+
+
+
+# Tests de producciónLa prevención de doble-booking es **CRÍTICA** y se implementa en dos capas:
+
+BASE_URL=https://tudominio.com ./scripts/smoke-test-prod.sh
 
 ### 1. Lock Redis (Prevención Optimista)
-```python
-lock_key = f"lock:acc:{accommodation_id}:{check_in}:{check_out}"
-await redis.set(lock_key, "locked", ex=1800, nx=True)
-```
-- TTL: 30 minutos (1800s)
-- NX: Only if Not eXists
-- Si falla: `{"error": "En proceso o no disponible"}`
 
-### 2. Constraint PostgreSQL (Garantía Pesimista)
-```sql
-CREATE EXTENSION btree_gist;
-period daterange GENERATED ALWAYS AS (daterange(check_in, check_out, '[)')) STORED
-CONSTRAINT no_overlap_reservations EXCLUDE USING gist
-  (accommodation_id WITH =, period WITH &&)
-  WHERE (reservation_status IN ('pre_reserved','confirmed'))
+# Deploy automatizado (6 fases)```python
+
+./scripts/deploy.shlock_key = f"lock:acc:{accommodation_id}:{check_in}:{check_out}"
+
+```await redis.set(lock_key, "locked", ex=1800, nx=True)
+
 ```
-- Fechas half-open: `[check_in, check_out)` → checkout mismo día permitido
-- Solo aplica a estados: `pre_reserved`, `confirmed`
-- Si falla: `IntegrityError` capturado y retorna error al cliente
+
+**Documentación completa:** [scripts/README.md](scripts/README.md)- TTL: 30 minutos (1800s)
+
+- NX: Only if Not eXists
+
+---- Si falla: `{"error": "En proceso o no disponible"}`
+
+
+
+## 🔒 Seguridad### 2. Constraint PostgreSQL (Garantía Pesimista)
+
+```sql
+
+### Validación de WebhooksCREATE EXTENSION btree_gist;
+
+period daterange GENERATED ALWAYS AS (daterange(check_in, check_out, '[)')) STORED
+
+**WhatsApp (HMAC SHA-256):**CONSTRAINT no_overlap_reservations EXCLUDE USING gist
+
+- Header: `X-Hub-Signature-256`  (accommodation_id WITH =, period WITH &&)
+
+- Secret: `WHATSAPP_APP_SECRET`  WHERE (reservation_status IN ('pre_reserved','confirmed'))
+
+```
+
+**Mercado Pago (x-signature v1):**- Fechas half-open: `[check_in, check_out)` → checkout mismo día permitido
+
+- Header: `x-signature`- Solo aplica a estados: `pre_reserved`, `confirmed`
+
+- Secret: `MERCADOPAGO_WEBHOOK_SECRET`- Si falla: `IntegrityError` capturado y retorna error al cliente
+
+- Manejo idempotente de `payment_id`
 
 ### Testing de Concurrencia
+
+### Seguridad en Producción```bash
+
+- ✅ PostgreSQL/Redis NO expuestos (solo red interna Docker)# Test de concurrencia simultánea (DEBE fallar)
+
+- ✅ Security headers (HSTS, X-Frame-Options, CSP, X-Content-Type-Options)pytest tests/test_double_booking.py::test_overlapping_reservation_blocked -v
+
+- ✅ Rate limiting por endpoint```
+
+- ✅ JWT para autenticación admin
+
+- ✅ HTTPS obligatorio (Let's Encrypt)## 🛠️ Scripts de Automatización
+
+- ✅ Variables de entorno para secretos
+
+- ✅ No logs de datos sensibles### pre-deploy-check.sh (Validación Pre-Deploy)
+
 ```bash
-# Test de concurrencia simultánea (DEBE fallar)
-pytest tests/test_double_booking.py::test_overlapping_reservation_blocked -v
+
+---./scripts/pre-deploy-check.sh
+
 ```
 
-## 🛠️ Scripts de Automatización
+## 🎯 Filosofía del ProyectoValida: `.env`, docker-compose, tests, seguridad puertos, nginx, Git, SSL
 
-### pre-deploy-check.sh (Validación Pre-Deploy)
-```bash
-./scripts/pre-deploy-check.sh
-```
-Valida: `.env`, docker-compose, tests, seguridad puertos, nginx, Git, SSL
 
-### smoke-test-prod.sh (Tests de Producción)
-```bash
-BASE_URL=https://tudominio.com ./scripts/smoke-test-prod.sh
-```
-8 tests: health, metrics, security headers, CORS, performance
 
-### deploy.sh (Deploy Automatizado)
+### SHIPPING > PERFECCIÓN### smoke-test-prod.sh (Tests de Producción)
+
 ```bash
+
+**Principios:**BASE_URL=https://tudominio.com ./scripts/smoke-test-prod.sh
+
+1. Implementar SOLO lo necesario```
+
+2. Tests críticos primero (locks, overlap, firmas)8 tests: health, metrics, security headers, CORS, performance
+
+3. No feature creep ("sería fácil agregar...")
+
+4. Solución MÁS SIMPLE que funcione### deploy.sh (Deploy Automatizado)
+
+5. Refactors DESPUÉS de tests pasando```bash
+
 ./scripts/deploy.sh
-```
-6 fases: validación → backup → build → migrations → smoke tests
 
-**Documentación completa:** [scripts/README.md](scripts/README.md)
+### Anti-Patrones Prohibidos```
 
-## 📊 Observabilidad y Monitoreo
+- ❌ Microservicios o arquitectura compleja6 fases: validación → backup → build → migrations → smoke tests
+
+- ❌ Cache sin evidencia de lentitud
+
+- ❌ Múltiples providers de pago**Documentación completa:** [scripts/README.md](scripts/README.md)
+
+- ❌ Channel manager propio
+
+- ❌ Optimizaciones prematuras## 📊 Observabilidad y Monitoreo
+
+- ❌ Abstracciones "por si acaso"
 
 ### Health Check
-```bash
+
+---```bash
+
 curl http://localhost:8000/api/v1/healthz
-```
+
+## 🤝 Contribución```
+
 Verifica:
-- ✅ Database connection (SELECT 1)
+
+### Workflow- ✅ Database connection (SELECT 1)
+
 - ✅ Redis connection (PING)
-- ✅ iCal last sync age < 20min
-- ⚠️ Degraded: Redis down pero DB ok
-- ❌ Unhealthy: DB down
+
+1. **Branch desde main:**- ✅ iCal last sync age < 20min
+
+   ```bash- ⚠️ Degraded: Redis down pero DB ok
+
+   git checkout -b feature/nombre-feature- ❌ Unhealthy: DB down
+
+   ```
 
 ### Métricas Prometheus
-```bash
-curl http://localhost:8000/metrics
-```
-Métricas disponibles:
+
+2. **Desarrollar con TDD:**```bash
+
+   ```bashcurl http://localhost:8000/metrics
+
+   pytest tests/test_nueva_feature.py -v```
+
+   ```Métricas disponibles:
+
 - `http_requests_total` - Total de requests por endpoint
-- `http_request_duration_seconds` - Latencia por endpoint
-- `reservations_total` - Reservas creadas por estado
-- `ical_last_sync_age_minutes` - Edad del último sync iCal
-- `rate_limit_exceeded_total` - Rate limits superados
+
+3. **Validar antes de commit:**- `http_request_duration_seconds` - Latencia por endpoint
+
+   ```bash- `reservations_total` - Reservas creadas por estado
+
+   pytest tests/ -v- `ical_last_sync_age_minutes` - Edad del último sync iCal
+
+   ./scripts/pre-deploy-check.sh- `rate_limit_exceeded_total` - Rate limits superados
+
+   ```
 
 ### SLOs Target
-- **Texto P95:** < 3s (warning > 4s, critical > 6s)
-- **Audio P95:** < 15s (warning > 20s, critical > 30s)
-- **iCal sync:** < 20min desfase (warning > 30min)
-- **Error rate:** < 1% (critical > 5%)
+
+4. **Commit con convención:**- **Texto P95:** < 3s (warning > 4s, critical > 6s)
+
+   ```bash- **Audio P95:** < 15s (warning > 20s, critical > 30s)
+
+   git commit -m "feat(reservations): agregar endpoint confirmación"- **iCal sync:** < 20min desfase (warning > 30min)
+
+   git commit -m "fix(whatsapp): corregir validación firma HMAC"- **Error rate:** < 1% (critical > 5%)
+
+   ```
 
 ## 🏗️ Estructura del Proyecto
 
+### Tests Obligatorios
+
 ```
-SIST_CABANAS_MVP/
-├── backend/
-│   ├── app/
+
+```bashSIST_CABANAS_MVP/
+
+# Todos los tests deben pasar├── backend/
+
+pytest tests/ -v│   ├── app/
+
 │   │   ├── main.py              # FastAPI app + middleware + jobs
-│   │   ├── core/                # config, db, redis, auth, logging
-│   │   ├── models/              # SQLAlchemy ORM
-│   │   ├── routers/             # Endpoints API
+
+# Coverage mínimo 80%│   │   ├── core/                # config, db, redis, auth, logging
+
+pytest tests/ --cov=app --cov-report=term-missing│   │   ├── models/              # SQLAlchemy ORM
+
+```│   │   ├── routers/             # Endpoints API
+
 │   │   │   ├── health.py        # Health checks
-│   │   │   ├── reservations.py  # CRUD reservas
+
+---│   │   │   ├── reservations.py  # CRUD reservas
+
 │   │   │   ├── whatsapp.py      # Webhook WhatsApp
-│   │   │   ├── mercadopago.py   # Webhook Mercado Pago
+
+## 📞 Soporte│   │   │   ├── mercadopago.py   # Webhook Mercado Pago
+
 │   │   │   ├── ical.py          # Import/Export iCal
-│   │   │   ├── audio.py         # Transcripción audio
-│   │   │   ├── admin.py         # Panel admin
-│   │   │   └── nlu.py           # Análisis de intención
+
+- **Issues:** https://github.com/eevans-d/SIST_CABANAS_MVP/issues│   │   │   ├── audio.py         # Transcripción audio
+
+- **Pull Requests:** https://github.com/eevans-d/SIST_CABANAS_MVP/pulls│   │   │   ├── admin.py         # Panel admin
+
+- **Documentación:** Ver `docs/INDEX.md`│   │   │   └── nlu.py           # Análisis de intención
+
 │   │   ├── services/            # Lógica de negocio
-│   │   │   ├── reservations.py  # ReservationService
+
+---│   │   │   ├── reservations.py  # ReservationService
+
 │   │   │   ├── whatsapp.py      # WhatsAppService
-│   │   │   ├── mercadopago.py   # MercadoPagoService
+
+## 📄 Licencia│   │   │   ├── mercadopago.py   # MercadoPagoService
+
 │   │   │   ├── ical.py          # iCal sync
-│   │   │   ├── audio.py         # Audio transcription
+
+MIT License - Ver [LICENSE](LICENSE)│   │   │   ├── audio.py         # Audio transcription
+
 │   │   │   └── nlu.py           # NLU intent detection
-│   │   └── jobs/                # Background jobs
+
+---│   │   └── jobs/                # Background jobs
+
 │   │       ├── scheduler.py     # APScheduler config
-│   │       ├── cleanup.py       # Expiración pre-reservas
+
+## 🎓 ADR: No Integrar PMS Externo│   │       ├── cleanup.py       # Expiración pre-reservas
+
 │   │       └── import_ical.py   # Sync iCal automático
-│   ├── alembic/                 # Migraciones DB
+
+**Decisión:** NO se integrará ningún PMS (Odoo, HotelDruid, QloApps) en el MVP.│   ├── alembic/                 # Migraciones DB
+
 │   ├── tests/                   # Tests (37 passed)
-│   ├── docker-compose.yml       # Servicios (postgres, redis, api, nginx)
-│   ├── Dockerfile               # Imagen API
-│   ├── nginx.conf.template      # Template nginx con variables
-│   └── .env.template            # Variables de entorno
-├── scripts/                     # Scripts de automatización
+
+**Razones:**│   ├── docker-compose.yml       # Servicios (postgres, redis, api, nginx)
+
+- Añade complejidad estructural innecesaria (>2-3 días)│   ├── Dockerfile               # Imagen API
+
+- No resuelve diferenciadores clave (WhatsApp, locks, audio/NLU)│   ├── nginx.conf.template      # Template nginx con variables
+
+- Riesgo de feature creep fuera del scope MVP│   └── .env.template            # Variables de entorno
+
+- El modelo de datos necesario es mínimo y está definido├── scripts/                     # Scripts de automatización
+
 │   ├── pre-deploy-check.sh      # Validación pre-deploy (200+ líneas)
-│   ├── smoke-test-prod.sh       # Tests de producción (100+ líneas)
+
+**Re-evaluación:** Post-MVP cuando >100 reservas/mes o necesidades avanzadas.│   ├── smoke-test-prod.sh       # Tests de producción (100+ líneas)
+
 │   ├── deploy.sh                # Deploy automatizado (80+ líneas)
-│   └── README.md                # Documentación de scripts
+
+Ver: `docs/adr/001-no-pms-externo.md`│   └── README.md                # Documentación de scripts
+
 ├── docs/                        # Documentación adicional
-│   ├── adr/                     # Architecture Decision Records
+
+---│   ├── adr/                     # Architecture Decision Records
+
 │   └── CONSOLIDATION_STATUS.md  # Estado de consolidación del repo
-├── PRODUCTION_SETUP.md          # Guía de deploy paso a paso (210 líneas)
+
+**El sistema está listo para producción. ¡A deployar! 🚀**├── PRODUCTION_SETUP.md          # Guía de deploy paso a paso (210 líneas)
+
 ├── STATUS_ACTUAL_2025-10-02.md  # Estado actual detallado
-├── PARA_MAÑANA.md               # Guía para continuar desarrollo
+
+---├── PARA_MAÑANA.md               # Guía para continuar desarrollo
+
 └── README.md                    # Este archivo
-```
+
+_README actualizado: 2025-10-10 - Fase 4 en progreso (60% completada)_```
+
 
 
 ## 🔒 Seguridad
