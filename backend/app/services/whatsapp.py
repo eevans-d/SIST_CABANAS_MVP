@@ -1,9 +1,24 @@
 from __future__ import annotations
 
-from typing import Dict, Any
+from datetime import date
+from decimal import Decimal
+from typing import Any, Dict, Optional
+
 import structlog
 
 from app.core.config import get_settings
+from app.services.messages import (
+    format_availability_response,
+    format_error_capacity_exceeded,
+    format_error_date_overlap,
+    format_error_generic,
+    format_error_invalid_dates,
+    format_error_no_availability,
+    format_payment_reminder,
+    format_prereservation_confirmation,
+    format_reservation_confirmed,
+    format_reservation_expired,
+)
 
 logger = structlog.get_logger()
 settings = get_settings()
@@ -49,3 +64,191 @@ async def send_text_message(to_phone: str, body: str) -> Dict[str, Any]:
     except Exception as e:  # pragma: no cover
         logger.exception("whatsapp_send_exception", error=str(e))
         return {"status": "error", "reason": "exception"}
+
+
+# ========== High-level message functions ==========
+
+
+async def send_prereservation_confirmation(
+    phone: str,
+    reservation: Dict[str, Any],
+    accommodation: Dict[str, Any],
+    payment_link: str,
+    expiration_minutes: int = 60,
+) -> Dict[str, Any]:
+    """Envía confirmación detallada de pre-reserva vía WhatsApp.
+
+    Args:
+        phone: Número de teléfono del cliente
+        reservation: Datos de la reserva
+        accommodation: Datos del alojamiento
+        payment_link: URL de pago de Mercado Pago
+        expiration_minutes: Tiempo de expiración en minutos
+
+    Returns:
+        Dict con status del envío
+    """
+    message = format_prereservation_confirmation(
+        reservation=reservation,
+        accommodation=accommodation,
+        payment_link=payment_link,
+        expiration_minutes=expiration_minutes,
+    )
+
+    result = await send_text_message(phone, message)
+    logger.info(
+        "prereservation_confirmation_sent",
+        phone=phone,
+        reservation_code=reservation.get("code"),
+        status=result.get("status"),
+    )
+    return result
+
+
+async def send_reservation_confirmed(
+    phone: str, reservation: Dict[str, Any], accommodation: Dict[str, Any]
+) -> Dict[str, Any]:
+    """Envía confirmación definitiva de reserva (post-pago).
+
+    Args:
+        phone: Número de teléfono del cliente
+        reservation: Datos de la reserva
+        accommodation: Datos del alojamiento
+
+    Returns:
+        Dict con status del envío
+    """
+    message = format_reservation_confirmed(reservation=reservation, accommodation=accommodation)
+
+    result = await send_text_message(phone, message)
+    logger.info(
+        "reservation_confirmed_sent",
+        phone=phone,
+        reservation_code=reservation.get("code"),
+        status=result.get("status"),
+    )
+    return result
+
+
+async def send_error_date_overlap(
+    phone: str, accommodation_name: str, check_in: date, check_out: date
+) -> Dict[str, Any]:
+    """Envía mensaje de error cuando las fechas no están disponibles.
+
+    Args:
+        phone: Número de teléfono del cliente
+        accommodation_name: Nombre del alojamiento
+        check_in: Fecha de entrada solicitada
+        check_out: Fecha de salida solicitada
+
+    Returns:
+        Dict con status del envío
+    """
+    message = format_error_date_overlap(
+        accommodation_name=accommodation_name, check_in=check_in, check_out=check_out
+    )
+
+    result = await send_text_message(phone, message)
+    logger.info("error_date_overlap_sent", phone=phone, status=result.get("status"))
+    return result
+
+
+async def send_error_no_availability(
+    phone: str, check_in: date, check_out: date
+) -> Dict[str, Any]:
+    """Envía mensaje cuando no hay disponibilidad en ningún alojamiento.
+
+    Args:
+        phone: Número de teléfono del cliente
+        check_in: Fecha de entrada solicitada
+        check_out: Fecha de salida solicitada
+
+    Returns:
+        Dict con status del envío
+    """
+    message = format_error_no_availability(check_in=check_in, check_out=check_out)
+
+    result = await send_text_message(phone, message)
+    logger.info("error_no_availability_sent", phone=phone, status=result.get("status"))
+    return result
+
+
+async def send_availability_response(
+    phone: str, accommodation: Dict[str, Any], check_in: date, check_out: date, price: Decimal
+) -> Dict[str, Any]:
+    """Envía mensaje mostrando disponibilidad de un alojamiento.
+
+    Args:
+        phone: Número de teléfono del cliente
+        accommodation: Datos del alojamiento
+        check_in: Fecha de entrada
+        check_out: Fecha de salida
+        price: Precio calculado para el período
+
+    Returns:
+        Dict con status del envío
+    """
+    message = format_availability_response(
+        accommodation=accommodation, check_in=check_in, check_out=check_out, price=price
+    )
+
+    result = await send_text_message(phone, message)
+    logger.info(
+        "availability_response_sent",
+        phone=phone,
+        accommodation_name=accommodation.get("name"),
+        status=result.get("status"),
+    )
+    return result
+
+
+async def send_payment_reminder(
+    phone: str, reservation_code: str, payment_link: str, minutes_remaining: int
+) -> Dict[str, Any]:
+    """Envía recordatorio de pago pendiente.
+
+    Args:
+        phone: Número de teléfono del cliente
+        reservation_code: Código de la reserva
+        payment_link: URL de pago
+        minutes_remaining: Minutos restantes antes de expiración
+
+    Returns:
+        Dict con status del envío
+    """
+    message = format_payment_reminder(
+        reservation_code=reservation_code,
+        payment_link=payment_link,
+        minutes_remaining=minutes_remaining,
+    )
+
+    result = await send_text_message(phone, message)
+    logger.info(
+        "payment_reminder_sent",
+        phone=phone,
+        reservation_code=reservation_code,
+        status=result.get("status"),
+    )
+    return result
+
+
+async def send_reservation_expired(phone: str, reservation_code: str) -> Dict[str, Any]:
+    """Envía mensaje cuando una pre-reserva ha expirado.
+
+    Args:
+        phone: Número de teléfono del cliente
+        reservation_code: Código de la reserva expirada
+
+    Returns:
+        Dict con status del envío
+    """
+    message = format_reservation_expired(reservation_code=reservation_code)
+
+    result = await send_text_message(phone, message)
+    logger.info(
+        "reservation_expired_sent",
+        phone=phone,
+        reservation_code=reservation_code,
+        status=result.get("status"),
+    )
+    return result
