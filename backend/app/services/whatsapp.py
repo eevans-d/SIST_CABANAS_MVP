@@ -410,9 +410,12 @@ async def send_accommodation_info_with_photo(
     return result
 
 
-# Funciones específicas para estados de pago
+# Funciones específicas para estados de pago con retry automático
+@retry_async(max_attempts=3, base_delay=1.0, operation_name="whatsapp_payment_notification")
 async def send_payment_approved(phone: str, guest_name: str, reservation_code: str, check_in: str, check_out: str, accommodation_name: str) -> Dict[str, Any]:
     """Envía notificación de pago aprobado exitosamente.
+    
+    Tiene retry automático (3 intentos) para manejar errores transitorios de WhatsApp API.
     
     Args:
         phone: Número de teléfono del huésped
@@ -431,8 +434,11 @@ async def send_payment_approved(phone: str, guest_name: str, reservation_code: s
     return result
 
 
+@retry_async(max_attempts=3, base_delay=1.0, operation_name="whatsapp_payment_notification")
 async def send_payment_rejected(phone: str, guest_name: str, reservation_code: str, amount: str) -> Dict[str, Any]:
     """Envía notificación de pago rechazado.
+    
+    Tiene retry automático (3 intentos) para manejar errores transitorios de WhatsApp API.
     
     Args:
         phone: Número de teléfono del huésped
@@ -449,8 +455,11 @@ async def send_payment_rejected(phone: str, guest_name: str, reservation_code: s
     return result
 
 
+@retry_async(max_attempts=3, base_delay=1.0, operation_name="whatsapp_payment_notification")
 async def send_payment_pending(phone: str, guest_name: str, reservation_code: str, amount: str) -> Dict[str, Any]:
     """Envía notificación de pago pendiente de procesamiento.
+    
+    Tiene retry automático (3 intentos) para manejar errores transitorios de WhatsApp API.
     
     Args:
         phone: Número de teléfono del huésped

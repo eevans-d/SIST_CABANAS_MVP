@@ -10,6 +10,7 @@ Características:
 - Configuración de max_attempts y base_delay
 - Logging detallado de cada intento
 - Distinción entre errores transitorios (retry) y permanentes (fail fast)
+- Métricas Prometheus de retry attempts y failures
 """
 from __future__ import annotations
 
@@ -18,8 +19,29 @@ import random
 from functools import wraps
 from typing import Callable, Type, Tuple, Any
 import structlog
+from prometheus_client import Counter, Histogram
 
 logger = structlog.get_logger()
+
+# Métricas Prometheus para retry logic
+RETRY_ATTEMPTS = Counter(
+    "retry_attempts_total",
+    "Total de intentos de retry por operación y resultado",
+    ["operation", "attempt_number", "result"]  # result = success|retry|failed
+)
+
+RETRY_DELAYS = Histogram(
+    "retry_delay_seconds",
+    "Distribución de delays entre intentos de retry",
+    ["operation"],
+    buckets=[0.5, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0]
+)
+
+RETRY_EXHAUSTED = Counter(
+    "retry_exhausted_total",
+    "Total de operaciones que agotaron todos los intentos",
+    ["operation", "error_type"]
+)
 
 
 class RetryExhausted(Exception):
@@ -127,12 +149,14 @@ def retry_async(
 ):
     """Decorador para reintentar funciones async con exponential backoff.
     
+    Incluye métricas Prometheus automáticas de intentos, delays y fallos.
+    
     Args:
         max_attempts: Número máximo de intentos (default 3)
         base_delay: Delay base en segundos (default 1.0)
         max_delay: Delay máximo en segundos (default 32.0)
         retriable_exceptions: Tupla de excepciones que se pueden reintentar
-        operation_name: Nombre de la operación para logging
+        operation_name: Nombre de la operación para logging y métricas
         
     Example:
         @retry_async(max_attempts=5, base_delay=1.0, operation_name="whatsapp_send")
@@ -156,6 +180,13 @@ def retry_async(
                     
                     result = await func(*args, **kwargs)
                     
+                    # Métrica: intento exitoso
+                    RETRY_ATTEMPTS.labels(
+                        operation=operation_name,
+                        attempt_number=str(attempt + 1),
+                        result="success"
+                    ).inc()
+                    
                     # Si hubo intentos previos, logear el éxito
                     if attempt > 0:
                         logger.info(
@@ -178,6 +209,12 @@ def retry_async(
                             error=str(e),
                             error_type=type(e).__name__
                         )
+                        # Métrica: error permanente (no retry)
+                        RETRY_ATTEMPTS.labels(
+                            operation=operation_name,
+                            attempt_number=str(attempt + 1),
+                            result="failed_permanent"
+                        ).inc()
                         raise  # No reintentar errores permanentes
                     
                     # Si es el último intento, no esperar
@@ -189,6 +226,11 @@ def retry_async(
                             last_error=str(e),
                             error_type=type(e).__name__
                         )
+                        # Métrica: retry agotado
+                        RETRY_EXHAUSTED.labels(
+                            operation=operation_name,
+                            error_type=type(e).__name__
+                        ).inc()
                         break
                     
                     # Calcular delay y esperar
@@ -203,6 +245,16 @@ def retry_async(
                         error_type=type(e).__name__,
                         next_retry_in_seconds=round(delay, 2)
                     )
+                    
+                    # Métrica: intento fallido que se reintentará
+                    RETRY_ATTEMPTS.labels(
+                        operation=operation_name,
+                        attempt_number=str(attempt + 1),
+                        result="retry"
+                    ).inc()
+                    
+                    # Métrica: delay aplicado
+                    RETRY_DELAYS.labels(operation=operation_name).observe(delay)
                     
                     await asyncio.sleep(delay)
             
@@ -225,14 +277,14 @@ def retry_sync(
 ):
     """Decorador para reintentar funciones síncronas con exponential backoff.
     
-    Versión síncrona del decorador retry_async.
+    Versión síncrona del decorador retry_async. Incluye métricas Prometheus.
     
     Args:
         max_attempts: Número máximo de intentos (default 3)
         base_delay: Delay base en segundos (default 1.0)
         max_delay: Delay máximo en segundos (default 32.0)
         retriable_exceptions: Tupla de excepciones que se pueden reintentar
-        operation_name: Nombre de la operación para logging
+        operation_name: Nombre de la operación para logging y métricas
     """
     def decorator(func: Callable) -> Callable:
         @wraps(func)
@@ -250,6 +302,13 @@ def retry_sync(
                     )
                     
                     result = func(*args, **kwargs)
+                    
+                    # Métrica: éxito
+                    RETRY_ATTEMPTS.labels(
+                        operation=operation_name,
+                        attempt_number=str(attempt + 1),
+                        result="success"
+                    ).inc()
                     
                     if attempt > 0:
                         logger.info(
@@ -271,6 +330,12 @@ def retry_sync(
                             error=str(e),
                             error_type=type(e).__name__
                         )
+                        # Métrica: error permanente
+                        RETRY_ATTEMPTS.labels(
+                            operation=operation_name,
+                            attempt_number=str(attempt + 1),
+                            result="failed_permanent"
+                        ).inc()
                         raise
                     
                     if attempt == max_attempts - 1:
@@ -281,6 +346,11 @@ def retry_sync(
                             last_error=str(e),
                             error_type=type(e).__name__
                         )
+                        # Métrica: retry agotado
+                        RETRY_EXHAUSTED.labels(
+                            operation=operation_name,
+                            error_type=type(e).__name__
+                        ).inc()
                         break
                     
                     delay = calculate_backoff_delay(attempt, base_delay, max_delay)
@@ -294,6 +364,16 @@ def retry_sync(
                         error_type=type(e).__name__,
                         next_retry_in_seconds=round(delay, 2)
                     )
+                    
+                    # Métrica: intento fallido que se reintentará
+                    RETRY_ATTEMPTS.labels(
+                        operation=operation_name,
+                        attempt_number=str(attempt + 1),
+                        result="retry"
+                    ).inc()
+                    
+                    # Métrica: delay aplicado
+                    RETRY_DELAYS.labels(operation=operation_name).observe(delay)
                     
                     time.sleep(delay)
             
