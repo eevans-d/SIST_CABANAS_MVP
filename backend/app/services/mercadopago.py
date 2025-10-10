@@ -26,8 +26,11 @@ from app.models import Payment, Reservation, Accommodation
 from app.models.enums import ReservationStatus, PaymentStatus
 import structlog
 from app.services.whatsapp import send_payment_approved, send_payment_rejected, send_payment_pending
+from app.utils.retry import retry_async
+from app.core.config import get_settings
 
 logger = structlog.get_logger()
+settings = get_settings()
 
 
 class MercadoPagoService:
@@ -188,3 +191,89 @@ class MercadoPagoService:
             "payment_id": payment_id,
             "reservation_id": reservation_id,
         }
+
+    @retry_async(max_attempts=3, base_delay=1.0, operation_name="mercadopago_get_payment")
+    async def get_payment_info(self, payment_id: str) -> Dict[str, Any]:
+        """
+        Consulta información de un pago en MercadoPago API.
+        
+        Tiene retry automático (3 intentos) para manejar errores transitorios.
+        
+        Args:
+            payment_id: ID del pago en MercadoPago
+            
+        Returns:
+            Dict con información del pago desde API
+            
+        Raises:
+            ValueError: Si no hay access token configurado
+            ConnectionError: Si hay error de conectividad (triggerea retry)
+            Exception: Otros errores de API
+        """
+        import httpx
+        
+        if not settings.MERCADOPAGO_ACCESS_TOKEN or settings.MERCADOPAGO_ACCESS_TOKEN == "dummy":
+            raise ValueError("MERCADOPAGO_ACCESS_TOKEN not configured")
+        
+        url = f"https://api.mercadopago.com/v1/payments/{payment_id}"
+        headers = {
+            "Authorization": f"Bearer {settings.MERCADOPAGO_ACCESS_TOKEN}",
+            "Content-Type": "application/json"
+        }
+        
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            try:
+                response = await client.get(url, headers=headers)
+                
+                # Errores transitorios → retry
+                if response.status_code in [429, 500, 502, 503, 504]:
+                    logger.warning(
+                        "mercadopago_api_transient_error",
+                        payment_id=payment_id,
+                        status_code=response.status_code
+                    )
+                    raise ConnectionError(f"MercadoPago API returned {response.status_code}")
+                
+                # Errores permanentes → no retry
+                if response.status_code >= 400:
+                    logger.error(
+                        "mercadopago_api_client_error",
+                        payment_id=payment_id,
+                        status_code=response.status_code,
+                        response=response.text[:200]
+                    )
+                    raise ValueError(f"MercadoPago API error: {response.status_code}")
+                
+                # Éxito
+                data = response.json()
+                logger.info(
+                    "mercadopago_payment_retrieved",
+                    payment_id=payment_id,
+                    status=data.get("status")
+                )
+                return data
+                
+            except httpx.TimeoutException as e:
+                logger.warning("mercadopago_api_timeout", payment_id=payment_id)
+                raise ConnectionError(f"MercadoPago API timeout: {e}")
+            
+            except httpx.NetworkError as e:
+                logger.warning("mercadopago_api_network_error", payment_id=payment_id, error=str(e))
+                raise ConnectionError(f"MercadoPago API network error: {e}")
+
+    @retry_async(max_attempts=3, base_delay=1.0, operation_name="mercadopago_get_payment_status")
+    async def get_payment_status(self, payment_id: str) -> str:
+        """
+        Obtiene solo el estado de un pago (método más liviano).
+        
+        Tiene retry automático (3 intentos) para manejar errores transitorios.
+        
+        Args:
+            payment_id: ID del pago en MercadoPago
+            
+        Returns:
+            Estado del pago (approved, pending, rejected, etc.)
+        """
+        payment_info = await self.get_payment_info(payment_id)
+        return payment_info.get("status", "unknown")
+
