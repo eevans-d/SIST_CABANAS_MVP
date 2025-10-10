@@ -80,3 +80,44 @@ RATE_LIMIT_REDIS_ERRORS = Counter(
     "rate_limit_redis_errors_total",
     "Errores de Redis durante rate limiting (fail-open)",
 )
+
+# ============================================================================
+# MÉTRICAS DE IDEMPOTENCIA (Fase 6.2)
+# ============================================================================
+
+IDEMPOTENCY_CACHE_HITS = Counter(
+    "idempotency_cache_hits_total",
+    "Requests respondidos desde caché de idempotencia",
+    ["endpoint", "method"],
+)
+
+IDEMPOTENCY_CACHE_MISSES = Counter(
+    "idempotency_cache_misses_total",
+    "Requests procesados (no encontrados en caché)",
+    ["endpoint", "method"],
+)
+
+IDEMPOTENCY_KEYS_CREATED = Counter(
+    "idempotency_keys_created_total",
+    "Claves de idempotencia creadas",
+    ["endpoint"],
+)
+
+IDEMPOTENCY_KEYS_EXPIRED = Counter(
+    "idempotency_keys_expired_total",
+    "Claves de idempotencia expiradas y eliminadas",
+    ["endpoint"],
+)
+
+IDEMPOTENCY_PROCESSING_TIME = Histogram(
+    "idempotency_processing_time_seconds",
+    "Tiempo de procesamiento del middleware de idempotencia",
+    ["endpoint", "cache_result"],  # cache_result: hit, miss, error
+    buckets=[0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5],
+)
+
+IDEMPOTENCY_ERRORS = Counter(
+    "idempotency_errors_total",
+    "Errores en el middleware de idempotencia (fail-open)",
+    ["endpoint", "error_type"],
+)

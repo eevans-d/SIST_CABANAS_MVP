@@ -10,6 +10,7 @@ from app.core.middleware import TraceIDMiddleware
 from app.core.redis import get_redis_pool
 from app.jobs.cleanup import expire_prereservations, send_prereservation_reminders
 from app.jobs.import_ical import run_ical_sync
+from app.middleware.idempotency import IdempotencyMiddleware
 from app.routers import admin as admin_router
 from app.routers import audio as audio_router
 from app.routers import health
@@ -117,6 +118,25 @@ Instrumentator().instrument(app).expose(app, include_in_schema=False, endpoint="
 
 # Trace ID middleware (PRIMERO para que esté en todos los logs)
 app.add_middleware(TraceIDMiddleware)
+
+# Idempotency middleware (SEGUNDO, después de TraceID y antes de CORS)
+# Solo para endpoints críticos que requieren prevención de duplicados
+app.add_middleware(
+    IdempotencyMiddleware,
+    enabled_endpoints=[
+        "/api/v1/webhooks/mercadopago",
+        "/api/v1/webhooks/whatsapp",
+        "/api/v1/reservations",
+        "/api/v1/payments",
+    ],
+    ttl_hours=48,  # TTL de 48 horas para claves de idempotencia
+    include_headers=[
+        "x-hub-signature-256",  # WhatsApp
+        "x-signature",  # MercadoPago
+        "content-type",
+        "user-agent",
+    ],
+)
 
 # CORS configuration
 app.add_middleware(
