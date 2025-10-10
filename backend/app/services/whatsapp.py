@@ -66,6 +66,65 @@ async def send_text_message(to_phone: str, body: str) -> Dict[str, Any]:
         return {"status": "error", "reason": "exception"}
 
 
+async def send_image_message(
+    to_phone: str, image_url: str, caption: Optional[str] = None
+) -> Dict[str, Any]:
+    """Envía una imagen vía WhatsApp Cloud API.
+
+    Args:
+        to_phone: Número de teléfono destino
+        image_url: URL pública de la imagen (debe ser HTTPS)
+        caption: Texto opcional que acompaña la imagen
+
+    Returns:
+        Dict con status del envío
+    """
+    # No-op en no producción o sin credenciales válidas
+    if settings.ENVIRONMENT != "production":
+        logger.info("whatsapp_image_skipped_env", environment=settings.ENVIRONMENT)
+        return {"status": "skipped", "reason": "non_production"}
+    if not settings.WHATSAPP_ACCESS_TOKEN or not settings.WHATSAPP_PHONE_ID:
+        logger.warning("whatsapp_image_skipped_missing_creds")
+        return {"status": "skipped", "reason": "missing_creds"}
+    if settings.WHATSAPP_ACCESS_TOKEN == "dummy" or settings.WHATSAPP_PHONE_ID == "dummy":
+        logger.info("whatsapp_image_skipped_dummy")
+        return {"status": "skipped", "reason": "dummy_creds"}
+
+    try:
+        import httpx
+
+        url = f"https://graph.facebook.com/v17.0/{settings.WHATSAPP_PHONE_ID}/messages"
+        headers = {
+            "Authorization": f"Bearer {settings.WHATSAPP_ACCESS_TOKEN}",
+            "Content-Type": "application/json",
+        }
+
+        # Payload para imagen
+        image_data: Dict[str, Any] = {"link": image_url}
+        if caption:
+            image_data["caption"] = caption
+
+        payload = {
+            "messaging_product": "whatsapp",
+            "to": to_phone,
+            "type": "image",
+            "image": image_data,
+        }
+
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.post(url, json=payload, headers=headers)
+            if resp.status_code // 100 == 2:
+                logger.info("whatsapp_image_sent", phone=to_phone, image_url=image_url)
+                return {"status": "sent"}
+            logger.warning(
+                "whatsapp_image_error", code=resp.status_code, text=resp.text[:200]
+            )
+            return {"status": "error", "code": resp.status_code}
+    except Exception as e:  # pragma: no cover
+        logger.exception("whatsapp_image_exception", error=str(e))
+        return {"status": "error", "reason": "exception"}
+
+
 # ========== High-level message functions ==========
 
 
@@ -251,4 +310,62 @@ async def send_reservation_expired(phone: str, reservation_code: str) -> Dict[st
         reservation_code=reservation_code,
         status=result.get("status"),
     )
+    return result
+
+
+async def send_accommodation_info_with_photo(
+    phone: str, accommodation: Dict[str, Any]
+) -> Dict[str, Any]:
+    """Envía información de alojamiento con foto principal si existe.
+
+    Args:
+        phone: Número de teléfono del cliente
+        accommodation: Datos del alojamiento (con campo photos)
+
+    Returns:
+        Dict con status del envío
+    """
+    # Obtener foto principal
+    photos = accommodation.get("photos", [])
+    main_photo = None
+
+    if photos:
+        # Buscar foto marcada como primary, o tomar la primera
+        main_photo = next((p for p in photos if p.get("is_primary")), photos[0] if photos else None)
+
+    # Enviar foto si existe
+    if main_photo and main_photo.get("url"):
+        caption = f"📸 *{accommodation.get('name', 'Alojamiento')}*"
+        photo_result = await send_image_message(
+            to_phone=phone, image_url=main_photo["url"], caption=caption
+        )
+        logger.info(
+            "accommodation_photo_sent",
+            phone=phone,
+            accommodation_name=accommodation.get("name"),
+            photo_status=photo_result.get("status"),
+        )
+
+    # Enviar detalles en texto
+    capacity = accommodation.get("capacity", "N/A")
+    base_price = accommodation.get("base_price", 0)
+    description = accommodation.get("description", "")
+
+    message = f"""🏠 *{accommodation.get('name', 'Alojamiento')}*
+
+📏 Capacidad: {capacity} personas
+💰 Precio base: ${float(base_price):.2f}/noche
+
+{description}
+
+¿Te gustaría consultar disponibilidad para fechas específicas?"""
+
+    result = await send_text_message(phone, message)
+    logger.info(
+        "accommodation_info_sent",
+        phone=phone,
+        accommodation_name=accommodation.get("name"),
+        status=result.get("status"),
+    )
+
     return result
