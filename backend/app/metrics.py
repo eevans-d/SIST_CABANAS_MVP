@@ -59,3 +59,24 @@ ICAL_EVENTS_IMPORTED = Counter(
     "Total de eventos iCal importados",
     ["accommodation_id", "source"],
 )
+
+# ============================================================================
+# MÉTRICAS DE RATE LIMITING (Fase 4.3)
+# ============================================================================
+
+RATE_LIMIT_BLOCKED = Counter(
+    "rate_limit_requests_blocked_total",
+    "Requests bloqueados por rate limiting",
+    ["path", "client_ip"],
+)
+
+RATE_LIMIT_CURRENT_COUNT = Gauge(
+    "rate_limit_current_count",
+    "Contador actual de requests en ventana de rate limit",
+    ["client_ip", "path"],
+)
+
+RATE_LIMIT_REDIS_ERRORS = Counter(
+    "rate_limit_redis_errors_total",
+    "Errores de Redis durante rate limiting (fail-open)",
+)

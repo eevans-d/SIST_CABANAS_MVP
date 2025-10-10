@@ -13,15 +13,15 @@ contra PostgreSQL real (variable TEST_DATABASE_URL apuntando a instancia con
 `CREATE EXTENSION btree_gist;`).
 """
 
-import pytest
 import asyncio
-from typing import AsyncGenerator, Callable, Optional
+import os
 from contextlib import asynccontextmanager
 from decimal import Decimal
-import os
+from typing import AsyncGenerator, Callable, Optional
 
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+import pytest
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.ext.compiler import compiles
 
 try:
@@ -123,7 +123,7 @@ async def test_engine():  # type: ignore
                 DO $$
                 BEGIN
                     IF EXISTS (
-                        SELECT 1 FROM information_schema.columns 
+                        SELECT 1 FROM information_schema.columns
                         WHERE table_name='reservations' AND column_name='period'
                     ) THEN
                         ALTER TABLE reservations DROP COLUMN period;
@@ -135,8 +135,8 @@ async def test_engine():  # type: ignore
             await conn.execute(
                 text(
                     """
-                ALTER TABLE reservations 
-                ADD COLUMN period daterange 
+                ALTER TABLE reservations
+                ADD COLUMN period daterange
                 GENERATED ALWAYS AS (daterange(check_in, check_out, '[)')) STORED
             """
                 )
@@ -148,8 +148,8 @@ async def test_engine():  # type: ignore
             await conn.execute(
                 text(
                     """
-                ALTER TABLE reservations 
-                ADD CONSTRAINT no_overlap_reservations 
+                ALTER TABLE reservations
+                ADD CONSTRAINT no_overlap_reservations
                 EXCLUDE USING gist (
                     accommodation_id WITH =,
                     period WITH &&
@@ -195,16 +195,21 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
                 await trans.rollback()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 async def redis_client() -> AsyncGenerator["redis.Redis", None]:  # type: ignore
     """Cliente Redis para tests.
 
     Prioriza fakeredis (memoria, rápido). Si no disponible y redis real tampoco
     instalable, marca tests como xfail.
+
+    Scope function para aislar tests (cada test tiene Redis limpio).
     """
     if fakeredis is not None:
-        client = fakeredis.FakeRedis()
+        # Usar FakeRedis de aioredis que ya soporta async
+        client = fakeredis.FakeRedis(decode_responses=True)
         yield client
+        # Limpiar al terminar el test
+        await client.flushall()
         await client.aclose()
         return
 
@@ -277,8 +282,8 @@ async def reservation_factory(db_session, accommodation_factory):  # type: ignor
         from app.models.reservation import Reservation  # type: ignore
     except Exception:
         pytest.skip("Modelo Reservation no disponible todavía")
-    from datetime import date
     import uuid as _uuid
+    from datetime import date
 
     async def _create(**overrides):
         acc = overrides.pop("accommodation", None) or await accommodation_factory()
@@ -312,14 +317,16 @@ async def reservation_factory(db_session, accommodation_factory):  # type: ignor
 # Cliente HTTP para tests de API (se activa cuando exista app.main:app)
 # ---------------------------------------------------------------------------
 @pytest.fixture()
-async def test_client(test_engine):  # type: ignore
+async def test_client(test_engine, redis_client):  # type: ignore
     """Cliente HTTP usando la misma base de datos que el engine de test.
 
-    Asegura consistencia: la app importada apuntará al mismo URL (sqlite fallback o postgres)
-    evitando errores de 'database ... does not exist'.
+    Asegura consistencia: la app importará el pool de Redis mockeado que
+    devuelve el cliente de test (fakeredis).
     """
-    from httpx import AsyncClient
     import os as _os
+    from unittest.mock import MagicMock, patch
+
+    from httpx import AsyncClient
 
     # Forzar variables de entorno coherentes ANTES de importar la app
     _os.environ.setdefault("ENVIRONMENT", "test")
@@ -330,6 +337,7 @@ async def test_client(test_engine):  # type: ignore
     _os.environ.setdefault("MERCADOPAGO_ACCESS_TOKEN", "dummy")
     _os.environ.setdefault("BASE_URL", "http://localhost")
     _os.environ.setdefault("DOMAIN", "localhost")
+    _os.environ.setdefault("RATE_LIMIT_ENABLED", "True")  # Habilitar para tests
     # Usar exactamente el URL del engine ya inicializado (sqlite o postgres)
     try:
         _os.environ["DATABASE_URL"] = str(test_engine.url)
@@ -337,12 +345,26 @@ async def test_client(test_engine):  # type: ignore
         # Fallback mínimo si algo inesperado sucede
         _os.environ.setdefault("DATABASE_URL", TEST_DATABASE_URL)
 
+    # Mockear get_redis_pool para que devuelva un pool que al usarse
+    # en redis.Redis(connection_pool=pool) retorne nuestro cliente de test
+
+    # Crear un mock del pool compatible con ConnectionPool
+    mock_pool = MagicMock()
+    # El pool debe comportarse como si devolviera el cliente de test cuando se use en Redis()
+    # La forma más directa: patch redis.Redis para que devuelva redis_client
+
+    def mock_redis_constructor(connection_pool=None, **kwargs):
+        return redis_client
+
     # Import tardío de la app ahora que el entorno está listo
-    from app.main import app  # type: ignore
+    with patch("app.core.redis.get_redis_pool", return_value=mock_pool), patch(
+        "redis.asyncio.Redis", side_effect=mock_redis_constructor
+    ):
+        from app.main import app  # type: ignore
 
-    # Evitar deprecation usando transporte explícito
-    from httpx import ASGITransport
+        # Evitar deprecation usando transporte explícito
+        from httpx import ASGITransport
 
-    transport = ASGITransport(app=app)  # type: ignore[arg-type]
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
-        yield client
+        transport = ASGITransport(app=app)  # type: ignore[arg-type]
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            yield client

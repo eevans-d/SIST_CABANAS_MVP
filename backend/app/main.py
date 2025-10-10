@@ -129,30 +129,63 @@ app.add_middleware(
 # Rate limit middleware (simple per-IP + path, Redis-based). Bypass in development.
 @app.middleware("http")
 async def rate_limit(request: Request, call_next):
+    """
+    Middleware de rate limiting con observabilidad.
+
+    - Fixed window counter en Redis
+    - Métricas Prometheus de bloqueos y contadores actuales
+    - Fail-open si Redis falla (no bloquea requests)
+    - Bypass para endpoints de observabilidad
+    """
     try:
         if not settings.RATE_LIMIT_ENABLED or settings.ENVIRONMENT == "development":
             return await call_next(request)
+
         path = request.url.path
+
         # No limitar healthz, readyz ni metrics para no afectar observabilidad
         if path in ("/api/v1/healthz", "/api/v1/readyz", "/metrics"):
             return await call_next(request)
-        # clave por IP + path, ventana deslizante básica (fixed window)
+
+        # Obtener IP del cliente (considerar proxy headers)
         client_ip = request.client.host if request.client else "unknown"
+        if "X-Forwarded-For" in request.headers:
+            # Tomar la primera IP de la cadena (cliente real)
+            client_ip = request.headers["X-Forwarded-For"].split(",")[0].strip()
+
+        # clave por IP + path, ventana deslizante básica (fixed window)
         key = f"ratelimit:{client_ip}:{path}"
         pool = get_redis_pool()
         import redis.asyncio as redis
 
         r = redis.Redis(connection_pool=pool)
-        # incrementar y setear TTL si clave nueva
+
+        # Incrementar y setear TTL si clave nueva
         count = await r.incr(key)
         if count == 1:
             await r.expire(key, settings.RATE_LIMIT_WINDOW_SECONDS)
+
+        # Actualizar métrica de contador actual
+        from app.metrics import RATE_LIMIT_CURRENT_COUNT
+
+        RATE_LIMIT_CURRENT_COUNT.labels(client_ip=client_ip, path=path).set(count)
+
+        # Verificar si se excedió el límite
         if count > settings.RATE_LIMIT_REQUESTS:
+            from app.metrics import RATE_LIMIT_BLOCKED
+
+            RATE_LIMIT_BLOCKED.labels(path=path, client_ip=client_ip).inc()
             logger.warning("rate_limited", ip=client_ip, path=path, count=int(count))
             return JSONResponse(status_code=429, content={"error": "Too Many Requests"})
+
         return await call_next(request)
-    except Exception:  # pragma: no cover
-        # fallback: no bloquear si redis falla
+
+    except Exception as e:  # pragma: no cover
+        # Fail-open: no bloquear si redis falla
+        from app.metrics import RATE_LIMIT_REDIS_ERRORS
+
+        RATE_LIMIT_REDIS_ERRORS.inc()
+        logger.error("rate_limit_error", error=str(e))
         return await call_next(request)
 
 
