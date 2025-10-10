@@ -7,6 +7,7 @@ from typing import Any, Dict, Optional
 import structlog
 
 from app.core.config import get_settings
+from app.utils.retry import retry_async
 from .messages import (
     format_prereservation_confirmation,
     format_reservation_confirmed, 
@@ -27,10 +28,53 @@ logger = structlog.get_logger()
 settings = get_settings()
 
 
+@retry_async(max_attempts=3, base_delay=1.0, operation_name="whatsapp_send_text")
+async def _send_text_message_with_retry(
+    to_phone: str, body: str, timeout: float = 10.0
+) -> Dict[str, Any]:
+    """Función interna que hace el envío real con retry automático.
+    
+    Esta función se ejecuta solo en producción con credenciales válidas.
+    Tiene retry automático para manejar errores transitorios.
+    """
+    import httpx
+
+    url = f"https://graph.facebook.com/v17.0/{settings.WHATSAPP_PHONE_ID}/messages"
+    headers = {
+        "Authorization": f"Bearer {settings.WHATSAPP_ACCESS_TOKEN}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": to_phone,
+        "type": "text",
+        "text": {"body": body},
+    }
+    
+    async with httpx.AsyncClient(timeout=timeout) as client:
+        resp = await client.post(url, json=payload, headers=headers)
+        
+        # Lanzar excepción en errores para que el retry los maneje
+        if resp.status_code == 429:
+            # Rate limit - transitorio
+            raise ConnectionError(f"WhatsApp rate limit: {resp.status_code}")
+        elif resp.status_code >= 500:
+            # Server error - transitorio
+            raise ConnectionError(f"WhatsApp server error: {resp.status_code}")
+        elif resp.status_code >= 400:
+            # Client error - permanente (no retry)
+            logger.warning("whatsapp_client_error", code=resp.status_code, text=resp.text[:200])
+            raise ValueError(f"WhatsApp client error {resp.status_code}: {resp.text[:100]}")
+        
+        return {"status": "sent", "message_id": resp.json().get("messages", [{}])[0].get("id")}
+
+
 async def send_text_message(to_phone: str, body: str) -> Dict[str, Any]:
-    """Envía un mensaje de texto vía WhatsApp Cloud API.
+    """Envía un mensaje de texto vía WhatsApp Cloud API con retry automático.
 
     En desarrollo o si faltan credenciales, hace no-op para no romper tests.
+    En producción, reintenta automáticamente hasta 3 veces con exponential backoff.
+    
     Retorna diccionario con status: "sent" | "skipped" | "error".
     """
     # No-op en no producción o sin credenciales válidas
@@ -45,34 +89,54 @@ async def send_text_message(to_phone: str, body: str) -> Dict[str, Any]:
         return {"status": "skipped", "reason": "dummy_creds"}
 
     try:
-        import httpx
-
-        url = f"https://graph.facebook.com/v17.0/{settings.WHATSAPP_PHONE_ID}/messages"
-        headers = {
-            "Authorization": f"Bearer {settings.WHATSAPP_ACCESS_TOKEN}",
-            "Content-Type": "application/json",
-        }
-        payload = {
-            "messaging_product": "whatsapp",
-            "to": to_phone,
-            "type": "text",
-            "text": {"body": body},
-        }
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            resp = await client.post(url, json=payload, headers=headers)
-            if resp.status_code // 100 == 2:
-                return {"status": "sent"}
-            logger.warning("whatsapp_send_error", code=resp.status_code, text=resp.text[:200])
-            return {"status": "error", "code": resp.status_code}
+        return await _send_text_message_with_retry(to_phone, body)
     except Exception as e:  # pragma: no cover
         logger.exception("whatsapp_send_exception", error=str(e))
         return {"status": "error", "reason": "exception"}
 
 
+@retry_async(max_attempts=3, base_delay=1.0, operation_name="whatsapp_send_image")
+async def _send_image_message_with_retry(
+    to_phone: str, image_url: str, caption: Optional[str] = None, timeout: float = 15.0
+) -> Dict[str, Any]:
+    """Función interna que hace el envío real de imagen con retry automático."""
+    import httpx
+
+    url = f"https://graph.facebook.com/v17.0/{settings.WHATSAPP_PHONE_ID}/messages"
+    headers = {
+        "Authorization": f"Bearer {settings.WHATSAPP_ACCESS_TOKEN}",
+        "Content-Type": "application/json",
+    }
+    
+    image_payload: Dict[str, Any] = {"link": image_url}
+    if caption:
+        image_payload["caption"] = caption
+    
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": to_phone,
+        "type": "image",
+        "image": image_payload,
+    }
+    
+    async with httpx.AsyncClient(timeout=timeout) as client:
+        resp = await client.post(url, json=payload, headers=headers)
+        
+        if resp.status_code == 429:
+            raise ConnectionError(f"WhatsApp rate limit: {resp.status_code}")
+        elif resp.status_code >= 500:
+            raise ConnectionError(f"WhatsApp server error: {resp.status_code}")
+        elif resp.status_code >= 400:
+            logger.warning("whatsapp_image_client_error", code=resp.status_code, text=resp.text[:200])
+            raise ValueError(f"WhatsApp client error {resp.status_code}: {resp.text[:100]}")
+        
+        return {"status": "sent", "message_id": resp.json().get("messages", [{}])[0].get("id")}
+
+
 async def send_image_message(
     to_phone: str, image_url: str, caption: Optional[str] = None
 ) -> Dict[str, Any]:
-    """Envía una imagen vía WhatsApp Cloud API.
+    """Envía una imagen vía WhatsApp Cloud API con retry automático.
 
     Args:
         to_phone: Número de teléfono destino
@@ -94,35 +158,7 @@ async def send_image_message(
         return {"status": "skipped", "reason": "dummy_creds"}
 
     try:
-        import httpx
-
-        url = f"https://graph.facebook.com/v17.0/{settings.WHATSAPP_PHONE_ID}/messages"
-        headers = {
-            "Authorization": f"Bearer {settings.WHATSAPP_ACCESS_TOKEN}",
-            "Content-Type": "application/json",
-        }
-
-        # Payload para imagen
-        image_data: Dict[str, Any] = {"link": image_url}
-        if caption:
-            image_data["caption"] = caption
-
-        payload = {
-            "messaging_product": "whatsapp",
-            "to": to_phone,
-            "type": "image",
-            "image": image_data,
-        }
-
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            resp = await client.post(url, json=payload, headers=headers)
-            if resp.status_code // 100 == 2:
-                logger.info("whatsapp_image_sent", phone=to_phone, image_url=image_url)
-                return {"status": "sent"}
-            logger.warning(
-                "whatsapp_image_error", code=resp.status_code, text=resp.text[:200]
-            )
-            return {"status": "error", "code": resp.status_code}
+        return await _send_image_message_with_retry(to_phone, image_url, caption)
     except Exception as e:  # pragma: no cover
         logger.exception("whatsapp_image_exception", error=str(e))
         return {"status": "error", "reason": "exception"}
