@@ -6,6 +6,7 @@ import structlog
 from app.core.config import get_settings
 from app.core.database import async_session_maker
 from app.core.logging import setup_logging
+from app.core.middleware import TraceIDMiddleware
 from app.core.redis import get_redis_pool
 from app.jobs.cleanup import expire_prereservations, send_prereservation_reminders
 from app.jobs.import_ical import run_ical_sync
@@ -114,6 +115,9 @@ app = FastAPI(
 # Prometheus instrumentation (simple MVP). Expondrá /metrics
 Instrumentator().instrument(app).expose(app, include_in_schema=False, endpoint="/metrics")
 
+# Trace ID middleware (PRIMERO para que esté en todos los logs)
+app.add_middleware(TraceIDMiddleware)
+
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
@@ -187,6 +191,9 @@ async def rate_limit(request: Request, call_next):
         RATE_LIMIT_REDIS_ERRORS.inc()
         logger.error("rate_limit_error", error=str(e))
         return await call_next(request)
+
+
+# Routers
 
 
 # Request ID middleware (sin context manager erróneo)

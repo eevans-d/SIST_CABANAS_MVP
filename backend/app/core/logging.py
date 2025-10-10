@@ -9,10 +9,10 @@ settings = get_settings()
 def setup_logging():
     """Configure structured logging for the application"""
 
-    # Configure structlog
+    # Configure structlog with trace_id support
     structlog.configure(
         processors=[
-            structlog.contextvars.merge_contextvars,
+            structlog.contextvars.merge_contextvars,  # Incluye trace_id de contextvars
             structlog.stdlib.filter_by_level,
             structlog.stdlib.add_logger_name,
             structlog.stdlib.add_log_level,
