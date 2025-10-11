@@ -1,18 +1,20 @@
 from __future__ import annotations
-from fastapi import APIRouter, Request, Depends, Query
-from typing import Dict, Any, Optional
-from datetime import datetime, timezone
-import json
 
-from app.core.security import verify_whatsapp_signature
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+import json
+from datetime import datetime, timezone
+from typing import Any, Dict, Optional
+
 from app.core.database import get_db
-from app.services import nlu
-from app.services.reservations import ReservationService
-from app.models import Accommodation
-from app.services.whatsapp import send_text_message
+from app.core.security import verify_whatsapp_signature
 from app.metrics import NLU_PRE_RESERVE
+from app.models import Accommodation
+from app.services import nlu
+from app.services.button_handlers import handle_button_callback
+from app.services.reservations import ReservationService
+from app.services.whatsapp import send_text_message
+from fastapi import APIRouter, Depends, Query, Request
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter()
 
@@ -109,6 +111,33 @@ async def whatsapp_webhook(request: Request, db: AsyncSession = Depends(get_db))
         media_url = doc.get("id")
         metadata["filename"] = doc.get("filename")
         metadata["mime_type"] = doc.get("mime_type")
+    elif msg_type == "interactive":
+        # Manejar respuestas a botones o listas
+        interactive = msg.get("interactive", {})
+        interactive_type = interactive.get("type")  # "button_reply" o "list_reply"
+
+        if interactive_type == "button_reply":
+            button_reply = interactive.get("button_reply", {})
+            button_id = button_reply.get("id")
+            button_title = button_reply.get("title")
+            # Normalizar como texto con el button_id
+            texto = button_id
+            metadata["button_type"] = "reply"
+            metadata["button_id"] = button_id
+            metadata["button_title"] = button_title
+        elif interactive_type == "list_reply":
+            list_reply = interactive.get("list_reply", {})
+            list_id = list_reply.get("id")
+            list_title = list_reply.get("title")
+            list_description = list_reply.get("description")
+            # Normalizar como texto con el list_id
+            texto = list_id
+            metadata["button_type"] = "list"
+            metadata["button_id"] = list_id
+            metadata["button_title"] = list_title
+            metadata["button_description"] = list_description
+
+        msg_type = "text"  # Tratar como texto para procesamiento
     else:
         msg_type = "text"
         texto = None
@@ -126,6 +155,17 @@ async def whatsapp_webhook(request: Request, db: AsyncSession = Depends(get_db))
     # Orquestación mínima: si es texto, intentar NLU -> pre-reserva
     try:
         if msg_type == "text" and (texto or "").strip():
+            # Si es callback de botón, manejar primero
+            if metadata.get("button_type"):
+                button_id = metadata.get("button_id", "")
+                button_result = await handle_button_callback(
+                    button_id=button_id, user_phone=str(from_user), db=db
+                )
+                normalized["auto_action"] = "button_callback"
+                normalized["button_result"] = button_result
+                return normalized
+
+            # Si no es botón, procesar con NLU
             analysis = nlu.analyze(texto or "")
             normalized["nlu"] = analysis
 
