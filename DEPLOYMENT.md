@@ -1,23 +1,367 @@
-# 🚢 Guía de Deployment - Producción
+# 🚀 Guía de Deployment en Producción
 
-Guía paso a paso para desplegar el Sistema MVP de Reservas en producción.
+Esta guía cubre el deployment completo del Sistema de Reservas MVP en un entorno de producción.
 
-## 📋 Pre-requisitos
+## 📋 Prerrequisitos
 
-- Servidor Linux (Ubuntu 22.04+ recomendado)
-- Docker 24+ y Docker Compose 2.20+
-- Dominio con DNS configurado
-- Certificado SSL (Let's Encrypt)
-- 2 GB RAM mínimo, 4 GB recomendado
-- 20 GB espacio en disco
+### Servidor
+- **OS**: Ubuntu 20.04+ / Debian 11+ / CentOS 8+
+- **RAM**: Mínimo 2GB (recomendado 4GB+)
+- **CPU**: Mínimo 2 cores (recomendado 4+ cores)
+- **Storage**: Mínimo 20GB SSD (recomendado 50GB+)
+- **Network**: IP pública con puertos 80/443 abiertos
+
+### Software Base
+```bash
+# Actualizar sistema
+sudo apt update && sudo apt upgrade -y
+
+# Instalar Docker y Docker Compose
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+sudo usermod -aG docker $USER
+
+# Docker Compose v2
+sudo apt install docker-compose-plugin
+
+# Herramientas útiles
+sudo apt install -y nginx certbot python3-certbot-nginx htop curl git
+```
+
+### Dominio y DNS
+- Registrar dominio (ej: `reservas.example.com`)
+- Configurar DNS A records:
+  - `api.reservas.example.com` → IP del servidor
+  - `admin.reservas.example.com` → IP del servidor (opcional)
+
+## 🔧 Configuración Inicial
+
+### 1. Clonar Repositorio
+```bash
+cd /opt
+sudo git clone https://github.com/tu-org/sistema-reservas.git
+sudo chown -R $USER:$USER sistema-reservas
+cd sistema-reservas
+```
+
+### 2. Configurar Variables de Entorno
+```bash
+# Copiar template
+cp .env.prod.template .env.prod
+
+# Editar configuración
+nano .env.prod
+```
+
+**Variables críticas a configurar:**
+```env
+# Database
+POSTGRES_PASSWORD=tu_password_seguro_aqui
+
+# WhatsApp (obtener de Facebook Developers)
+WHATSAPP_ACCESS_TOKEN=tu_token_whatsapp
+WHATSAPP_APP_SECRET=tu_secret_whatsapp
+WHATSAPP_PHONE_NUMBER_ID=tu_phone_number_id
+
+# Mercado Pago (obtener de MP Developers)
+MERCADOPAGO_ACCESS_TOKEN=tu_token_mercadopago
+MERCADOPAGO_WEBHOOK_SECRET=tu_secret_mercadopago
+
+# Security
+JWT_SECRET_KEY=$(openssl rand -hex 32)
+
+# Domain
+DOMAIN=api.reservas.example.com
+CORS_ORIGINS=https://admin.reservas.example.com,https://reservas.example.com
+```
+
+### 3. Configurar SSL con Let's Encrypt
+```bash
+# Instalar certificado
+sudo certbot certonly --standalone -d api.reservas.example.com
+
+# Copiar certificados para nginx
+sudo mkdir -p nginx/ssl
+sudo cp /etc/letsencrypt/live/api.reservas.example.com/fullchain.pem nginx/ssl/
+sudo cp /etc/letsencrypt/live/api.reservas.example.com/privkey.pem nginx/ssl/
+sudo chown -R $USER:$USER nginx/ssl
+```
+
+### 4. Configurar Nginx
+```bash
+# Actualizar configuración con tu dominio
+sed -i 's/api.reservas.example.com/tu-dominio-real.com/g' nginx/conf.d/api.conf
+
+# Crear archivo .htpasswd para métricas
+sudo htpasswd -c nginx/.htpasswd metrics_user
+```
+
+## 🐳 Deployment con Docker
+
+### 1. Verificar Configuración
+```bash
+# Validar docker-compose
+docker compose -f docker-compose.prod.yml config
+
+# Verificar que no hay errores de sintaxis
+echo "✅ Configuración válida"
+```
+
+### 2. Iniciar Servicios Base
+```bash
+# Base de datos y Redis primero
+docker compose -f docker-compose.prod.yml up -d db redis
+
+# Esperar que estén ready
+docker compose -f docker-compose.prod.yml logs -f db redis
+```
+
+### 3. Ejecutar Migraciones
+```bash
+# Iniciar backend temporalmente para migraciones
+docker compose -f docker-compose.prod.yml run --rm backend alembic upgrade head
+
+# Verificar que las tablas se crearon
+docker compose -f docker-compose.prod.yml exec db psql -U postgres -d reservas_prod -c "\dt"
+```
+
+### 4. Iniciar Todos los Servicios
+```bash
+# Iniciar stack completo
+docker compose -f docker-compose.prod.yml up -d
+
+# Verificar estado
+docker compose -f docker-compose.prod.yml ps
+```
+
+### 5. Verificar Health Checks
+```bash
+# Health check de la API
+curl https://api.reservas.example.com/api/v1/healthz
+
+# Verificar métricas
+curl -u metrics_user:password https://api.reservas.example.com/metrics
+```
+
+## 📊 Configurar Monitoreo (Opcional)
+
+### 1. Iniciar Prometheus y Grafana
+```bash
+# Iniciar servicios de monitoreo
+docker compose -f docker-compose.prod.yml --profile monitoring up -d
+
+# Verificar Prometheus (puerto 9090)
+curl http://localhost:9090/api/v1/query?query=up
+
+# Acceder a Grafana (puerto 3000)
+# Usuario: admin, Password: configurado en GRAFANA_PASSWORD
+```
+
+### 2. Configurar Dashboards
+```bash
+# Grafana estará disponible en http://servidor:3000
+# Importar dashboards predefinidos de monitoring/grafana/dashboards/
+```
+
+## 🔐 Configuración de Seguridad
+
+### 1. Firewall
+```bash
+# Configurar UFW
+sudo ufw enable
+sudo ufw allow 22/tcp      # SSH
+sudo ufw allow 80/tcp      # HTTP
+sudo ufw allow 443/tcp     # HTTPS
+sudo ufw allow 9090/tcp    # Prometheus (opcional, solo IPs confiables)
+sudo ufw allow 3000/tcp    # Grafana (opcional, solo IPs confiables)
+```
+
+### 2. Auto-renovación SSL
+```bash
+# Configurar cron para renovación automática
+sudo crontab -e
+
+# Agregar línea:
+0 12 * * * /usr/bin/certbot renew --quiet && /usr/bin/systemctl reload nginx
+```
+
+### 3. Backups Automáticos
+```bash
+# Crear script de backup
+sudo tee /opt/backup-reservas.sh << 'EOF'
+#!/bin/bash
+BACKUP_DIR="/opt/backups"
+DATE=$(date +%Y%m%d_%H%M%S)
+
+mkdir -p $BACKUP_DIR
+
+# Backup PostgreSQL
+docker compose -f /opt/sistema-reservas/docker-compose.prod.yml exec -T db pg_dump -U postgres reservas_prod | gzip > $BACKUP_DIR/db_$DATE.sql.gz
+
+# Backup Redis
+docker compose -f /opt/sistema-reservas/docker-compose.prod.yml exec -T redis redis-cli --rdb /data/dump.rdb
+docker cp $(docker compose -f /opt/sistema-reservas/docker-compose.prod.yml ps -q redis):/data/dump.rdb $BACKUP_DIR/redis_$DATE.rdb
+
+# Limpiar backups antiguos (mantener últimos 7 días)
+find $BACKUP_DIR -name "*.sql.gz" -mtime +7 -delete
+find $BACKUP_DIR -name "*.rdb" -mtime +7 -delete
+
+echo "Backup completed: $DATE"
+EOF
+
+sudo chmod +x /opt/backup-reservas.sh
+
+# Configurar cron para backup diario
+sudo crontab -e
+# Agregar: 0 2 * * * /opt/backup-reservas.sh >> /var/log/backup-reservas.log 2>&1
+```
+
+## 🔧 Operaciones de Mantenimiento
+
+### Ver Logs
+```bash
+# Logs de todos los servicios
+docker compose -f docker-compose.prod.yml logs -f
+
+# Logs específicos
+docker compose -f docker-compose.prod.yml logs -f backend
+docker compose -f docker-compose.prod.yml logs -f nginx
+docker compose -f docker-compose.prod.yml logs -f db
+```
+
+### Escalado de Servicios
+```bash
+# Escalar backend (múltiples instancias)
+docker compose -f docker-compose.prod.yml up -d --scale backend=3
+
+# Verificar load balancing en nginx logs
+docker compose -f docker-compose.prod.yml logs nginx | grep backend
+```
+
+### Actualizaciones de Código
+```bash
+# Backup antes de actualizar
+/opt/backup-reservas.sh
+
+# Pull código nuevo
+git pull origin main
+
+# Rebuild y restart
+docker compose -f docker-compose.prod.yml build backend
+docker compose -f docker-compose.prod.yml up -d backend
+
+# Ejecutar migraciones si es necesario
+docker compose -f docker-compose.prod.yml run --rm backend alembic upgrade head
+```
+
+### Troubleshooting Común
+
+#### Backend no inicia
+```bash
+# Verificar logs
+docker compose -f docker-compose.prod.yml logs backend
+
+# Verificar variables de entorno
+docker compose -f docker-compose.prod.yml exec backend env | grep -E "(DATABASE|REDIS|WHATSAPP|MERCADO)"
+
+# Verificar conectividad a DB
+docker compose -f docker-compose.prod.yml exec backend python -c "
+import asyncio
+from app.core.database import async_session_maker
+from sqlalchemy import text
+
+async def test_db():
+    async with async_session_maker() as session:
+        result = await session.execute(text('SELECT 1'))
+        print('DB OK:', result.scalar())
+
+asyncio.run(test_db())
+"
+```
+
+#### SSL/Nginx problemas
+```bash
+# Verificar certificados
+sudo certbot certificates
+
+# Test configuración nginx
+docker compose -f docker-compose.prod.yml exec nginx nginx -t
+
+# Recargar nginx sin downtime
+docker compose -f docker-compose.prod.yml exec nginx nginx -s reload
+```
+
+#### Performance issues
+```bash
+# Verificar uso de recursos
+docker stats
+
+# Verificar métricas de la aplicación
+curl https://api.reservas.example.com/metrics | grep -E "(response_time|error_rate|concurrent)"
+
+# Verificar queries lentas en PostgreSQL
+docker compose -f docker-compose.prod.yml exec db psql -U postgres -d reservas_prod -c "
+SELECT query, mean_exec_time, calls, total_exec_time
+FROM pg_stat_statements
+WHERE mean_exec_time > 1000
+ORDER BY mean_exec_time DESC
+LIMIT 10;"
+```
+
+## 📈 Métricas de Éxito
+
+### Health Checks Automáticos
+```bash
+# Script de monitoreo simple
+#!/bin/bash
+ENDPOINT="https://api.reservas.example.com/api/v1/healthz"
+RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $ENDPOINT)
+
+if [ $RESPONSE -eq 200 ]; then
+    echo "✅ Sistema operativo"
+else
+    echo "❌ Sistema con problemas: HTTP $RESPONSE"
+    # Aquí podrías enviar alerta (email, Slack, etc.)
+fi
+```
+
+### SLOs a Monitorear
+- **Uptime**: > 99.5%
+- **Response Time P95**: < 3s para texto, < 15s para audio
+- **Error Rate**: < 1%
+- **Database Response**: < 100ms P95
+- **SSL Certificate**: > 30 días hasta expiración
+
+## 🎯 Checklist de Go-Live
+
+- [ ] Dominio configurado y DNS propagado
+- [ ] SSL certificado instalado y válido
+- [ ] Variables de entorno de producción configuradas
+- [ ] Migraciones de base de datos ejecutadas
+- [ ] Health checks pasando
+- [ ] Webhooks configurados en WhatsApp y Mercado Pago
+- [ ] Backups automáticos configurados
+- [ ] Monitoreo configurado (métricas + alertas)
+- [ ] Firewall configurado
+- [ ] Logs centralizados funcionando
+- [ ] Documentación de runbooks actualizada
+- [ ] Equipo entrenado en operaciones
+
+## 🆘 Contactos de Emergencia
+
+En caso de problemas críticos:
+
+1. **Verificar health checks**: `/api/v1/healthz`
+2. **Revisar logs**: `docker compose logs -f`
+3. **Verificar métricas**: `/metrics`
+4. **Escalamiento manual**: Incrementar recursos temporalmente
+5. **Rollback**: Volver a versión anterior conocida estable
 
 ---
 
-## 🔧 1. Preparación del Servidor
+**🎉 ¡Sistema listo para producción!**
 
-### Actualizar Sistema
-```bash
-sudo apt update && sudo apt upgrade -y
+Para soporte adicional, consultar la documentación técnica en `/docs` o contactar al equipo de desarrollo.
 sudo apt install -y git curl vim htop
 ```
 

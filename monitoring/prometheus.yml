@@ -1,0 +1,70 @@
+# Prometheus configuration for Sistema de Reservas
+# Configuración de monitoreo y alertas
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'sistema-reservas'
+    environment: 'production'
+
+# Alertmanager configuration (opcional)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets:
+#           - alertmanager:9093
+
+# Rule files for alerts
+# rule_files:
+#   - "alert_rules.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Sistema de Reservas API
+  - job_name: 'reservas-api'
+    static_configs:
+      - targets: ['backend:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    honor_labels: true
+    params:
+      format: ['prometheus']
+
+  # Nginx metrics (si nginx-prometheus-exporter está configurado)
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx:9113']
+    scrape_interval: 15s
+    metrics_path: '/metrics'
+
+  # PostgreSQL metrics (si postgres_exporter está configurado)
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 15s
+
+  # Redis metrics (si redis_exporter está configurado)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 15s
+
+  # Node exporter para métricas del sistema (opcional)
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 15s
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 15s
+
+# Storage configuration
+storage:
+  tsdb:
+    retention.time: 15d
+    retention.size: 1GB

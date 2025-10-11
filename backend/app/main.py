@@ -105,8 +105,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Sistema de Reservas API",
-    description="API para gestión automatizada de reservas de alojamientos",
+    title="🏠 Sistema de Reservas API",
+    description="Sistema MVP de automatización de reservas con WhatsApp, pagos y sincronización iCal",
     version="1.0.0",
     lifespan=lifespan,
     docs_url="/api/docs" if settings.ENVIRONMENT != "production" else None,
@@ -275,14 +275,19 @@ async def internal_error_handler(request: Request, exc):
 
 
 # Include routers
-app.include_router(health.router, prefix="/api/v1")
-app.include_router(reservations_router.router, prefix="/api/v1")
-app.include_router(mercadopago_router.router, prefix="/api/v1/mercadopago")
-app.include_router(whatsapp_router.router, prefix="/api/v1")
-app.include_router(ical_router.router, prefix="/api/v1")
-app.include_router(audio_router.router, prefix="/api/v1")
-app.include_router(admin_router.router, prefix="/api/v1")
-app.include_router(nlu_router.router, prefix="/api/v1")
+app.include_router(health.router, prefix="/api/v1", tags=["Health"])
+app.include_router(reservations_router.router, prefix="/api/v1", tags=["Reservations"])
+app.include_router(mercadopago_router.router, prefix="/api/v1/mercadopago", tags=["Payments"])
+app.include_router(whatsapp_router.router, prefix="/api/v1", tags=["WhatsApp"])
+app.include_router(ical_router.router, prefix="/api/v1", tags=["iCal"])
+app.include_router(audio_router.router, prefix="/api/v1", tags=["Audio"])
+app.include_router(admin_router.router, prefix="/api/v1", tags=["Admin"])
+app.include_router(nlu_router.router, prefix="/api/v1", tags=["NLU"])
+
+# Configurar OpenAPI personalizado
+from app.schemas.openapi import custom_openapi
+
+app.openapi = lambda: custom_openapi(app)
 
 
 @app.get("/")

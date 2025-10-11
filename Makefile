@@ -62,6 +62,11 @@ test-fast: ## Ejecutar tests críticos rápidos
 	@echo "$(GREEN)Ejecutando tests críticos...$(NC)"
 	cd backend && $(PYTEST) tests/test_health.py tests/test_nlu.py tests/test_reservation_lifecycle.py -v
 
+test-e2e: ## Ejecutar tests End-to-End completos
+	@echo "$(GREEN)Ejecutando tests E2E...$(NC)"
+	cd backend && $(PYTEST) tests/test_e2e_flows.py -v --tb=short
+	@echo "$(GREEN)✓ Tests E2E completados$(NC)"
+
 ##@ Development
 
 dev: ## Levantar entorno de desarrollo (sin rebuild)
