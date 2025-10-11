@@ -1,184 +1,365 @@
-# Sistema MVP de Reservas de Alojamientos# Sistema MVP de Reservas de Alojamientos
+# 🏡 Sistema MVP de Automatización de Reservas# Sistema MVP de Reservas de Alojamientos# Sistema MVP de Reservas de Alojamientos
 
 
 
-[![CI](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci.yml)[![CI](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci.yml)
-
-[![Deploy Staging](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/deploy-staging.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/deploy-staging.yml)[![Deploy Staging](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/deploy-staging.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/deploy-staging.yml)
-
-[![Security Scan](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/security-scan.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/security-scan.yml)[![Security Scan](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/security-scan.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/security-scan.yml)
-
-[![Python](https://img.shields.io/badge/python-3.12-blue)](https://www.python.org/)[![Production Ready](https://img.shields.io/badge/production-ready-brightgreen)](https://github.com/eevans-d/SIST_CABANAS_MVP)
-
-[![FastAPI](https://img.shields.io/badge/fastapi-0.115-009688)](https://fastapi.tiangolo.com/)[![Python](https://img.shields.io/badge/python-3.12-blue)](https://www.python.org/)
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)[![FastAPI](https://img.shields.io/badge/fastapi-0.115-009688)](https://fastapi.tiangolo.com/)
-
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
-
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-
-> **Sistema de automatización completo** para reservas de alojamientos con WhatsApp Business, anti-doble-booking garantizado y pagos integrados con Mercado Pago.[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
+Sistema completo de automatización de reservas con integración WhatsApp, Mercado Pago, y sincronización iCal.
 
 
 
----> **Sistema de automatización completo** para reservas de alojamientos con WhatsApp Business, anti-doble-booking garantizado y pagos integrados.
+[![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/)[![CI](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci.yml)[![CI](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci.yml)
+
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-green.svg)](https://fastapi.tiangolo.com/)
+
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue.svg)](https://www.postgresql.org/)[![Deploy Staging](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/deploy-staging.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/deploy-staging.yml)[![Deploy Staging](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/deploy-staging.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/deploy-staging.yml)
 
 
+
+## 🎯 Características[![Security Scan](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/security-scan.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/security-scan.yml)[![Security Scan](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/security-scan.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/security-scan.yml)
+
+
+
+### 🤖 Automatización Completa[![Python](https://img.shields.io/badge/python-3.12-blue)](https://www.python.org/)[![Production Ready](https://img.shields.io/badge/production-ready-brightgreen)](https://github.com/eevans-d/SIST_CABANAS_MVP)
+
+- WhatsApp Bot con NLU básico
+
+- Audio Processing (Whisper STT)[![FastAPI](https://img.shields.io/badge/fastapi-0.115-009688)](https://fastapi.tiangolo.com/)[![Python](https://img.shields.io/badge/python-3.12-blue)](https://www.python.org/)
+
+- Pre-reservas con expiración automática
+
+- Procesamiento de pagos (Mercado Pago)[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)[![FastAPI](https://img.shields.io/badge/fastapi-0.115-009688)](https://fastapi.tiangolo.com/)
+
+
+
+### 🛡️ Robustez[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
+- **Anti doble-booking**: PostgreSQL constraint + Redis locks
+
+- **Idempotencia**: Prevención de webhooks duplicados (48h TTL)[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
+- **Circuit Breaker**: Resilencia ante fallos externos
+
+- **Rate Limiting**: 60 req/min por IP> **Sistema de automatización completo** para reservas de alojamientos con WhatsApp Business, anti-doble-booking garantizado y pagos integrados con Mercado Pago.[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
+
+
+
+### 📊 Observabilidad
+
+- 20+ métricas Prometheus
+
+- Structured logging (JSON + trace-id)---> **Sistema de automatización completo** para reservas de alojamientos con WhatsApp Business, anti-doble-booking garantizado y pagos integrados.
+
+- Health checks comprehensivos
+
+
+
+## 🚀 Quick Start
 
 ## 🎯 Estado del Proyecto---
 
-
-
-✅ **MVP Core Completado** - Todos los componentes críticos funcionando  ## 🎯 Estado del Proyecto
-
-✅ **Fase 4 en Progreso** - 60% completada (4.1 ✅, 4.2 ✅, 4.3 → siguiente)
-
-✅ **37 Tests Pasando** - Suite completa con 87% coverage  ✅ **MVP COMPLETAMENTE FUNCIONAL** - Fase 4 en progreso (60% completada)
-
-✅ **CI/CD Automatizado** - GitHub Actions con deploy automático  ✅ **37 Tests Pasando** - Suite completa con 87% coverage
-
-✅ **Production Ready** - Listo para deployment  ✅ **CI/CD Automatizado** - GitHub Actions con tests, linting, security scan
-
-✅ **Deploy Automatizado** - Scripts de validación, deploy y rollback
-
----✅ **Documentación Exhaustiva** - 32 archivos, 14,000+ líneas
-
-
-
-## 🚀 Características Principales---
-
-
-
-### 🔒 Anti-Doble-Booking Garantizado## 🚀 Características Principales
-
-- **PostgreSQL Constraint:** `EXCLUDE USING gist` con daterange
-
-- **Redis Locks:** Locks distribuidos con TTL 30 minutos### Anti-Doble-Booking Garantizado
-
-- **Prevención multicapa:** Race condition handling DB + aplicación- **PostgreSQL Constraint:** `EXCLUDE USING gist` con daterange
-
-- **Redis Locks:** Locks distribuidos con TTL 30 minutos
-
-### 📱 Integración WhatsApp Business- **Prevención multicapa:** Race condition handling a nivel DB y aplicación
-
-- **Webhooks seguros:** Validación HMAC-SHA256
-
-- **Audio STT:** Transcripción con Whisper + FFmpeg### Integración WhatsApp Business
-
-- **NLU básico:** Detección de intenciones (regex + dateparser)- **Webhooks seguros:** Validación HMAC-SHA256
-
-- **Respuestas automáticas:** Templates contextuales- **Audio STT:** Transcripción con Whisper + FFmpeg
-
-- **NLU básico:** Detección de intenciones (regex + dateparser)
-
-### 💳 Pagos Mercado Pago- **Respuestas automáticas:** Templates contextuales
-
-- **Webhooks idempotentes:** Manejo de duplicados
-
-- **Validación de firmas:** x-signature header### Pagos Mercado Pago
-
-- **Flujo completo:** Pre-reserva → Pago → Confirmación automática- **Webhooks idempotentes:** Manejo de duplicados
-
-- **Validación de firmas:** x-signature header
-
-### 📅 Sincronización iCal- **Flujo completo:** Pre-reserva → Pago → Confirmación automática
-
-- **Import/Export:** Compatible con Airbnb, Booking.com
-
-- **Deduplicación:** Por UID de evento### Sincronización iCal
-
-- **Background jobs:** Sync automático cada 15 minutos- **Import/Export:** Compatible con Airbnb, Booking.com
-
-- **Deduplicación:** Por UID de evento
-
-### 📊 Observabilidad- **Background jobs:** Sync automático cada 15 minutos
-
-- **Prometheus metrics:** 17+ métricas custom de negocio
-
-- **Health checks:** `/healthz` y `/readyz` con latencias### Observabilidad
-
-- **Structured logging:** JSON logs con trace IDs- **Prometheus metrics:** 17+ métricas custom de negocio
-
-- **Rate limiting:** Por IP + endpoint con métricas- **Health checks:** `/healthz` y `/readyz` con latencias
-
-- **Structured logging:** JSON logs con trace IDs
-
----- **Rate limiting:** Por IP + endpoint con métricas
-
-
-
-## ⚡ Quick Start (3 minutos)---
-
-
-
-### Desarrollo Local## ⚡ Quick Start (3 minutos)
-
-
-
-```bash### Desarrollo Local
-
-# 1. Clonar y configurar
-
-git clone https://github.com/eevans-d/SIST_CABANAS_MVP.git```bash
-
-cd SIST_CABANAS_MVP# 1. Clonar y configurar
-
-cp backend/.env.template backend/.envgit clone https://github.com/eevans-d/SIST_CABANAS_MVP.git
-
-cd SIST_CABANAS_MVP
-
-# 2. Levantar servicioscp backend/.env.template backend/.env
-
-cd backend
-
-docker-compose up -d# 2. Levantar servicios con Docker
-
-cd backend
-
-# 3. Ejecutar migracionesdocker-compose up -d
-
-docker-compose exec api alembic upgrade head
-
-# 3. Ejecutar migraciones
-
-# 4. Verificardocker-compose exec api alembic upgrade head
-
-curl http://localhost:8000/api/v1/healthz
-
-# Respuesta esperada: {"status": "healthy", ...}# 4. Verificar
-
-```curl http://localhost:8000/api/v1/healthz
-
-
-
-**Accesos:**./test_constraint_specific.sh  - **Anti-Doble-Booking:** Constraint PostgreSQL `EXCLUDE USING gist` + locks Redis distribuidos
-
-- **API:** http://localhost:8000
-
-- **Docs:** http://localhost:8000/docs- **WhatsApp Business:** Webhook con firma HMAC SHA-256, normalización de mensajes, audio STT
-
-- **Métricas:** http://localhost:8000/metrics
-
-# Test flujo completo end-to-end- **Mercado Pago:** Integración con validación de firmas y manejo idempotente
-
-### Deploy a Producción
-
-./test_end_to_end.sh- **iCal Import/Export:** Sincronización automática con Airbnb/Booking
-
 ```bash
 
-# 1. Configurar variables de entorno- **NLU Básico:** Detección de intención y extracción de entidades (fechas, huéspedes)
+# 1. Clonar
+
+git clone https://github.com/eevans-d/SIST_CABANAS_MVP.git
+
+cd SIST_CABANAS_MVP✅ **MVP Core Completado** - Todos los componentes críticos funcionando  ## 🎯 Estado del Proyecto
+
+
+
+# 2. Configurar✅ **Fase 4 en Progreso** - 60% completada (4.1 ✅, 4.2 ✅, 4.3 → siguiente)
 
 cp backend/.env.template backend/.env
 
-nano backend/.env  # Completar con valores reales# Test idempotencia webhooks- **Observabilidad:** Métricas Prometheus, health checks, logs estructurados
+# Editar backend/.env con tus credenciales✅ **37 Tests Pasando** - Suite completa con 87% coverage  ✅ **MVP COMPLETAMENTE FUNCIONAL** - Fase 4 en progreso (60% completada)
 
 
 
-# 2. Deploy automatizado./test_idempotency.sh- **Jobs Background:** Expiración de pre-reservas, sync iCal, recordatorios
+# 3. Iniciar✅ **CI/CD Automatizado** - GitHub Actions con deploy automático  ✅ **37 Tests Pasando** - Suite completa con 87% coverage
 
-./scripts/deploy.sh
+docker-compose up -d
+
+✅ **Production Ready** - Listo para deployment  ✅ **CI/CD Automatizado** - GitHub Actions con tests, linting, security scan
+
+# 4. Migrar
+
+docker-compose exec backend alembic upgrade head✅ **Deploy Automatizado** - Scripts de validación, deploy y rollback
+
+
+
+# 5. Verificar---✅ **Documentación Exhaustiva** - 32 archivos, 14,000+ líneas
+
+curl http://localhost:8000/api/v1/healthz
+
+```
+
+
+
+## 📚 Documentación## 🚀 Características Principales---
+
+
+
+- **API Docs**: http://localhost:8000/docs
+
+- **Metrics**: http://localhost:8000/metrics
+
+- **[Estado del MVP](./MVP_STATUS.md)**### 🔒 Anti-Doble-Booking Garantizado## 🚀 Características Principales
+
+- **[Deployment Guide](./DEPLOYMENT.md)**
+
+- **PostgreSQL Constraint:** `EXCLUDE USING gist` con daterange
+
+## 🔧 Configuración Crítica
+
+- **Redis Locks:** Locks distribuidos con TTL 30 minutos### Anti-Doble-Booking Garantizado
+
+```env
+
+# WhatsApp- **Prevención multicapa:** Race condition handling DB + aplicación- **PostgreSQL Constraint:** `EXCLUDE USING gist` con daterange
+
+WHATSAPP_ACCESS_TOKEN=tu_token
+
+WHATSAPP_APP_SECRET=tu_secret- **Redis Locks:** Locks distribuidos con TTL 30 minutos
+
+
+
+# Mercado Pago### 📱 Integración WhatsApp Business- **Prevención multicapa:** Race condition handling a nivel DB y aplicación
+
+MERCADOPAGO_ACCESS_TOKEN=tu_token
+
+- **Webhooks seguros:** Validación HMAC-SHA256
+
+# Database
+
+DATABASE_URL=postgresql+asyncpg://user:pass@localhost:5432/db- **Audio STT:** Transcripción con Whisper + FFmpeg### Integración WhatsApp Business
+
+REDIS_URL=redis://localhost:6379/0
+
+```- **NLU básico:** Detección de intenciones (regex + dateparser)- **Webhooks seguros:** Validación HMAC-SHA256
+
+
+
+## 📖 Uso Básico- **Respuestas automáticas:** Templates contextuales- **Audio STT:** Transcripción con Whisper + FFmpeg
+
+
+
+### Consultar Disponibilidad- **NLU básico:** Detección de intenciones (regex + dateparser)
+
+```bash
+
+curl -X GET "http://localhost:8000/api/v1/reservations/availability" \### 💳 Pagos Mercado Pago- **Respuestas automáticas:** Templates contextuales
+
+  -H "Content-Type: application/json" \
+
+  -d '{- **Webhooks idempotentes:** Manejo de duplicados
+
+    "accommodation_id": 1,
+
+    "check_in": "2025-10-20",- **Validación de firmas:** x-signature header### Pagos Mercado Pago
+
+    "check_out": "2025-10-22"
+
+  }'- **Flujo completo:** Pre-reserva → Pago → Confirmación automática- **Webhooks idempotentes:** Manejo de duplicados
+
+```
+
+- **Validación de firmas:** x-signature header
+
+### Crear Reserva
+
+```bash### 📅 Sincronización iCal- **Flujo completo:** Pre-reserva → Pago → Confirmación automática
+
+curl -X POST "http://localhost:8000/api/v1/reservations" \
+
+  -H "Content-Type: application/json" \- **Import/Export:** Compatible con Airbnb, Booking.com
+
+  -d '{
+
+    "accommodation_id": 1,- **Deduplicación:** Por UID de evento### Sincronización iCal
+
+    "check_in": "2025-10-20",
+
+    "check_out": "2025-10-22",- **Background jobs:** Sync automático cada 15 minutos- **Import/Export:** Compatible con Airbnb, Booking.com
+
+    "guests": 2,
+
+    "guest_name": "Juan Pérez",- **Deduplicación:** Por UID de evento
+
+    "guest_phone": "+5491123456789"
+
+  }'### 📊 Observabilidad- **Background jobs:** Sync automático cada 15 minutos
+
+```
+
+- **Prometheus metrics:** 17+ métricas custom de negocio
+
+## 🧪 Testing
+
+- **Health checks:** `/healthz` y `/readyz` con latencias### Observabilidad
+
+```bash
+
+cd backend- **Structured logging:** JSON logs con trace IDs- **Prometheus metrics:** 17+ métricas custom de negocio
+
+pytest tests/ -v
+
+pytest tests/ --cov=app --cov-report=html- **Rate limiting:** Por IP + endpoint con métricas- **Health checks:** `/healthz` y `/readyz` con latencias
+
+```
+
+- **Structured logging:** JSON logs con trace IDs
+
+## 📊 Arquitectura
+
+---- **Rate limiting:** Por IP + endpoint con métricas
+
+```
+
+WhatsApp/Email → FastAPI → PostgreSQL
+
+                    ↓         (+ btree_gist)
+
+              Redis (locks)## ⚡ Quick Start (3 minutos)---
+
+                    ↓
+
+            Prometheus (metrics)
+
+```
+
+### Desarrollo Local## ⚡ Quick Start (3 minutos)
+
+**Stack:**
+
+- FastAPI 0.115+ (async)
+
+- PostgreSQL 16 + btree_gist
+
+- Redis 7```bash### Desarrollo Local
+
+- SQLAlchemy 2.0+ AsyncSession
+
+# 1. Clonar y configurar
+
+**Integraciones:**
+
+- WhatsApp Business Cloud APIgit clone https://github.com/eevans-d/SIST_CABANAS_MVP.git```bash
+
+- Mercado Pago
+
+- Whisper STTcd SIST_CABANAS_MVP# 1. Clonar y configurar
+
+- iCal (RFC 5545)
+
+cp backend/.env.template backend/.envgit clone https://github.com/eevans-d/SIST_CABANAS_MVP.git
+
+## 🐛 Troubleshooting
+
+cd SIST_CABANAS_MVP
+
+### Doble-booking error
+
+Normal - el sistema está previniendo correctamente:# 2. Levantar servicioscp backend/.env.template backend/.env
+
+```sql
+
+SELECT conname FROM pg_constraint cd backend
+
+WHERE conname = 'no_overlap_reservations';
+
+```docker-compose up -d# 2. Levantar servicios con Docker
+
+
+
+### iCal sync atrasadocd backend
+
+```bash
+
+docker-compose logs backend | grep "ical_sync"# 3. Ejecutar migracionesdocker-compose up -d
+
+curl -X POST "http://localhost:8000/api/v1/ical/sync/1"
+
+```docker-compose exec api alembic upgrade head
+
+
+
+### Redis unavailable# 3. Ejecutar migraciones
+
+Sistema funciona en fail-open mode. Verificar:
+
+```bash# 4. Verificardocker-compose exec api alembic upgrade head
+
+docker-compose ps redis
+
+docker-compose logs rediscurl http://localhost:8000/api/v1/healthz
+
+```
+
+# Respuesta esperada: {"status": "healthy", ...}# 4. Verificar
+
+## 📝 Docs Adicionales
+
+```curl http://localhost:8000/api/v1/healthz
+
+- **[MVP_STATUS.md](./MVP_STATUS.md)** - Estado del proyecto
+
+- **[PROGRESO_DIARIO.md](./PROGRESO_DIARIO.md)** - Log de desarrollo
+
+- **[copilot-instructions.md](./.github/copilot-instructions.md)** - Reglas técnicas
+
+**Accesos:**./test_constraint_specific.sh  - **Anti-Doble-Booking:** Constraint PostgreSQL `EXCLUDE USING gist` + locks Redis distribuidos
+
+## 🤝 Contribución
+
+- **API:** http://localhost:8000
+
+1. Fork el repo
+
+2. Crear branch (`git checkout -b feature/nueva-feat`)- **Docs:** http://localhost:8000/docs- **WhatsApp Business:** Webhook con firma HMAC SHA-256, normalización de mensajes, audio STT
+
+3. Commit (`git commit -m 'feat: nueva funcionalidad'`)
+
+4. Push (`git push origin feature/nueva-feat`)- **Métricas:** http://localhost:8000/metrics
+
+5. Abrir PR
+
+# Test flujo completo end-to-end- **Mercado Pago:** Integración con validación de firmas y manejo idempotente
+
+Seguir [Conventional Commits](https://www.conventionalcommits.org/)
+
+### Deploy a Producción
+
+## 📄 Licencia
+
+./test_end_to_end.sh- **iCal Import/Export:** Sincronización automática con Airbnb/Booking
+
+MIT License
+
+```bash
+
+## 🎯 Roadmap Post-MVP
+
+# 1. Configurar variables de entorno- **NLU Básico:** Detección de intención y extracción de entidades (fechas, huéspedes)
+
+- [ ] Dashboard admin React
+
+- [ ] Multi-propiedadcp backend/.env.template backend/.env
+
+- [ ] Analytics avanzado
+
+- [ ] AI agents con LLMnano backend/.env  # Completar con valores reales# Test idempotencia webhooks- **Observabilidad:** Métricas Prometheus, health checks, logs estructurados
+
+
+
+---
+
+
+
+**v1.0.0 - MVP Completo y Producción-Ready**# 2. Deploy automatizado./test_idempotency.sh- **Jobs Background:** Expiración de pre-reservas, sync iCal, recordatorios
+
+
+
+Issues: https://github.com/eevans-d/SIST_CABANAS_MVP/issues./scripts/deploy.sh
+
 
 
 
