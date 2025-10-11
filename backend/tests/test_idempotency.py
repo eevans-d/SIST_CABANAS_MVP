@@ -5,24 +5,19 @@ Verifica que el middleware funcione correctamente para prevenir duplicación
 de requests críticos en webhooks y endpoints de reservas.
 """
 
-import json
 from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from app.core.database import async_session_maker
 from app.middleware.idempotency import IdempotencyMiddleware
 from app.models.idempotency import IdempotencyKey
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
-from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import select
-from sqlalchemy.exc import PendingRollbackError
 
 
 class TestIdempotencyMiddleware:
-    """Tests para el middleware de idempotencia."""
+    """Test cases for the idempotency middleware."""
 
     @pytest.fixture
     def app_with_idempotency(self):
@@ -125,7 +120,6 @@ class TestIdempotencyMiddleware:
     @pytest.mark.asyncio
     async def test_middleware_error_handling(self, app_with_idempotency):
         """Verifica que errores en middleware no bloqueen requests."""
-
         # Mock para simular error en base de datos
         with patch("app.middleware.idempotency.async_session_maker") as mock_session:
             mock_session.side_effect = Exception("Database error")

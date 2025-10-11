@@ -55,6 +55,7 @@ class IdempotencyKey(Base, TimestampMixin):
     extra_metadata = Column(Text, nullable=True)
 
     def __init__(self, **kwargs):
+        """Inicializa una nueva clave de idempotencia con TTL por defecto de 48h."""
         super().__init__(**kwargs)
         if "expires_at" not in kwargs:
             # TTL por defecto: 48 horas
@@ -96,6 +97,7 @@ class IdempotencyKey(Base, TimestampMixin):
         return False  # Si no es datetime, no está expirado (caso edge)
 
     def __repr__(self):
+        """Representación string del modelo."""
         return f"<IdempotencyKey(key='{self.key[:16]}...', endpoint='{self.endpoint}')>"
 
 

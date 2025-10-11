@@ -9,7 +9,7 @@ import hashlib
 import json
 import logging
 import time
-from typing import Any, Awaitable, Callable, Dict, Optional
+from typing import Callable, Optional
 
 from app.core.config import get_settings
 from app.core.database import async_session_maker
@@ -22,7 +22,7 @@ from app.metrics import (
     IDEMPOTENCY_PROCESSING_TIME,
 )
 from app.models.idempotency import IdempotencyKey
-from fastapi import HTTPException, Request, Response
+from fastapi import Request, Response
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -57,6 +57,15 @@ class IdempotencyMiddleware(BaseHTTPMiddleware):
         ttl_hours: int = 48,
         include_headers: Optional[list[str]] = None,
     ):
+        """
+        Inicializa el middleware de idempotencia.
+
+        Args:
+            app: Aplicación FastAPI
+            enabled_endpoints: Lista de endpoints donde aplicar idempotencia
+            ttl_hours: Tiempo de vida de las claves de idempotencia en horas
+            include_headers: Headers a incluir en el hash de idempotencia
+        """
         super().__init__(app)
         self.ttl_hours = ttl_hours
 
