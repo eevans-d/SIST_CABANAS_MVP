@@ -1,3 +1,5 @@
+"""WhatsApp Business API service for sending messages and handling interactions."""
+
 from __future__ import annotations
 
 from datetime import date
@@ -10,10 +12,7 @@ from app.utils.retry import retry_async
 
 from .messages import (
     format_availability_response,
-    format_error_capacity_exceeded,
     format_error_date_overlap,
-    format_error_generic,
-    format_error_invalid_dates,
     format_error_no_availability,
     format_payment_approved,
     format_payment_pending,
@@ -66,7 +65,10 @@ async def _send_text_message_with_retry(
             logger.warning("whatsapp_client_error", code=resp.status_code, text=resp.text[:200])
             raise ValueError(f"WhatsApp client error {resp.status_code}: {resp.text[:100]}")
 
-        return {"status": "sent", "message_id": resp.json().get("messages", [{}])[0].get("id")}
+        return {
+            "status": "sent",
+            "message_id": (await resp.json()).get("messages", [{}])[0].get("id"),
+        }
 
 
 async def send_text_message(to_phone: str, body: str) -> Dict[str, Any]:
@@ -84,7 +86,10 @@ async def send_text_message(to_phone: str, body: str) -> Dict[str, Any]:
     if not settings.WHATSAPP_ACCESS_TOKEN or not settings.WHATSAPP_PHONE_ID:
         logger.warning("whatsapp_send_skipped_missing_creds")
         return {"status": "skipped", "reason": "missing_creds"}
-    if settings.WHATSAPP_ACCESS_TOKEN == "dummy" or settings.WHATSAPP_PHONE_ID == "dummy":
+    if (
+        settings.WHATSAPP_ACCESS_TOKEN == "dummy"  # nosec B105
+        or settings.WHATSAPP_PHONE_ID == "dummy"  # nosec B105
+    ):
         logger.info("whatsapp_send_skipped_dummy")
         return {"status": "skipped", "reason": "dummy_creds"}
 
@@ -132,7 +137,10 @@ async def _send_image_message_with_retry(
             )
             raise ValueError(f"WhatsApp client error {resp.status_code}: {resp.text[:100]}")
 
-        return {"status": "sent", "message_id": resp.json().get("messages", [{}])[0].get("id")}
+        return {
+            "status": "sent",
+            "message_id": (await resp.json()).get("messages", [{}])[0].get("id"),
+        }
 
 
 async def send_image_message(
@@ -155,7 +163,10 @@ async def send_image_message(
     if not settings.WHATSAPP_ACCESS_TOKEN or not settings.WHATSAPP_PHONE_ID:
         logger.warning("whatsapp_image_skipped_missing_creds")
         return {"status": "skipped", "reason": "missing_creds"}
-    if settings.WHATSAPP_ACCESS_TOKEN == "dummy" or settings.WHATSAPP_PHONE_ID == "dummy":
+    if (
+        settings.WHATSAPP_ACCESS_TOKEN == "dummy"  # nosec B105
+        or settings.WHATSAPP_PHONE_ID == "dummy"  # nosec B105
+    ):
         logger.info("whatsapp_image_skipped_dummy")
         return {"status": "skipped", "reason": "dummy_creds"}
 
@@ -583,7 +594,10 @@ async def _send_interactive_buttons_with_retry(
             )
             raise ValueError(f"WhatsApp client error {resp.status_code}: {resp.text[:100]}")
 
-        return {"status": "sent", "message_id": resp.json().get("messages", [{}])[0].get("id")}
+        return {
+            "status": "sent",
+            "message_id": (await resp.json()).get("messages", [{}])[0].get("id"),
+        }
 
 
 async def send_interactive_buttons(
@@ -628,7 +642,10 @@ async def send_interactive_buttons(
     if not settings.WHATSAPP_ACCESS_TOKEN or not settings.WHATSAPP_PHONE_ID:
         logger.warning("whatsapp_buttons_skipped_missing_creds")
         return {"status": "skipped", "reason": "missing_creds"}
-    if settings.WHATSAPP_ACCESS_TOKEN == "dummy" or settings.WHATSAPP_PHONE_ID == "dummy":
+    if (
+        settings.WHATSAPP_ACCESS_TOKEN == "dummy"  # nosec B105
+        or settings.WHATSAPP_PHONE_ID == "dummy"  # nosec B105
+    ):
         logger.info("whatsapp_buttons_skipped_dummy")
         return {"status": "skipped", "reason": "dummy_creds"}
 
@@ -718,7 +735,10 @@ async def _send_interactive_list_with_retry(
             )
             raise ValueError(f"WhatsApp client error {resp.status_code}: {resp.text[:100]}")
 
-        return {"status": "sent", "message_id": resp.json().get("messages", [{}])[0].get("id")}
+        return {
+            "status": "sent",
+            "message_id": (await resp.json()).get("messages", [{}])[0].get("id"),
+        }
 
 
 async def send_interactive_list(
@@ -778,7 +798,10 @@ async def send_interactive_list(
     if not settings.WHATSAPP_ACCESS_TOKEN or not settings.WHATSAPP_PHONE_ID:
         logger.warning("whatsapp_list_skipped_missing_creds")
         return {"status": "skipped", "reason": "missing_creds"}
-    if settings.WHATSAPP_ACCESS_TOKEN == "dummy" or settings.WHATSAPP_PHONE_ID == "dummy":
+    if (
+        settings.WHATSAPP_ACCESS_TOKEN == "dummy"  # nosec B105
+        or settings.WHATSAPP_PHONE_ID == "dummy"  # nosec B105
+    ):
         logger.info("whatsapp_list_skipped_dummy")
         return {"status": "skipped", "reason": "dummy_creds"}
 
