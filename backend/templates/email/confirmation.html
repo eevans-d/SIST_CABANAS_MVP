@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pre-reserva confirmada - {{ accommodation_name }}</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 20px; text-align: center; }
+        .content { padding: 30px; }
+        .highlight { background: #f8f9ff; border-left: 4px solid #667eea; padding: 15px; margin: 15px 0; border-radius: 4px; }
+        .button { display: inline-block; background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 15px 0; }
+        .footer { background: #f8f9ff; padding: 20px; text-align: center; font-size: 14px; color: #666; }
+        .warning { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 15px 0; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✅ Pre-reserva Confirmada</h1>
+            <p>{{ accommodation_name }}</p>
+        </div>
+
+        <div class="content">
+            <p>Hola <strong>{{ guest_name }}</strong>,</p>
+
+            <p>Tu pre-reserva ha sido <strong>confirmada exitosamente</strong>. A continuación encontrarás todos los detalles:</p>
+
+            <div class="highlight">
+                <h3>📋 Detalles de la Reserva</h3>
+                <p><strong>Código de reserva:</strong> {{ reservation_code }}</p>
+                <p><strong>Alojamiento:</strong> {{ accommodation_name }}</p>
+                <p><strong>Check-in:</strong> {{ check_in }}</p>
+                <p><strong>Check-out:</strong> {{ check_out }}</p>
+                <p><strong>Huéspedes:</strong> {{ guests_count }}</p>
+                <p><strong>Total a pagar:</strong> ${{ total_amount }}</p>
+            </div>
+
+            <div class="warning">
+                <h3>⏰ Importante: Completa tu pago</h3>
+                <p>Esta pre-reserva <strong>expira el {{ expires_at }}</strong>. Para confirmar definitivamente tu reserva, debes completar el pago antes de esa fecha.</p>
+            </div>
+
+            <div style="text-align: center;">
+                <a href="{{ payment_link }}" class="button">💳 Completar Pago</a>
+            </div>
+
+            <p>Si necesitas ayuda o tienes alguna consulta, no dudes en contactarnos.</p>
+
+            <p>¡Esperamos verte pronto!</p>
+        </div>
+
+        <div class="footer">
+            <p>Este email fue enviado automáticamente. Por favor, no respondas directamente a este mensaje.</p>
+            <p><strong>Código de reserva:</strong> {{ reservation_code }}</p>
+        </div>
+    </div>
+</body>
+</html>

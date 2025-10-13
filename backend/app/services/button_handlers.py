@@ -1,32 +1,22 @@
 """Button Callback Handlers."""
 
-from datetime import date, timedelta
-from typing import Any, Dict
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-
-from app.models import Accommodation, Reservation
-from app.services import whatsapp
-from app.services.interactive_buttons import (
-    build_accommodations_list,
-    build_guests_selection_buttons,
-    build_help_topics_list,
-    build_my_reservations_actions,
-    format_availability_prompt_with_dates,
-    format_payment_link_with_buttons,
-    format_welcome_with_menu,
-)
-
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from typing import Any, Dict, Optional
 
 from app.models import Accommodation, Reservation
 from app.services import whatsapp
+from app.services.conversation_state import (
+    delete_user_context,
+    get_user_context,
+    set_user_context,
+    update_user_context,
+)
 from app.services.interactive_buttons import (
     build_accommodations_list,
     build_confirmation_buttons,
     build_date_ranges_list,
+    build_guests_selection_buttons,
     build_help_topics_list,
     build_my_reservations_actions,
     format_availability_prompt_with_dates,
@@ -54,106 +44,172 @@ async def handle_button_callback(
     Returns:
         Dict con resultado: {"action": "...", ...}
     """
-    # ===== Menú Principal =====
-    if button_id == "menu_availability":
-        return await _handle_menu_availability(user_phone)
+    # 🔄 Cargar contexto de conversación
+    context = await get_user_context(user_phone) or {}
 
-    elif button_id == "menu_reservations":
-        return await _handle_menu_reservations(user_phone, db)
+    # Actualizar último activity
+    await update_user_context(user_phone, {"last_button": button_id}, reset_ttl=True)
 
-    elif button_id == "menu_help":
-        return await _handle_menu_help(user_phone)
+    try:
+        # ===== Menú Principal =====
+        if button_id == "menu_availability":
+            result = await _handle_menu_availability(user_phone)
+            # Actualizar contexto: usuario quiere ver disponibilidad
+            await update_user_context(user_phone, {"current_step": "availability_flow"})
+            return result
 
-    elif button_id == "menu_back":
-        return await _handle_menu_back(user_phone)
+        elif button_id == "menu_reservations":
+            result = await _handle_menu_reservations(user_phone, db)
+            await update_user_context(user_phone, {"current_step": "my_reservations"})
+            return result
 
-    # ===== Selección de Fechas =====
-    elif button_id == "date_this_weekend":
-        return await _handle_date_selection(user_phone, db, "this_weekend")
+        elif button_id == "menu_help":
+            result = await _handle_menu_help(user_phone)
+            await update_user_context(user_phone, {"current_step": "help_menu"})
+            return result
 
-    elif button_id == "date_next_weekend":
-        return await _handle_date_selection(user_phone, db, "next_weekend")
+        elif button_id == "menu_back":
+            # Reset a menú principal
+            await update_user_context(user_phone, {"current_step": "main_menu"})
+            return await _handle_menu_back(user_phone)
 
-    elif button_id == "date_custom":
-        return await _handle_date_custom(user_phone)
+        # ===== Selección de Fechas =====
+        elif button_id == "date_this_weekend":
+            result = await _handle_date_selection(user_phone, db, "this_weekend")
+            # Guardar fechas seleccionadas en contexto
+            if result.get("action") == "show_accommodations" and "dates" in result:
+                await update_user_context(
+                    user_phone,
+                    {"selected_dates": result["dates"], "current_step": "selecting_accommodation"},
+                )
+            return result
 
-    elif button_id.startswith("date_range_"):
-        # Format: date_range_2025-10-20_2025-10-22
-        parts = button_id.split("_", 2)
-        if len(parts) == 3:
-            date_str = parts[2]
-            dates = date_str.split("_")
-            if len(dates) == 2:
-                return await _handle_date_range_selected(user_phone, db, dates[0], dates[1])
-        return {"action": "error", "error": "invalid_date_format"}
+        elif button_id == "date_next_weekend":
+            result = await _handle_date_selection(user_phone, db, "next_weekend")
+            if result.get("action") == "show_accommodations" and "dates" in result:
+                await update_user_context(
+                    user_phone,
+                    {"selected_dates": result["dates"], "current_step": "selecting_accommodation"},
+                )
+            return result
 
-    # ===== Confirmación Pre-Reserva =====
-    elif button_id.startswith("confirm_res_"):
-        reservation_code = button_id.replace("confirm_res_", "")
-        return await _handle_confirm_reservation(user_phone, db, reservation_code)
+        elif button_id == "date_custom":
+            result = await _handle_date_custom(user_phone)
+            await update_user_context(user_phone, {"current_step": "awaiting_custom_dates"})
+            return result
 
-    elif button_id.startswith("change_dates_"):
-        reservation_code = button_id.replace("change_dates_", "")
-        return await _handle_change_dates(user_phone, db, reservation_code)
+        elif button_id.startswith("date_range_"):
+            # Format: date_range_2025-10-20_2025-10-22
+            parts = button_id.split("_", 2)
+            if len(parts) == 3:
+                date_str = parts[2]
+                dates = date_str.split("_")
+                if len(dates) == 2:
+                    result = await _handle_date_range_selected(user_phone, db, dates[0], dates[1])
+                    # Guardar fechas seleccionadas
+                    if result.get("action") == "show_accommodations" and "dates" in result:
+                        await update_user_context(
+                            user_phone,
+                            {
+                                "selected_dates": result["dates"],
+                                "current_step": "selecting_accommodation",
+                            },
+                        )
+                    return result
+            return {"action": "error", "error": "invalid_date_format"}
 
-    elif button_id == "see_other_acc":
-        return await _handle_see_other_accommodations(user_phone, db)
+        # ===== Alojamientos (con contexto de fechas) =====
+        elif button_id.startswith("acc_"):
+            accommodation_id = int(button_id.replace("acc_", ""))
+            result = await _handle_accommodation_selected(user_phone, db, accommodation_id)
+            # Guardar alojamiento seleccionado
+            await update_user_context(
+                user_phone,
+                {"accommodation_id": accommodation_id, "current_step": "confirming_reservation"},
+            )
+            return result
 
-    # ===== Acciones de Pago =====
-    elif button_id.startswith("pay_now_"):
-        reservation_code = button_id.replace("pay_now_", "")
-        return await _handle_pay_now(user_phone, db, reservation_code)
+        # ===== Confirmación Pre-Reserva =====
+        elif button_id.startswith("confirm_res_"):
+            reservation_code = button_id.replace("confirm_res_", "")
+            result = await _handle_confirm_reservation(user_phone, db, reservation_code)
+            # Reset contexto después de confirmación
+            if result.get("action") == "reservation_confirmed":
+                await update_user_context(user_phone, {"current_step": "main_menu"})
+            return result
 
-    elif button_id.startswith("consult_payment_"):
-        reservation_code = button_id.replace("consult_payment_", "")
-        return await _handle_consult_payment(user_phone, db, reservation_code)
+        # ===== Resto de handlers (sin cambios por ahora) =====
+        elif button_id.startswith("change_dates_"):
+            reservation_code = button_id.replace("change_dates_", "")
+            return await _handle_change_dates(user_phone, db, reservation_code)
 
-    elif button_id.startswith("change_payment_"):
-        reservation_code = button_id.replace("change_payment_", "")
-        return await _handle_change_payment(user_phone, db, reservation_code)
+        elif button_id == "see_other_acc":
+            return await _handle_see_other_accommodations(user_phone, db)
 
-    # ===== Mis Reservas =====
-    elif button_id.startswith("pay_res_"):
-        reservation_code = button_id.replace("pay_res_", "")
-        return await _handle_pay_reservation(user_phone, db, reservation_code)
+        # ===== Acciones de Pago =====
+        elif button_id.startswith("pay_now_"):
+            reservation_code = button_id.replace("pay_now_", "")
+            return await _handle_pay_now(user_phone, db, reservation_code)
 
-    elif button_id.startswith("cancel_res_"):
-        reservation_code = button_id.replace("cancel_res_", "")
-        return await _handle_cancel_reservation(user_phone, db, reservation_code)
+        elif button_id.startswith("consult_payment_"):
+            reservation_code = button_id.replace("consult_payment_", "")
+            return await _handle_consult_payment(user_phone, db, reservation_code)
 
-    elif button_id.startswith("view_details_"):
-        reservation_code = button_id.replace("view_details_", "")
-        return await _handle_view_details(user_phone, db, reservation_code)
+        elif button_id.startswith("change_payment_"):
+            reservation_code = button_id.replace("change_payment_", "")
+            return await _handle_change_payment(user_phone, db, reservation_code)
 
-    # ===== Alojamientos =====
-    elif button_id.startswith("acc_"):
-        accommodation_id = int(button_id.replace("acc_", ""))
-        return await _handle_accommodation_selected(user_phone, db, accommodation_id)
+        # ===== Mis Reservas =====
+        elif button_id.startswith("pay_res_"):
+            reservation_code = button_id.replace("pay_res_", "")
+            return await _handle_pay_reservation(user_phone, db, reservation_code)
 
-    # ===== Ayuda =====
-    elif button_id.startswith("help_"):
-        topic = button_id.replace("help_", "")
-        return await _handle_help_topic(user_phone, topic)
+        elif button_id.startswith("cancel_res_"):
+            reservation_code = button_id.replace("cancel_res_", "")
+            return await _handle_cancel_reservation(user_phone, db, reservation_code)
 
-    # ===== Selección de Huéspedes =====
-    elif button_id.startswith("guests_"):
-        guests_str = button_id.replace("guests_", "")
-        if guests_str == "other":
-            return await _handle_guests_other(user_phone)
+        elif button_id.startswith("view_details_"):
+            reservation_code = button_id.replace("view_details_", "")
+            return await _handle_view_details(user_phone, db, reservation_code)
+
+        # ===== Ayuda =====
+        elif button_id.startswith("help_"):
+            topic = button_id.replace("help_", "")
+            return await _handle_help_topic(user_phone, topic)
+
+        # ===== Selección de Huéspedes =====
+        elif button_id.startswith("guests_"):
+            guests_str = button_id.replace("guests_", "")
+            if guests_str == "other":
+                return await _handle_guests_other(user_phone)
+            else:
+                try:
+                    guests = int(guests_str)
+                    # Guardar huéspedes en contexto
+                    await update_user_context(user_phone, {"guests_count": guests})
+                    return {"action": "guests_selected", "guests": guests}
+                except ValueError:
+                    return {"action": "error", "error": "invalid_guests"}
+
+        # ===== Reservar de Nuevo =====
+        elif button_id == "reserve_again":
+            # Reset contexto y volver a disponibilidad
+            await update_user_context(user_phone, {"current_step": "availability_flow"})
+            return await _handle_menu_availability(user_phone)
+
+        # ===== Botón Desconocido =====
         else:
-            try:
-                guests = int(guests_str)
-                return {"action": "guests_selected", "guests": guests}
-            except ValueError:
-                return {"action": "error", "error": "invalid_guests"}
+            return {"action": "unknown_button", "button_id": button_id}
 
-    # ===== Reservar de Nuevo =====
-    elif button_id == "reserve_again":
-        return await _handle_menu_availability(user_phone)
+    except Exception as e:
+        # Log error pero no fallar completamente
+        import structlog
 
-    # ===== Botón Desconocido =====
-    else:
-        return {"action": "unknown_button", "button_id": button_id}
+        logger = structlog.get_logger()
+        logger.error(
+            "button_callback_error", button_id=button_id, user_phone=user_phone, error=str(e)
+        )
+        return {"action": "error", "error": "processing_error"}
 
 
 # ========== Handlers Internos ==========

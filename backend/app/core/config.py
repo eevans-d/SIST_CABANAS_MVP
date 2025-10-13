@@ -1,9 +1,9 @@
-from pydantic_settings import BaseSettings
-from pydantic import Field, field_validator
-from pydantic_settings import SettingsConfigDict
-from typing import Optional
-import secrets
 import os
+import secrets
+from typing import Optional
+
+from pydantic import Field, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -66,6 +66,8 @@ class Settings(BaseSettings):
     SMTP_USER: str | None = None
     SMTP_PASS: str | None = None
     SMTP_FROM: str | None = None
+    SMTP_USE_TLS: bool = True
+    BASE_URL: str | None = None  # Para links en emails
 
     # Admin (seguridad mínima)
     ADMIN_ALLOWED_EMAILS: str = "admin@example.com"  # coma-separado
