@@ -5,7 +5,6 @@ from typing import AsyncGenerator
 
 import pytest
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 root = Path(__file__).resolve().parents[1]
 tests_dir = root / "tests"
@@ -21,21 +20,8 @@ async def client() -> AsyncGenerator[AsyncClient, None]:
         yield ac
 
 
-@pytest.fixture()
-async def db_session():
-    """Sesión de DB conectada a la base de datos del contenedor E2E"""
-    # Conectar a postgres-test en el puerto 5433
-    DATABASE_URL = (
-        "postgresql+asyncpg://alojamientos_test:test_pass@localhost:5433/alojamientos_test"
-    )
-
-    engine = create_async_engine(DATABASE_URL, echo=False)
-    async_session = async_sessionmaker(engine, expire_on_commit=False)
-
-    async with async_session() as session:
-        yield session
-
-    await engine.dispose()
+# NOTE: db_session fixture removed - E2E tests should only access the system via API
+# This ensures tests validate the complete system behavior, not internal DB state directly.
 
 
 @pytest.fixture()

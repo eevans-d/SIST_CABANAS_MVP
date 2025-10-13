@@ -1,11 +1,13 @@
-from fastapi import APIRouter, Depends, Body
 from datetime import date
-from pydantic import BaseModel, Field
-from typing import Optional, Any, Dict
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Any, Dict, List, Optional
 
 from app.core.database import get_db
+from app.models import Accommodation, Reservation
 from app.services.reservations import ReservationService
+from fastapi import APIRouter, Body, Depends, HTTPException
+from pydantic import BaseModel, Field
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/reservations", tags=["reservations"])
 
@@ -87,3 +89,50 @@ async def cancel_reservation(
 ):
     service = ReservationService(db)
     return await service.cancel_reservation(code, reason=payload.reason)
+
+
+@router.get("/accommodations")
+async def list_accommodations(db: AsyncSession = Depends(get_db)):
+    """List all active accommodations (for E2E tests)."""
+    result = await db.execute(select(Accommodation).where(Accommodation.active == True))
+    accommodations = result.scalars().all()
+    return [
+        {
+            "id": acc.id,
+            "name": acc.name,
+            "type": acc.type,
+            "capacity": acc.capacity,
+            "base_price": str(acc.base_price),
+            "active": acc.active,
+        }
+        for acc in accommodations
+    ]
+
+
+@router.get("/{code}")
+async def get_reservation(code: str, db: AsyncSession = Depends(get_db)):
+    """Get reservation details by code (for E2E tests)."""
+    result = await db.execute(select(Reservation).where(Reservation.code == code))
+    reservation = result.scalar_one_or_none()
+
+    if not reservation:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+
+    return {
+        "id": reservation.id,
+        "code": reservation.code,
+        "accommodation_id": reservation.accommodation_id,
+        "guest_name": reservation.guest_name,
+        "guest_phone": reservation.guest_phone,
+        "guest_email": reservation.guest_email,
+        "check_in": str(reservation.check_in),
+        "check_out": str(reservation.check_out),
+        "guests_count": reservation.guests_count,
+        "total_price": str(reservation.total_price),
+        "payment_status": reservation.payment_status,
+        "reservation_status": reservation.reservation_status,
+        "channel_source": reservation.channel_source,
+        "created_at": reservation.created_at.isoformat() if reservation.created_at else None,
+        "confirmed_at": reservation.confirmed_at.isoformat() if reservation.confirmed_at else None,
+        "expires_at": reservation.expires_at.isoformat() if reservation.expires_at else None,
+    }

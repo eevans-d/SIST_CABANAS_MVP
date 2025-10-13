@@ -5,7 +5,7 @@ services:
     build: .
     environment:
       - ENVIRONMENT=test
-      - DATABASE_URL=postgresql+asyncpg://alojamientos_test:${POSTGRES_PASSWORD:-test_pass}@db:5432/alojamientos_test
+      - DATABASE_URL=postgresql+asyncpg://alojamientos_test:test_pass@db:5432/alojamientos_test
       - REDIS_URL=redis://:${REDIS_PASSWORD:-test_redis}@redis:6379/1
       - WHATSAPP_ACCESS_TOKEN=test_whatsapp_token
       - WHATSAPP_APP_SECRET=test_whatsapp_secret
@@ -58,7 +58,7 @@ services:
     environment:
       - POSTGRES_DB=alojamientos_test
       - POSTGRES_USER=alojamientos_test
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-test_pass}
+      - POSTGRES_PASSWORD=test_pass  # Hardcoded para E2E tests
     ports:
       - "5433:5432"  # Exponer en puerto 5433 del host
     healthcheck:
