@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pre-reserva Expirada - {{ accommodation_name }}</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #FF6B6B 0%, #ee5a52 100%); color: white; padding: 30px 20px; text-align: center; }
+        .content { padding: 30px; }
+        .warning { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 15px 0; border-radius: 4px; }
+        .info-box { background: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .button { display: inline-block; background: #007bff; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; margin: 15px 0; font-weight: bold; }
+        .footer { background: #f8f9ff; padding: 20px; text-align: center; font-size: 14px; color: #666; }
+        h2 { color: #FF6B6B; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⏰ Pre-reserva Expirada</h1>
+            <p style="font-size: 18px; margin: 10px 0;">{{ accommodation_name }}</p>
+        </div>
+        
+        <div class="content">
+            <p>Hola <strong>{{ guest_name }}</strong>,</p>
+            
+            <p>Lamentablemente, tu pre-reserva <strong>{{ reservation_code }}</strong> ha expirado porque no se recibió el pago dentro del plazo establecido.</p>
+            
+            <div class="warning">
+                <h2>📋 Detalles de la Pre-reserva Expirada</h2>
+                <p><strong>Código:</strong> {{ reservation_code }}</p>
+                <p><strong>Alojamiento:</strong> {{ accommodation_name }}</p>
+                <p><strong>Fechas:</strong> {{ check_in }} → {{ check_out }}</p>
+                <p><strong>Huéspedes:</strong> {{ guests_count }}</p>
+                <p><strong>Fecha de expiración:</strong> {{ expired_at }}</p>
+            </div>
+            
+            <div class="info-box">
+                <h3>¿Sigues interesado?</h3>
+                <p>Si todavía deseas reservar estas fechas, puedes crear una nueva reserva. Ten en cuenta que <strong>la disponibilidad podría haber cambiado</strong>.</p>
+                
+                {% if availability_url %}
+                <a href="{{ availability_url }}" class="button">Ver Disponibilidad Actual</a>
+                {% endif %}
+            </div>
+            
+            <p>Si tuviste algún problema con el pago o necesitas asistencia, no dudes en contactarnos.</p>
+        </div>
+        
+        <div class="footer">
+            <p>Este correo es informativo. La pre-reserva {{ reservation_code }} ya no está activa.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -84,7 +84,7 @@ class ReservationService:
             return {"error": "accommodation_not_found"}
 
         nights = (check_out - check_in).days
-        base_price = Decimal(acc.base_price)  # asume field NUMERIC
+        base_price = Decimal(str(acc.base_price))  # asume field NUMERIC
         weekend_mult = Decimal(getattr(acc, "weekend_multiplier", Decimal("1.2")))
         # Calcular noches weekend (sábado=5, domingo=6) dentro del rango [check_in, check_out)
         weekend_nights = 0
@@ -154,6 +154,24 @@ class ReservationService:
 
             # Incrementar métrica (flush implícito la expone en /metrics inmediatamente)
             RESERVATIONS_CREATED.labels(channel=channel).inc()
+            
+            # Enviar email de pre-reserva si hay email (best-effort, no bloquea)
+            if contact_email:
+                try:
+                    await email_service.send_prereservation_confirmation(
+                        guest_email=contact_email,
+                        guest_name=contact_name,
+                        reservation_code=code,
+                        accommodation_name=str(acc.name),
+                        check_in=check_in.isoformat(),
+                        check_out=check_out.isoformat(),
+                        guests_count=guests,
+                        total_amount=float(total_price),
+                        expires_at=expires_at.isoformat(),
+                    )
+                except Exception:  # pragma: no cover
+                    pass  # log pero no fallar transacción
+            
             return {
                 "code": reservation.code,
                 "expires_at": (
@@ -241,38 +259,29 @@ class ReservationService:
             RESERVATIONS_CONFIRMED.labels(channel=channel).inc()
         except Exception:  # pragma: no cover
             pass
-        # Enviar email de confirmación si hay email y SMTP está configurado (best-effort)
-        try:
-            if getattr(reservation, "guest_email", None):
-                try:
-                    html = email_service.render(
-                        "confirmation.html",
-                        {
-                            "guest_name": getattr(reservation, "guest_name", "Cliente"),
-                            "code": original_code,
-                            "accommodation_name": (
-                                getattr(reservation, "accommodation", None).name
-                                if getattr(reservation, "accommodation", None)
-                                else str(reservation.accommodation_id)
-                            ),
-                            "check_in": str(reservation.check_in),
-                            "check_out": str(reservation.check_out),
-                            "total_price": str(getattr(reservation, "total_price", "")),
-                        },
-                    )
-                except Exception:
-                    html = (
-                        f"<h3>Reserva confirmada {original_code}</h3>"
-                        f"<p>Check-in: {reservation.check_in} - Check-out: {reservation.check_out}</p>"
-                    )
-                email_service.send_html(
-                    reservation.guest_email,
-                    f"Reserva {original_code} confirmada",
-                    html,
-                    email_type="confirmed",
+        
+        # Enviar email de confirmación si hay email (best-effort)
+        guest_email_val = getattr(reservation, "guest_email", None)
+        if guest_email_val:
+            try:
+                # Obtener nombre del alojamiento si disponible
+                accommodation_name = str(reservation.accommodation_id)
+                if hasattr(reservation, "accommodation") and reservation.accommodation:
+                    accommodation_name = str(reservation.accommodation.name)
+                
+                await email_service.send_reservation_confirmed(
+                    guest_email=str(guest_email_val),
+                    guest_name=str(getattr(reservation, "guest_name", "Cliente")),
+                    reservation_code=str(original_code),
+                    accommodation_name=accommodation_name,
+                    check_in=str(reservation.check_in),
+                    check_out=str(reservation.check_out),
+                    guests_count=int(getattr(reservation, "guests_count", 1)),
+                    total_amount=float(getattr(reservation, "total_price", 0)),
                 )
-        except Exception:  # pragma: no cover
-            pass
+            except Exception:  # pragma: no cover
+                pass
+        
         return {
             "code": original_code,
             "status": ReservationStatus.CONFIRMED.value,

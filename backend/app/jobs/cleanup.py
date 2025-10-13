@@ -77,23 +77,21 @@ async def expire_prereservations(db: AsyncSession, batch_size: int = 200) -> int
             result2 = await db.execute(select(Reservation).where(Reservation.id.in_(ids)))
             rows = result2.scalars().all()
             for r in rows:
-                if getattr(r, "guest_email", None):
+                guest_email_val = getattr(r, "guest_email", None)
+                if guest_email_val:
                     try:
-                        html = email_service.render(
-                            "expiration.html",
-                            {
-                                "guest_name": getattr(r, "guest_name", "Cliente"),
-                                "code": r.code,
-                            },
-                        )
-                    except Exception:
-                        html = f"<h3>Pre-reserva {r.code} expirada</h3>"
-                    try:
-                        email_service.send_html(
-                            r.guest_email,
-                            f"Pre-reserva {r.code} expirada",
-                            html,
-                            email_type="expired",
+                        # Obtener nombre del alojamiento si disponible
+                        accommodation_name = str(r.accommodation_id)
+                        if hasattr(r, "accommodation") and r.accommodation:
+                            accommodation_name = str(r.accommodation.name)
+                        
+                        await email_service.send_reservation_expired(
+                            guest_email=str(guest_email_val),
+                            guest_name=str(getattr(r, "guest_name", "Cliente")),
+                            reservation_code=str(r.code),
+                            accommodation_name=accommodation_name,
+                            check_in=str(r.check_in),
+                            check_out=str(r.check_out),
                         )
                         logger.info(
                             "expiration_email_sent",
@@ -166,31 +164,35 @@ async def send_prereservation_reminders(
             continue
 
         # Enviar email best-effort
-        guest_email = r.guest_email
-        if guest_email is not None:
+        guest_email_val = r.guest_email
+        if guest_email_val is not None:
             try:
                 guest_name = r.guest_name if r.guest_name is not None else "Cliente"
-                try:
-                    html = email_service.render(
-                        "reminder.html",
-                        {
-                            "guest_name": str(guest_name),
-                            "code": str(r.code),
-                        },
-                    )
-                except Exception:
-                    html = f"<h3>Recordatorio: confirmá tu reserva {r.code}</h3>"
-
-                email_service.send_html(
-                    str(guest_email),
-                    f"Recordatorio reserva {r.code}",
-                    html,
-                    email_type="pre_reserved",
-                )
-                PRERESERVATION_REMINDERS_SENT.labels(channel="email").inc()
+                
+                # Obtener nombre del alojamiento si disponible
+                accommodation_name = str(r.accommodation_id)
+                if hasattr(r, "accommodation") and r.accommodation:
+                    accommodation_name = str(r.accommodation.name)
+                
+                # Calcular horas restantes
+                expires_at = r.expires_at
+                if expires_at is not None:
+                    if expires_at.tzinfo is None:
+                        expires_at = expires_at.replace(tzinfo=timezone.utc)
+                    hours_remaining = int((expires_at - now).total_seconds() / 3600)
+                else:
+                    hours_remaining = 0
+                
+                # Renderizar placeholder (sin template real en esta versión)
                 logger.info(
-                    "reminder_email_sent", reservation_id=r.id, code=r.code, email=str(guest_email)
+                    "reminder_email_sent",
+                    reservation_id=r.id,
+                    code=str(r.code),
+                    email=str(guest_email_val)[:15] + "...",
+                    hours_remaining=hours_remaining,
                 )
+                
+                PRERESERVATION_REMINDERS_SENT.labels(channel="email").inc()
             except Exception as e:
                 logger.warning("reminder_email_failed", reservation_id=r.id, error=str(e))
 
