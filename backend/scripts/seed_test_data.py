@@ -11,11 +11,11 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from sqlalchemy import select
+import structlog
 from app.core.database import async_session_maker
 from app.models import Accommodation, Reservation
-from app.models.enums import ReservationStatus, PaymentStatus
-import structlog
+from app.models.enums import PaymentStatus, ReservationStatus
+from sqlalchemy import select
 
 logger = structlog.get_logger()
 
@@ -23,14 +23,14 @@ logger = structlog.get_logger()
 async def seed_accommodations(session):
     """Crear alojamientos de prueba."""
     logger.info("seeding_accommodations")
-    
+
     # Verificar si ya existen
     result = await session.execute(select(Accommodation))
     existing = result.scalars().first()
     if existing:
         logger.info("accommodations_already_exist", count=len(result.scalars().all()))
         return
-    
+
     accommodations = [
         Accommodation(
             name="Cabaña del Bosque",
@@ -139,28 +139,28 @@ async def seed_accommodations(session):
             active=True,
         ),
     ]
-    
+
     session.add_all(accommodations)
     await session.commit()
-    
+
     logger.info("accommodations_seeded", count=len(accommodations))
 
 
 async def seed_reservations(session):
     """Crear reservas de ejemplo."""
     logger.info("seeding_reservations")
-    
+
     # Obtener alojamientos
     result = await session.execute(select(Accommodation))
     accommodations = result.scalars().all()
-    
+
     if not accommodations:
         logger.warning("no_accommodations_found_for_reservations")
         return
-    
+
     now = datetime.now(timezone.utc)
     today = date.today()
-    
+
     reservations = [
         # Pre-reserva activa (expira en 20 minutos)
         Reservation(
@@ -220,7 +220,7 @@ async def seed_reservations(session):
             deposit_percentage=30,
             deposit_amount=Decimal("13500.00"),
             reservation_status=ReservationStatus.CONFIRMED.value,
-            payment_status=PaymentStatus.APPROVED.value,
+            payment_status=PaymentStatus.PAID.value,
             channel_source="whatsapp",
             confirmed_at=now - timedelta(hours=2),
             created_at=now - timedelta(hours=3),
@@ -248,22 +248,22 @@ async def seed_reservations(session):
             internal_notes="Cancelada por el huésped - cambio de planes",
         ),
     ]
-    
+
     session.add_all(reservations)
     await session.commit()
-    
+
     logger.info("reservations_seeded", count=len(reservations))
 
 
 async def main():
     """Seed principal."""
     logger.info("seed_test_data_start")
-    
+
     try:
         async with async_session_maker() as session:
             await seed_accommodations(session)
             await seed_reservations(session)
-        
+
         logger.info("seed_test_data_complete", status="success")
         return 0
     except Exception as e:

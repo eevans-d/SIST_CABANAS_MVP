@@ -59,6 +59,8 @@ services:
       - POSTGRES_DB=alojamientos_test
       - POSTGRES_USER=alojamientos_test
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-test_pass}
+    ports:
+      - "5433:5432"  # Exponer en puerto 5433 del host
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U alojamientos_test -d alojamientos_test"]
       interval: 5s
@@ -70,6 +72,8 @@ services:
   redis:
     image: redis:7-alpine
     command: redis-server --requirepass ${REDIS_PASSWORD:-test_redis} --maxmemory 256mb
+    ports:
+      - "6380:6379"  # Exponer en puerto 6380 del host
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-test_redis}", "ping"]
       interval: 5s
@@ -89,6 +93,4 @@ services:
 networks:
   test-network:
     driver: bridge
-networks:
-  default:
     name: alojamientos_test_net
