@@ -5,18 +5,29 @@ services:
     build: .
     environment:
       - ENVIRONMENT=test
-      - DATABASE_URL=postgresql+asyncpg://alojamientos_test:${POSTGRES_PASSWORD}@db:5432/alojamientos_test
-      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/1
-      - WHATSAPP_ACCESS_TOKEN=dummy
-      - WHATSAPP_APP_SECRET=dummy
-      - MERCADOPAGO_ACCESS_TOKEN=dummy
-      - JWT_SECRET=dev_jwt
-      - ICS_SALT=dev_salt
+      - DATABASE_URL=postgresql+asyncpg://alojamientos_test:${POSTGRES_PASSWORD:-test_pass}@db:5432/alojamientos_test
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-test_redis}@redis:6379/1
+      - WHATSAPP_ACCESS_TOKEN=test_whatsapp_token
+      - WHATSAPP_APP_SECRET=test_whatsapp_secret
+      - WHATSAPP_PHONE_ID=test_phone_id
+      - WHATSAPP_VERIFY_TOKEN=test_verify
+      - MERCADOPAGO_ACCESS_TOKEN=test_mp_token
+      - MERCADOPAGO_WEBHOOK_SECRET=test_mp_secret
+      - JWT_SECRET=test_jwt_secret_for_e2e_only
+      - JWT_ALGORITHM=HS256
+      - JWT_EXPIRATION_HOURS=24
+      - ICS_SALT=test_ics_salt
       - SMTP_HOST=mailhog
       - SMTP_PORT=1025
       - SMTP_USER=
       - SMTP_PASS=
-      - SMTP_FROM=reservas@example.com
+      - SMTP_FROM=reservas@test.com
+      - SMTP_USE_TLS=false
+      - BASE_URL=http://app:8000
+      - ADMIN_ALLOWED_EMAILS=admin@test.com,test@example.com
+      - JOB_EXPIRATION_INTERVAL_SECONDS=10
+      - JOB_ICAL_INTERVAL_SECONDS=30
+      - LOG_LEVEL=INFO
     depends_on:
       db:
         condition: service_healthy
@@ -24,30 +35,60 @@ services:
         condition: service_healthy
       mailhog:
         condition: service_started
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    command: >
+      sh -c "
+        echo '🔧 Running migrations...' &&
+        alembic upgrade head &&
+        echo '✅ Migrations complete' &&
+        echo '🌱 Seeding test data...' &&
+        python scripts/seed_test_data.py &&
+        echo '✅ Seed complete' &&
+        echo '🚀 Starting app...' &&
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      "
     ports:
       - "8001:8000"
+    volumes:
+      - ./:/app
+    networks:
+      - test-network
 
   db:
     image: postgres:16-alpine
     environment:
       - POSTGRES_DB=alojamientos_test
       - POSTGRES_USER=alojamientos_test
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-test_pass}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U alojamientos_test -d alojamientos_test"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - test-network
 
   redis:
     image: redis:7-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD:-test_redis} --maxmemory 256mb
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-test_redis}", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - test-network
 
   mailhog:
     image: mailhog/mailhog
     ports:
-      - "8025:8025" # UI
+      - "8025:8025"  # UI web
+      - "1025:1025"  # SMTP
+    networks:
+      - test-network
 
+networks:
+  test-network:
+    driver: bridge
 networks:
   default:
     name: alojamientos_test_net

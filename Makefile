@@ -64,8 +64,33 @@ test-fast: ## Ejecutar tests críticos rápidos
 
 test-e2e: ## Ejecutar tests End-to-End completos
 	@echo "$(GREEN)Ejecutando tests E2E...$(NC)"
-	cd backend && $(PYTEST) tests/test_e2e_flows.py -v --tb=short
+	cd backend && $(PYTEST) tests_e2e/test_full_journey.py -v --tb=short
 	@echo "$(GREEN)✓ Tests E2E completados$(NC)"
+
+test-e2e-up: ## Levantar entorno E2E con docker-compose.test.yml
+	@echo "$(GREEN)Levantando entorno E2E...$(NC)"
+	cd backend && docker-compose -f docker-compose.test.yml up -d
+	@echo "$(GREEN)✓ Entorno E2E levantado$(NC)"
+	@echo "$(YELLOW)API Test: http://localhost:8001$(NC)"
+	@echo "$(YELLOW)MailHog UI: http://localhost:8025$(NC)"
+
+test-e2e-down: ## Bajar entorno E2E
+	@echo "$(YELLOW)Bajando entorno E2E...$(NC)"
+	cd backend && docker-compose -f docker-compose.test.yml down
+	@echo "$(GREEN)✓ Entorno E2E bajado$(NC)"
+
+test-e2e-clean: test-e2e-down ## Limpiar entorno E2E completo (incluye volúmenes)
+	@echo "$(YELLOW)Limpiando entorno E2E (volúmenes)...$(NC)"
+	cd backend && docker-compose -f docker-compose.test.yml down -v
+	@echo "$(GREEN)✓ Entorno E2E limpiado$(NC)"
+
+test-e2e-logs: ## Ver logs del entorno E2E
+	cd backend && docker-compose -f docker-compose.test.yml logs -f
+
+seed-data: ## Ejecutar script de seed de datos de prueba
+	@echo "$(GREEN)Seeding datos de prueba...$(NC)"
+	cd backend && $(PYTHON) scripts/seed_test_data.py
+	@echo "$(GREEN)✓ Datos de prueba insertados$(NC)"
 
 ##@ Development
 
