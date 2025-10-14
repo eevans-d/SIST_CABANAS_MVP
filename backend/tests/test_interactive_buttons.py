@@ -361,7 +361,7 @@ class TestWebhookInteractiveIntegration:
     """Tests de integración webhook + botones interactivos."""
 
     @pytest.mark.asyncio
-    async def test_webhook_processes_button_reply(self, client, db_session):
+    async def test_webhook_processes_button_reply(self, test_client, db_session):
         """Debe procesar callback de botón reply."""
         payload = {
             "entry": [
@@ -393,7 +393,7 @@ class TestWebhookInteractiveIntegration:
         }
 
         with patch("app.services.button_handlers.whatsapp.send_interactive_buttons"):
-            await client.post("/api/v1/webhooks/whatsapp", json=payload)
+            await test_client.post("/api/v1/webhooks/whatsapp", json=payload)
 
             # En test real, requiere firma válida - aquí asumimos bypass o mock
             # assert response.status_code == 200
@@ -401,7 +401,7 @@ class TestWebhookInteractiveIntegration:
             # assert data.get("auto_action") == "button_callback"
 
     @pytest.mark.asyncio
-    async def test_webhook_processes_list_reply(self, client, db_session):
+    async def test_webhook_processes_list_reply(self, test_client, db_session):
         """Debe procesar callback de lista."""
         payload = {
             "entry": [
@@ -434,7 +434,7 @@ class TestWebhookInteractiveIntegration:
         }
 
         with patch("app.services.button_handlers.whatsapp.send_interactive_buttons"):
-            await client.post("/api/v1/webhooks/whatsapp", json=payload)
+            await test_client.post("/api/v1/webhooks/whatsapp", json=payload)
 
             # assert response.status_code == 200
             # Placeholder para test completo con auth
