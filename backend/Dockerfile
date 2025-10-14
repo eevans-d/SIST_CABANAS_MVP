@@ -10,6 +10,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     ffmpeg \
     curl \
+    pkg-config \
+    libavcodec-dev \
+    libavformat-dev \
+    libavutil-dev \
+    libavdevice-dev \
+    libavfilter-dev \
+    libswscale-dev \
+    libswresample-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
@@ -20,15 +28,15 @@ RUN useradd -m -u 1000 appuser && \
 WORKDIR /app
 
 # Install Python dependencies
-COPY --chown=appuser:appuser backend/requirements.txt .
+COPY --chown=appuser:appuser requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY --chown=appuser:appuser backend/ /app
+COPY --chown=appuser:appuser . /app
 
 # Copy start script and make it executable (before switching to non-root user)
-COPY --chown=appuser:appuser backend/start.sh /app/start.sh
+COPY --chown=appuser:appuser start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
 # Switch to non-root user

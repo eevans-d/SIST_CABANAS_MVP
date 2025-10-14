@@ -22,7 +22,8 @@ psutil==5.9.8
 prometheus-fastapi-instrumentator==6.1.0
 prometheus-client==0.20.0
 icalendar==5.0.11
-faster-whisper==0.10.0
+# Audio processing será agregado post-MVP
+# openai-whisper==20231117
 numpy==1.26.4
 soundfile==0.12.1
 spacy==3.7.2
