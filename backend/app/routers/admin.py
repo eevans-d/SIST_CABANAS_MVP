@@ -1,19 +1,20 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Query, HTTPException, Header, Body
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
-from fastapi.responses import StreamingResponse
-from typing import Optional
 import csv
 import io
-import structlog
+from typing import Optional
 
-from app.core.database import get_db
-from app.core.security import verify_jwt_token, create_access_token
+import structlog
 from app.core.config import get_settings
+from app.core.database import get_db
+from app.core.security import create_access_token, verify_jwt_token
 from app.models.reservation import Reservation
 from app.services.email import email_service
+from fastapi import APIRouter, Body, Depends, Header, HTTPException, Query
+from fastapi.responses import StreamingResponse
+from sqlalchemy import and_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 logger = structlog.get_logger()
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -66,6 +67,11 @@ async def list_reservations(
         filters.append(Reservation.check_out <= to_date)
 
     stmt = select(Reservation).where(and_(*filters)) if filters else select(Reservation)
+
+    # O4: Eager loading para prevenir N+1 queries
+    # Si en el futuro se accede a r.accommodation.name, no generará queries adicionales
+    stmt = stmt.options(selectinload(Reservation.accommodation))
+
     result = await db.execute(stmt)
     rows = result.scalars().all()
     return [
@@ -75,11 +81,17 @@ async def list_reservations(
             "guest_name": r.guest_name,
             "guest_email": r.guest_email,
             "guest_phone": r.guest_phone,
-            "check_in": getattr(r, "check_in").isoformat() if getattr(r, "check_in", None) is not None else None,
-            "check_out": getattr(r, "check_out").isoformat() if getattr(r, "check_out", None) is not None else None,
+            "check_in": getattr(r, "check_in").isoformat()
+            if getattr(r, "check_in", None) is not None
+            else None,
+            "check_out": getattr(r, "check_out").isoformat()
+            if getattr(r, "check_out", None) is not None
+            else None,
             "status": r.reservation_status,
             "total_price": r.total_price,
-            "created_at": getattr(r, "created_at").isoformat() if getattr(r, "created_at", None) is not None else None,
+            "created_at": getattr(r, "created_at").isoformat()
+            if getattr(r, "created_at", None) is not None
+            else None,
         }
         for r in rows
     ]
@@ -90,7 +102,8 @@ async def export_reservations_csv(
     db: AsyncSession = Depends(get_db),
     _admin=Depends(require_admin),
 ):
-    stmt = select(Reservation)
+    # O4: Eager loading proactivo para export
+    stmt = select(Reservation).options(selectinload(Reservation.accommodation))
     result = await db.execute(stmt)
     rows = result.scalars().all()
 
@@ -137,27 +150,27 @@ async def resend_email(
     x_csrf_token: str | None = Header(default=None),
 ):
     """Reenviar notificación de email para una reserva.
-    
+
     Requiere autenticación admin y token CSRF básico.
     """
     if not x_csrf_token or len(x_csrf_token) < 8:
         # CSRF muy simple: presencia de token en header (un secreto compartido via UI)
         raise HTTPException(status_code=403, detail="Missing CSRF token")
-    
+
     r = await db.scalar(select(Reservation).where(Reservation.code == code))
     if not r:
         raise HTTPException(status_code=404, detail="Reservation not found")
-    
+
     # Forzar conversión de todos los valores a tipos nativos Python
     guest_email_val = getattr(r, "guest_email", None)
     if guest_email_val is None or (isinstance(guest_email_val, str) and not guest_email_val):
         raise HTTPException(status_code=400, detail="Reservation has no guest_email")
-    
+
     # Obtener nombre de alojamiento
     accommodation_name = str(getattr(r, "accommodation_id"))
     if hasattr(r, "accommodation") and r.accommodation:
         accommodation_name = str(getattr(r.accommodation, "name"))
-    
+
     # Determinar tipo de email según estado
     email_type = "prereservation"
     reservation_status_val = str(getattr(r, "reservation_status"))
@@ -165,7 +178,7 @@ async def resend_email(
         email_type = "confirmed"
     elif reservation_status_val == "cancelled":
         email_type = "expired"
-    
+
     # Enviar email según tipo
     success = False
     try:
@@ -178,7 +191,7 @@ async def resend_email(
         total_price_val = float(getattr(r, "total_price", 0))
         expires_at_val = getattr(r, "expires_at", None)
         expires_at_str = expires_at_val.isoformat() if expires_at_val is not None else ""
-        
+
         if email_type == "prereservation":
             success = await email_service.send_prereservation_confirmation(
                 guest_email=str(guest_email_val),
@@ -214,5 +227,5 @@ async def resend_email(
     except Exception as e:
         logger.error("admin_resend_email_failed", code=code, error=str(e))
         raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
-    
+
     return {"sent": success, "email_type": email_type}

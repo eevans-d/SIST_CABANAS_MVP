@@ -27,6 +27,7 @@ from app.services.interactive_buttons import (
 from app.services.reservations import ReservationService
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 
 async def handle_button_callback(
@@ -533,8 +534,10 @@ async def _handle_view_details(
     user_phone: str, db: AsyncSession, reservation_code: str
 ) -> Dict[str, Any]:
     """Ver detalles de reserva."""
+    # O5: joinedload para eliminar query separada de accommodation
     query = await db.execute(
         select(Reservation)
+        .options(joinedload(Reservation.accommodation))
         .where(Reservation.code == reservation_code)
         .where(Reservation.guest_phone == user_phone)
     )
@@ -544,11 +547,8 @@ async def _handle_view_details(
         await whatsapp.send_text_message(user_phone, "❌ No encontré esa reserva.")
         return {"action": "reservation_not_found"}
 
-    # Obtener alojamiento
-    query_acc = await db.execute(
-        select(Accommodation).where(Accommodation.id == reservation.accommodation_id)
-    )
-    accommodation = query_acc.scalar_one_or_none()
+    # Acceder directamente a relationship (ya cargado con joinedload)
+    accommodation = reservation.accommodation
     acc_name = accommodation.name if accommodation else "Alojamiento"
 
     nights = (reservation.check_out - reservation.check_in).days

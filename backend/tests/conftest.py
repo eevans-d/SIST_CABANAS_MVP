@@ -14,10 +14,12 @@ contra PostgreSQL real (variable TEST_DATABASE_URL apuntando a instancia con
 """
 
 import asyncio
+import json
 import os
 from contextlib import asynccontextmanager
 from decimal import Decimal
 from typing import AsyncGenerator, Callable, Optional
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from sqlalchemy import text
@@ -82,7 +84,7 @@ async def _can_connect(engine) -> bool:
         return False
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")  # Cambiado de session a function para compatibilidad async
 async def test_engine():  # type: ignore
     """Devuelve engine async.
 

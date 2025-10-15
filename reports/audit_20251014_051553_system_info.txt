@@ -1,0 +1,17 @@
+=== SYSTEM INFO ===
+Hostname: eevans
+OS: Linux 6.6.87.2-microsoft-standard-WSL2
+Architecture: x86_64
+Python: Python 3.12.3
+Docker: Docker version 28.4.0, build d8eb465
+Git Branch: main
+Git Commit: 0b27fb9
+
+=== DISK USAGE ===
+Filesystem                                Size  Used Avail Use% Mounted on
+/dev/sdf                                 1007G  102G  855G  11% /
+
+=== MEMORY ===
+               total        used        free      shared  buff/cache   available
+Mem:            15Gi        11Gi       542Mi        28Mi       3.9Gi       4.2Gi
+Swap:          2.0Gi       1.7Gi       273Mi

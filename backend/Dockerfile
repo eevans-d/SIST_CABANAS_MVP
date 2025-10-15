@@ -28,12 +28,12 @@ RUN useradd -m -u 1000 appuser && \
 WORKDIR /app
 
 # Install Python dependencies
-COPY --chown=appuser:appuser requirements.txt .
+COPY --chown=appuser:appuser backend/requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY --chown=appuser:appuser . /app
+COPY --chown=appuser:appuser backend/ /app
 
 # Copy start script and make it executable (before switching to non-root user)
 COPY --chown=appuser:appuser start.sh /app/start.sh

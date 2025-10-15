@@ -201,7 +201,7 @@ networks:
     name: monitoring
   backend:
     external: true
-    name: sist_cabanas_backend  # Must match your main app network
+    name: sist_cabaas_backend  # Nombre real de la red (typo histórico con ñ)
 
 # ═══════════════════════════════════════════════════════════════════════════
 # VOLUMES

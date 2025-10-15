@@ -1,25 +1,29 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from sqlalchemy import text
-from sqlalchemy.pool import NullPool
 import structlog
-
 from app.core.config import get_settings
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.pool import NullPool
 
 logger = structlog.get_logger()
 settings = get_settings()
 
 engine_kwargs = {
     "echo": settings.ENVIRONMENT == "development",
-    "pool_pre_ping": True,
 }
-if settings.ENVIRONMENT == "test":
+
+# SQLite doesn't support pool_size/max_overflow
+database_url = settings.DATABASE_URL or ""
+is_sqlite = "sqlite" in database_url.lower()
+
+if settings.ENVIRONMENT == "test" or is_sqlite:
     engine_kwargs["poolclass"] = NullPool  # type: ignore
 else:
+    engine_kwargs["pool_pre_ping"] = True
     engine_kwargs["pool_size"] = settings.DB_POOL_SIZE  # type: ignore
     engine_kwargs["max_overflow"] = settings.DB_MAX_OVERFLOW  # type: ignore
 
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    database_url,
     **engine_kwargs,
 )
 

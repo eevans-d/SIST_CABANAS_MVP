@@ -17,8 +17,8 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str | None = None
-    DB_POOL_SIZE: int = 10
-    DB_MAX_OVERFLOW: int = 5
+    DB_POOL_SIZE: int = 50  # Increased for load handling (was 10)
+    DB_MAX_OVERFLOW: int = 25  # Increased for spike traffic (was 5)
 
     # Redis
     REDIS_URL: str | None = None

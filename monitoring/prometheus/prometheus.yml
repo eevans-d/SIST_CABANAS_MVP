@@ -30,7 +30,7 @@ scrape_configs:
   # FastAPI Application - Main API
   - job_name: 'alojamientos-api'
     static_configs:
-      - targets: ['api:8000']
+      - targets: ['sist_cabaas-backend-1:8000']  # Backend staging container
     metrics_path: '/metrics'
     scrape_interval: 10s
     scrape_timeout: 5s
