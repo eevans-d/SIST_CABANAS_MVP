@@ -1,7 +1,7 @@
 # Opción C: Performance Validation - COMPLETADA ✅
 
-**Fecha:** 2025-10-15  
-**Duración:** ~3h (vs 5-7h estimado)  
+**Fecha:** 2025-10-15
+**Duración:** ~3h (vs 5-7h estimado)
 **Estado:** ✅ **COMPLETO - Sistema validado bajo carga**
 
 ---
@@ -192,33 +192,33 @@ Pre-reserve (/pre-reserve):
 ## 📋 Hallazgos y Aprendizajes
 
 ### 1. DB Pool Sizing ✅
-**Problema:** Pool de 10 conexiones insuficiente para 50 usuarios concurrentes  
-**Solución:** Aumentar a 50/25 basándose en fórmula: `pool_size >= max_concurrent_users`  
-**Resultado:** Eliminados timeouts de conexión, latencia reducida 332x  
+**Problema:** Pool de 10 conexiones insuficiente para 50 usuarios concurrentes
+**Solución:** Aumentar a 50/25 basándose en fórmula: `pool_size >= max_concurrent_users`
+**Resultado:** Eliminados timeouts de conexión, latencia reducida 332x
 **Evidencia:** 13,401 requests en 10min sin connection pool exhaustion
 
 ### 2. API Schema Mismatches ✅
-**Problema:** Tests usando field names incorrectos (guests_count vs guests, etc.)  
-**Solución:** Consultar `/openapi.json` para schema exacto antes de crear tests  
-**Resultado:** 100% success rate en pre-reservations (3,836 exitosas)  
+**Problema:** Tests usando field names incorrectos (guests_count vs guests, etc.)
+**Solución:** Consultar `/openapi.json` para schema exacto antes de crear tests
+**Resultado:** 100% success rate en pre-reservations (3,836 exitosas)
 **Lección:** SIEMPRE validar schema con OpenAPI antes de escribir tests
 
 ### 3. Network Isolation ✅
-**Problema:** Backend en red diferente a PostgreSQL/Redis  
-**Solución:** `docker network connect` para añadir backend a redes necesarias  
-**Resultado:** Conexiones estables sin errores de DNS/timeout  
+**Problema:** Backend en red diferente a PostgreSQL/Redis
+**Solución:** `docker network connect` para añadir backend a redes necesarias
+**Resultado:** Conexiones estables sin errores de DNS/timeout
 **Validación:** 0.00% HTTP failures en 13,401 requests
 
 ### 4. Error Handling en k6 ✅
-**Problema:** Tests crasheando al hacer JSON.parse() de respuestas vacías  
-**Solución:** Wrap todos los JSON.parse() en try-catch  
-**Resultado:** Tests más robustos, métricas más precisas  
+**Problema:** Tests crasheando al hacer JSON.parse() de respuestas vacías
+**Solución:** Wrap todos los JSON.parse() en try-catch
+**Resultado:** Tests más robustos, métricas más precisas
 **Impacto:** 99.96% checks passed (40,187/40,203)
 
 ### 5. Health Check Timeouts (Minor Issue) ⚠️
-**Observación:** 16 health checks (0.4%) tardaron entre 500-600ms  
-**Contexto:** Ocurrieron bajo carga máxima (50 VUs)  
-**Impacto:** No crítico, dentro del margen aceptable  
+**Observación:** 16 health checks (0.4%) tardaron entre 500-600ms
+**Contexto:** Ocurrieron bajo carga máxima (50 VUs)
+**Impacto:** No crítico, dentro del margen aceptable
 **Recomendación Post-MVP:** Optimizar queries de health check o aumentar timeout a 1s
 
 ---
@@ -322,17 +322,17 @@ Pre-reserve (/pre-reserve):
 
 ### ✅ Status Final
 
-**Opción C: COMPLETADA** ✅  
-**Sistema: PRODUCTION-READY** ✅  
+**Opción C: COMPLETADA** ✅
+**Sistema: PRODUCTION-READY** ✅
 **Próximo paso:** Deploy a staging/production 🚀
 
 ---
 
-**Test Engineer:** GitHub Copilot (QA Automation Agent)  
-**Test Duration:** 10 minutos (test) + 3 horas (debugging + optimización)  
-**Test ID:** k6-performance-validation-final-001  
-**Environment:** Staging (localhost Docker Compose)  
-**Date:** 2025-10-15 03:31:23 UTC  
+**Test Engineer:** GitHub Copilot (QA Automation Agent)
+**Test Duration:** 10 minutos (test) + 3 horas (debugging + optimización)
+**Test ID:** k6-performance-validation-final-001
+**Environment:** Staging (localhost Docker Compose)
+**Date:** 2025-10-15 03:31:23 UTC
 **Sign-off:** ✅ Sistema APROBADO para deployment a producción
 
 **Certificación de Calidad:**

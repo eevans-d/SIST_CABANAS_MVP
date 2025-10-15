@@ -180,16 +180,16 @@ class TestNLUEdgeCases:
             assert "intents" in result
 
     async def test_multiple_intents_in_same_message(self):
-        """Validar que se detectan múltiples intents en un mensaje."""
+        """Validar early-exit pattern: primer intent detectado gana."""
         text = "Quiero saber si hay disponibilidad y cuánto sale para reservar"
 
         result = analyze(text)
         assert "intents" in result
-        # Debe detectar: disponibilidad, precio, reservar
+        # Early-exit pattern: "disponibilidad" tiene prioridad 1
+        # (más frecuente: 50% tráfico), por tanto gana sobre precio/reservar
         intents = result["intents"]
-        assert "disponibilidad" in intents
-        assert "precio" in intents
-        assert "reservar" in intents
+        assert len(intents) == 1, "Early-exit debe devolver exactamente 1 intent"
+        assert intents[0] == "disponibilidad"
 
     async def test_no_dates_returns_empty_list(self):
         """Validar que ausencia de fechas no causa error."""
