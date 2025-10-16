@@ -1,9 +1,10 @@
 # Instrucciones para Agentes de IA - Sistema MVP de Automatización de Reservas
 
-## ⚡ TL;DR para agentes (actualizado 2025-10-16) — 🟢 MVP 100% COMPLETADO
-- **ESTADO:** ✅ **Biblioteca QA 20/20 prompts (100%) VALIDADA** | 180+ tests | 85% coverage | 0 CVEs | Todos SLOs met | **PRODUCCIÓN-LISTA**
+## ⚡ TL;DR para agentes (actualizado 2025-10-16) — 🟢 MVP BACKEND 100% + 🔶 FRONTEND EN DESARROLLO
+- **ESTADO:** ✅ **Backend MVP 100% COMPLETADO** | 20/20 QA | 180+ tests | 85% coverage | 0 CVEs | **DECISIÓN B CONFIRMADA**
+- **DECISIÓN ESTRATÉGICA:** Retrasar 5 días para implementar Dashboard Admin (Oct 17→28) | ROI: $36,000/año | Break-even: 2.25 meses
 - **Sistema de automatización** (NO agéntico/AI agents): rule-based con NLU regex + dateparser determinístico (validado P102)
-- Código monolito FastAPI + SQLAlchemy Async + PostgreSQL 16 + Redis 7. **Evitar microservicios y abstracciones innecesarias.**
+- Código monolito FastAPI + SQLAlchemy Async + PostgreSQL 16 + Redis 7. **Frontend: React 18 + Vite + Tailwind.**
 - Tests: **20/20 completados + validados** (P102 test_agent_consistency: 20/20 PASSED en 0.34s). Pytest con fallback SQLite para unitarios. Overlap tests requieren Postgres real con btree_gist (ver `backend/tests/test_double_booking.py`, `test_constraint_validation.py`, `test_agent_consistency.py`). Configurado en `pytest.ini`, fixtures en `backend/tests/conftest.py`.
 - Constraint anti doble-booking: ACTIVO. Columna `period` generada como `daterange(check_in, check_out, '[)')` con `EXCLUDE USING gist` filtrando pre_reserved/confirmed. IntegrityError en solapes concurrentes. Locks Redis: `lock:acc:{id}:{checkin}:{checkout}` TTL 1800s.
 - Webhooks críticos: VALIDADOS en P103. Firmas SIEMPRE obligatorias:
@@ -13,7 +14,7 @@
 - Observabilidad: `prometheus-fastapi-instrumentator` expone `/metrics`. Gauge `ical_last_sync_age_minutes`. Health `/api/v1/healthz` con DB/Redis/iCal checks. Rate limit middleware Redis per-IP+path. Bypass en `/healthz`, `/readyz`, `/metrics`. Fail-open en error Redis. Validado P105.
 - Rutas principales (prefijo `/api/v1`): `healthz`, `readyz`, `reservations` (CRUD pre-reservas), `mercadopago/webhook`, `whatsapp` (webhooks), `ical` (export/import), `audio` (transcribe), `admin` (gestión), `nlu` (analyze). Ver `app/routers/*`.
 - Comandos: `make test` (180+ tests), `make up` (Docker), `make logs`, `make migrate`. CI/CD con GitHub Actions. **E2E tests: 0/9 completados → PRAGMATIC SKIP (trigger: >10 errores/día en prod). Deuda documentada en docs/qa/BIBLIOTECA_QA_COMPLETA.md**
-- **Próximos pasos:** Deployment a producción. Monitoreo 1ª semana. Trigger E2E si incidents.
+- **Próximos pasos:** OPCIÓN B CONFIRMADA - Implementar Dashboard Admin (React 18 + Vite). Timeline: Oct 17→28. FASE 0 HOY: Admin Playbook (2h).
 
 ## ⚠️ IMPORTANTE: Sobre la Terminología
 Este sistema es un **sistema de automatización sofisticado con NLU básico**, NO un sistema "agéntico" con AI agents autónomos (LangChain, CrewAI, etc.).
