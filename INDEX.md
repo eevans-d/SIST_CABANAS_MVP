@@ -7,6 +7,23 @@
 
 ## 🎯 EMPIEZA AQUÍ (¿Qué necesitas?)
 
+### ANÁLISIS UX ADMINISTRADOR - NUEVA ESTRATEGIA (Oct 16)
+**📌 CRÍTICO: Lee esto PRIMERO para decidir roadmap**
+
+1. **[MATRIZ_DECISION_SIGUIENTE_FASE.md](./MATRIZ_DECISION_SIGUIENTE_FASE.md)** ⭐⭐⭐⭐⭐
+   - 15 min de lectura
+   - 2 opciones claras (Opción A vs B)
+   - ROI analysis + break-even
+   - **DECISIÓN:** ¿Deploy ahora o retrasar 5 días?
+
+2. **[ANALISIS_UX_ADMINISTRADOR_PROFUNDO.md](./ANALISIS_UX_ADMINISTRADOR_PROFUNDO.md)** ⭐⭐⭐⭐
+   - 25 min de lectura
+   - Diagnóstico completo del gap (sin dashboard)
+   - 5 pain points + 5 oportunidades
+   - Roadmap 3 fases + implementación
+
+---
+
 ### Para DEPLOYAR A PRODUCCIÓN en 2-3 horas:
 1. **[CREDENCIALES_TODO_NECESARIO.md](./CREDENCIALES_TODO_NECESARIO.md)** ⭐⭐⭐
    - 5 min de lectura
@@ -25,6 +42,13 @@
 ---
 
 ## 📋 Documentación por Categoría
+
+### 🎯 ANÁLISIS ESTRATÉGICO & DECISIÓN (NEW - Oct 16)
+
+| Archivo | Tamaño | Lectura | Propósito |
+|---------|--------|---------|-----------|
+| [MATRIZ_DECISION_SIGUIENTE_FASE.md](./MATRIZ_DECISION_SIGUIENTE_FASE.md) | 10 KB | 15 min | 🔴 **CRÍTICA:** Opción A vs B, ROI, break-even |
+| [ANALISIS_UX_ADMINISTRADOR_PROFUNDO.md](./ANALISIS_UX_ADMINISTRADOR_PROFUNDO.md) | 28 KB | 25 min | 🔴 Diagnóstico UX, pain points, roadmap |
 
 ### 🔐 CREDENCIALES & DEPLOYMENT
 
