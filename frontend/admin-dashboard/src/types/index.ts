@@ -62,12 +62,10 @@ export interface Accommodation {
 export interface DashboardStats {
   total_reservations: number;
   total_guests: number;
-  monthly_revenue: string;
-  pending_reservations: number;
-  confirmed_reservations: number;
-  checked_in_today: number;
-  checkout_today: number;
-  occupancy_rate: number;
+  monthly_revenue: number;
+  pending_confirmations: number;
+  avg_occupancy_rate: number;
+  last_updated: string;
 }
 
 // User/Auth Types
