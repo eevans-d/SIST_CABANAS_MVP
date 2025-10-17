@@ -13,6 +13,7 @@ const DashboardPage: React.FC = () => {
     statuses: [],
     startDate: undefined,
     endDate: undefined,
+    search: undefined,
   });
 
   // Convertir filtros del estado a formato del servicio
@@ -20,6 +21,7 @@ const DashboardPage: React.FC = () => {
     statuses: filters.statuses.length > 0 ? filters.statuses : undefined,
     start_date: filters.startDate,
     end_date: filters.endDate,
+    search: filters.search,
   };
 
   return (

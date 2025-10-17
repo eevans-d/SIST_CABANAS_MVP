@@ -15,7 +15,7 @@ from app.models.reservation import Reservation
 from app.services.email import email_service
 from fastapi import APIRouter, Body, Depends, Header, HTTPException, Query
 from fastapi.responses import StreamingResponse
-from sqlalchemy import and_, func, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -134,6 +134,9 @@ async def list_reservations(
     accommodation_id: Optional[int] = Query(default=None),
     from_date: Optional[str] = Query(default=None),
     to_date: Optional[str] = Query(default=None),
+    search: Optional[str] = Query(
+        default=None, description="Buscar por nombre, email o teléfono del huésped"
+    ),
     db: AsyncSession = Depends(get_db),
     _admin=Depends(require_admin),
 ):
@@ -147,6 +150,16 @@ async def list_reservations(
         filters.append(Reservation.check_in >= from_date)
     if to_date:
         filters.append(Reservation.check_out <= to_date)
+    if search:
+        # Búsqueda case-insensitive en guest_name, guest_email, guest_phone
+        search_pattern = f"%{search}%"
+        filters.append(
+            or_(
+                Reservation.guest_name.ilike(search_pattern),
+                Reservation.guest_email.ilike(search_pattern),
+                Reservation.guest_phone.ilike(search_pattern),
+            )
+        )
 
     stmt = select(Reservation).where(and_(*filters)) if filters else select(Reservation)
 

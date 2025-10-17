@@ -2,11 +2,13 @@ import React, { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { StatusFilter } from './StatusFilter';
 import { DateRangeFilter } from './DateRangeFilter';
+import { SearchInput } from './SearchInput';
 
 export interface FilterState {
   statuses: string[];
   startDate?: string;
   endDate?: string;
+  search?: string;
 }
 
 interface FilterBarProps {
@@ -27,18 +29,21 @@ export const FilterBar: React.FC<FilterBarProps> = ({
     const statusesParam = searchParams.get('statuses');
     const startDateParam = searchParams.get('start_date');
     const endDateParam = searchParams.get('end_date');
+    const searchParam = searchParams.get('search');
 
     const urlFilters: FilterState = {
       statuses: statusesParam ? statusesParam.split(',') : [],
       startDate: startDateParam || undefined,
       endDate: endDateParam || undefined,
+      search: searchParam || undefined,
     };
 
     // Solo actualizar si hay diferencias con los filtros actuales
     const hasChanges =
       JSON.stringify(filters.statuses.sort()) !== JSON.stringify(urlFilters.statuses.sort()) ||
       filters.startDate !== urlFilters.startDate ||
-      filters.endDate !== urlFilters.endDate;
+      filters.endDate !== urlFilters.endDate ||
+      filters.search !== urlFilters.search;
 
     if (hasChanges) {
       onFiltersChange(urlFilters);
@@ -59,6 +64,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({
 
     if (filters.endDate) {
       newParams.set('end_date', filters.endDate);
+    }
+
+    if (filters.search) {
+      newParams.set('search', filters.search);
     }
 
     // Solo actualizar si hay cambios
@@ -91,18 +100,27 @@ export const FilterBar: React.FC<FilterBarProps> = ({
     });
   };
 
+  const handleSearchChange = (search: string) => {
+    onFiltersChange({
+      ...filters,
+      search: search || undefined,
+    });
+  };
+
   const clearAllFilters = () => {
     onFiltersChange({
       statuses: [],
       startDate: undefined,
       endDate: undefined,
+      search: undefined,
     });
   };
 
   const hasActiveFilters =
     filters.statuses.length > 0 ||
     filters.startDate ||
-    filters.endDate;
+    filters.endDate ||
+    filters.search;
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
@@ -122,7 +140,15 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Search Input */}
+        <div>
+          <SearchInput
+            value={filters.search || ''}
+            onChange={handleSearchChange}
+          />
+        </div>
+
         {/* Status Filter */}
         <div>
           <StatusFilter
@@ -146,6 +172,12 @@ export const FilterBar: React.FC<FilterBarProps> = ({
       {hasActiveFilters && (
         <div className="mt-4 pt-3 border-t border-gray-100">
           <div className="flex flex-wrap gap-2">
+            {filters.search && (
+              <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">
+                Búsqueda: {filters.search}
+              </span>
+            )}
+
             {filters.statuses.length > 0 && (
               <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
                 {filters.statuses.length === 1
