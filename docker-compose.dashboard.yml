@@ -1,0 +1,51 @@
+version: "3.9"
+
+services:
+  # Frontend Admin Dashboard
+  admin-dashboard:
+    build:
+      context: ./frontend/admin-dashboard
+      dockerfile: Dockerfile
+    container_name: alojamientos_admin_dashboard
+    environment:
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:8000}
+    ports:
+      - "3001:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - frontend
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # Extends base docker-compose.yml
+  postgres:
+    extends:
+      file: docker-compose.yml
+      service: postgres
+
+  redis:
+    extends:
+      file: docker-compose.yml
+      service: redis
+
+  api:
+    extends:
+      file: docker-compose.yml
+      service: api
+    environment:
+      - ADMIN_DASHBOARD_URL=${ADMIN_DASHBOARD_URL:-http://localhost:3001}
+
+# Use volumes and networks from base docker-compose.yml
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  backend:
+  frontend:
