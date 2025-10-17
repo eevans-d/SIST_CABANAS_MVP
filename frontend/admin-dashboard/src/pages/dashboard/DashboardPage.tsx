@@ -1,4 +1,5 @@
 import { StatsCard } from '../../components/dashboard/StatsCard';
+import { ReservationsTable } from '../../components/dashboard/ReservationsTable';
 import { useDashboardStats } from '../../hooks/useDashboardStats';
 
 // Iconos SVG simples
@@ -107,12 +108,10 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Placeholder para tabla de reservas */}
-      <div className="bg-white rounded-lg shadow p-6">
+      {/* Tabla de reservas */}
+      <div>
         <h3 className="text-xl font-bold text-gray-900 mb-4">Reservas Recientes</h3>
-        <div className="text-center text-gray-500 py-8">
-          Tabla de reservas en construcción...
-        </div>
+        <ReservationsTable />
       </div>
     </div>
   );
