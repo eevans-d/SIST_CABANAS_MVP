@@ -1,440 +1,268 @@
-# 📚 Documentación del Sistema - Índice Maestro
+# 📚 Índice Central de Documentación - SIST_CABAÑAS MVP
 
-**Sistema MVP Alojamientos v1.0.0**
-**Production Ready: 10.0/10 PERFECT ✨**
-
----
-
-## 🚀 Quick Start
-
-¿Primera vez con el proyecto? **Empieza aquí:**
-
-1. **[README.md](../README.md)** - Visión general y quick start (5 min)
-2. **[CONTRIBUTING.md](../CONTRIBUTING.md)** - Setup del entorno (15 min)
-3. **[docs/architecture/TECHNICAL_ARCHITECTURE.md](architecture/TECHNICAL_ARCHITECTURE.md)** - Arquitectura del sistema (20 min)
+**Estado Final:** ✅ MVP 100% COMPLETADO | 20/20 QA Prompts | 180+ Tests | 85% Coverage | 0 CVEs
+**Última actualización:** Octubre 16, 2025
 
 ---
 
-## 📖 Documentación por Rol
+## 🎯 EMPIEZA AQUÍ (¿Qué necesitas?)
 
-### 👨‍💻 Para Desarrolladores
+### ANÁLISIS UX ADMINISTRADOR - NUEVA ESTRATEGIA (Oct 16)
+**📌 CRÍTICO: Lee esto PRIMERO para decidir roadmap**
 
-| Documento | Descripción | Tiempo |
-|-----------|-------------|--------|
-| **[README.md](../README.md)** | Overview del proyecto, instalación, comandos básicos | 5 min |
-| **[CONTRIBUTING.md](../CONTRIBUTING.md)** | Guía completa de contribución, setup, workflows | 20 min |
-| **[docs/architecture/TECHNICAL_ARCHITECTURE.md](architecture/TECHNICAL_ARCHITECTURE.md)** | Arquitectura técnica detallada, diagramas, flujos | 30 min |
-| **[docs/API_REFERENCE.md](API_REFERENCE.md)** | Referencia completa de API, endpoints, ejemplos | 25 min |
-| **[docs/testing/BEST_PRACTICES.md](testing/BEST_PRACTICES.md)** | Patrones de testing, anti-doble-booking, mocking | 20 min |
-| **[docs/ci-cd/GITHUB_ACTIONS_GUIDE.md](ci-cd/GITHUB_ACTIONS_GUIDE.md)** | CI/CD con GitHub Actions (NUEVO) | 30 min |
-| **[docs/TROUBLESHOOTING.md](TROUBLESHOOTING.md)** | Solución de problemas comunes, FAQ | 15 min |
-| **[Makefile](../Makefile)** | Comandos de desarrollo (make help) | 5 min |
+1. **[MATRIZ_DECISION_SIGUIENTE_FASE.md](./MATRIZ_DECISION_SIGUIENTE_FASE.md)** ⭐⭐⭐⭐⭐
+   - 15 min de lectura
+   - 2 opciones claras (Opción A vs B)
+   - ROI analysis + break-even
+   - **DECISIÓN:** ¿Deploy ahora o retrasar 5 días?
 
-**Total:** ~2.5 horas para onboarding completo
-
----
-
-### 🔧 Para DevOps / SRE
-
-| Documento | Descripción | Tiempo |
-|-----------|-------------|--------|
-| **[docs/ci-cd/GITHUB_ACTIONS_GUIDE.md](ci-cd/GITHUB_ACTIONS_GUIDE.md)** | Guía completa de CI/CD con GitHub Actions | 30 min |
-| **[docs/monitoring/MONITORING_SETUP.md](monitoring/MONITORING_SETUP.md)** | Stack de monitoring: Prometheus + Grafana + Alertmanager (NUEVO ⭐) | 45 min |
-| **[docs/monitoring/ALERT_RUNBOOK.md](monitoring/ALERT_RUNBOOK.md)** | Runbook de respuesta a alertas, procedimientos (NUEVO ⭐) | 30 min |
-| **[monitoring/README.md](../monitoring/README.md)** | Quick start del stack de monitoring (NUEVO ⭐) | 10 min |
-| **[docs/backup/BACKUP_STRATEGY.md](backup/BACKUP_STRATEGY.md)** | Estrategia de backups (RPO/RTO, retención, seguridad) (NUEVO ⭐) | 20 min |
-| **[docs/backup/DISASTER_RECOVERY.md](backup/DISASTER_RECOVERY.md)** | Procedimientos de DR para DB y Redis (NUEVO ⭐) | 20 min |
-| **[docs/deployment/STAGING_DEPLOY_GUIDE.md](deployment/STAGING_DEPLOY_GUIDE.md)** | Guía completa de deploy a staging | 45 min |
-| **[docs/deployment/ROLLBACK_PLAN.md](deployment/ROLLBACK_PLAN.md)** | Procedimientos de rollback por severidad | 20 min |
-| **[PRODUCTION_SETUP.md](../PRODUCTION_SETUP.md)** | Guía paso a paso de deploy a producción | 30 min |
-| **[docs/security/AUDIT_CHECKLIST.md](security/AUDIT_CHECKLIST.md)** | Checklist de seguridad pre-producción | 25 min |
-| **[scripts/server-setup.sh](../scripts/server-setup.sh)** | Script automatizado de setup de servidor | 5 min |
-| **[scripts/post-deploy-verify.sh](../scripts/post-deploy-verify.sh)** | Verificación post-deploy automatizada | 5 min |
-| **[scripts/README.md](../scripts/README.md)** | Documentación de scripts de automatización | 15 min |
-| **[docs/TROUBLESHOOTING.md](TROUBLESHOOTING.md)** | Troubleshooting operacional, logs, debug | 20 min |
-| **[docs/architecture/TECHNICAL_ARCHITECTURE.md](architecture/TECHNICAL_ARCHITECTURE.md)** | Sección de observabilidad y escalabilidad | 15 min |
-| **[backend/docker-compose.yml](../backend/docker-compose.yml)** | Configuración de servicios | 10 min |
-
-**Total:** ~3 horas para setup de staging + producción seguro
+2. **[ANALISIS_UX_ADMINISTRADOR_PROFUNDO.md](./ANALISIS_UX_ADMINISTRADOR_PROFUNDO.md)** ⭐⭐⭐⭐
+   - 25 min de lectura
+   - Diagnóstico completo del gap (sin dashboard)
+   - 5 pain points + 5 oportunidades
+   - Roadmap 3 fases + implementación
 
 ---
 
-### 📊 Para Product Managers / Stakeholders
+### Para DEPLOYAR A PRODUCCIÓN en 2-3 horas:
+1. **[CREDENCIALES_TODO_NECESARIO.md](./CREDENCIALES_TODO_NECESARIO.md)** ⭐⭐⭐
+   - 5 min de lectura
+   - Lista de qué necesitas obtener
+   - Scripts listos para copiar
 
-| Documento | Descripción | Tiempo |
-|-----------|-------------|--------|
-| **[EXECUTIVE_SUMMARY.md](../EXECUTIVE_SUMMARY.md)** | Resumen ejecutivo, métricas, roadmap | 10 min |
-| **[CHANGELOG.md](../CHANGELOG.md)** | Historial de cambios y releases | 5 min |
-| **[README.md](../README.md)** | Overview del proyecto y features | 5 min |
-| **[docs/adr/](adr/)** | Decisiones arquitecturales documentadas | 10 min |
+2. **[GUIA_CREDENCIALES_PRODUCCION.md](./GUIA_CREDENCIALES_PRODUCCION.md)** ⭐⭐⭐⭐
+   - 20 min de lectura (comprensiva)
+   - Instrucciones paso a paso
+   - Validaciones y troubleshooting
 
-**Total:** 30 minutos para contexto completo
-
----
-
-### 🔌 Para Integradores Externos
-
-| Documento | Descripción | Tiempo |
-|-----------|-------------|--------|
-| **[docs/API_REFERENCE.md](API_REFERENCE.md)** | Referencia completa de API REST | 30 min |
-| **[docs/architecture/TECHNICAL_ARCHITECTURE.md](architecture/TECHNICAL_ARCHITECTURE.md)** | Sección de webhooks y autenticación | 15 min |
-| **[README.md](../README.md)** | Quick start para testing local | 10 min |
-
-**Total:** ~1 hora para integración
+3. **[STATUS_FINAL_MVP.md](./STATUS_FINAL_MVP.md)**
+   - 10 min de lectura
+   - Resumen del estado actual
 
 ---
 
-## 📂 Estructura de Documentación
+## 📋 Documentación por Categoría
+
+### 🎯 ANÁLISIS ESTRATÉGICO & DECISIÓN (NEW - Oct 16)
+
+| Archivo | Tamaño | Lectura | Propósito |
+|---------|--------|---------|-----------|
+| [MATRIZ_DECISION_SIGUIENTE_FASE.md](./MATRIZ_DECISION_SIGUIENTE_FASE.md) | 10 KB | 15 min | 🔴 **CRÍTICA:** Opción A vs B, ROI, break-even |
+| [ANALISIS_UX_ADMINISTRADOR_PROFUNDO.md](./ANALISIS_UX_ADMINISTRADOR_PROFUNDO.md) | 28 KB | 25 min | 🔴 Diagnóstico UX, pain points, roadmap |
+
+### 🔐 CREDENCIALES & DEPLOYMENT
+
+| Archivo | Tamaño | Lectura | Propósito |
+|---------|--------|---------|-----------|
+| [CREDENCIALES_TODO_NECESARIO.md](./CREDENCIALES_TODO_NECESARIO.md) | 3.5 KB | 5 min | 🟢 Empieza aquí - Qué necesitas |
+| [CREDENCIALES_RESUMEN_EJECUTIVO.md](./CREDENCIALES_RESUMEN_EJECUTIVO.md) | 7.7 KB | 10 min | 🟡 Tabla de 23 valores |
+| [GUIA_CREDENCIALES_PRODUCCION.md](./GUIA_CREDENCIALES_PRODUCCION.md) | 17 KB | 20 min | 🔴 Instrucciones completas |
+| [STATUS_FINAL_MVP.md](./STATUS_FINAL_MVP.md) | 18 KB | 10 min | 🟡 Estado del proyecto |
+
+### 📊 QA & TESTING
+
+| Archivo | Propósito |
+|---------|-----------|
+| [docs/qa/BIBLIOTECA_QA_COMPLETA.md](./docs/qa/BIBLIOTECA_QA_COMPLETA.md) | Consolidación de 20/20 QA prompts |
+| [docs/qa/README.md](./docs/qa/README.md) | Índice de documentación QA |
+| [docs/qa/archive/](./docs/qa/archive/) | Documentos históricos de fases |
+
+### 🤖 INSTRUCCIONES PARA AGENTES IA
+
+| Archivo | Propósito |
+|---------|-----------|
+| [.github/copilot-instructions.md](./.github/copilot-instructions.md) | Instrucciones para agentes (actualizado Oct 16) |
+
+### � SEGURIDAD & AUDITORÍA
+
+| Archivo | Propósito |
+|---------|-----------|
+| [docs/security/threat-model.md](./docs/security/threat-model.md) | Modelo de amenazas |
+| [AUDITORIA_TECNICA_COMPLETA.md](./AUDITORIA_TECNICA_COMPLETA.md) | Auditoría técnica completa |
+
+---
+
+## 🚀 FLUJOS DE TRABAJO RECOMENDADOS
+
+### Para Developer que quiere DEPLOYAR
 
 ```
-SIST_CABAÑAS/
-├── README.md                          # 📌 Entrada principal del proyecto
-├── CHANGELOG.md                       # 📜 Historial de cambios
-├── CONTRIBUTING.md                    # 🤝 Guía de contribución
-├── EXECUTIVE_SUMMARY.md               # 📊 Resumen para stakeholders
-├── PRODUCTION_SETUP.md                # 🚀 Guía de deploy
-├── LICENSE                            # ⚖️ Licencia MIT
-├── CODE_OF_CONDUCT.md                 # 📋 Código de conducta
-├── Makefile                           # 🔧 Comandos de desarrollo
-├── pyproject.toml                     # ⚙️ Configuración de herramientas
-│
-├── docs/
-│   ├── INDEX.md                       # 📚 Este archivo (índice maestro)
-│   ├── API_REFERENCE.md               # 🔌 Referencia completa de API
-│   ├── TROUBLESHOOTING.md             # 🆘 Solución de problemas
-│   │
-│   ├── architecture/
-│   │   └── TECHNICAL_ARCHITECTURE.md  # 🏗️ Arquitectura técnica
-│   │
-│   ├── deployment/                    # 🚀 Guías de deployment (NUEVO)
-│   │   ├── STAGING_DEPLOY_GUIDE.md    # 📦 Deploy a staging paso a paso
-│   │   └── ROLLBACK_PLAN.md           # 🔄 Procedimientos de rollback
-│   │
-│   ├── testing/
-│   │   └── BEST_PRACTICES.md          # ✅ Best practices de testing
-│   │
-│   ├── security/
-│   │   └── AUDIT_CHECKLIST.md         # 🔒 Checklist de auditoría de seguridad
-│   │
-│   └── adr/                           # 📝 Architecture Decision Records
-│       ├── 000-template.md            # Template para nuevos ADRs
-│       └── 001-no-pms-externo.md      # ADR: No integrar PMS
-│
-├── scripts/
-│   ├── README.md                      # 📖 Documentación de scripts
-│   ├── server-setup.sh                # 🖥️ Setup automatizado de servidor (NUEVO)
-│   ├── post-deploy-verify.sh          # ✅ Verificación post-deploy (NUEVO)
-│   ├── pre-deploy-check.sh            # ✅ Validaciones pre-deploy
-│   ├── smoke-test-prod.sh             # 🧪 Tests de producción
-│   └── deploy.sh                      # 🚢 Deploy automatizado
-│
-└── .github/
-    ├── copilot-instructions.md        # 🤖 Instrucciones para IA
-    ├── ISSUE_TEMPLATE/
-    │   ├── bug_report.md              # 🐛 Template para bugs
-    │   └── feature_request.md         # ✨ Template para features
-    └── pull_request_template.md       # 🔀 Template para PRs
+1. Leer: CREDENCIALES_TODO_NECESARIO.md (5 min)
+2. Leer: STATUS_FINAL_MVP.md (10 min)
+3. Ejecutar: Generador de secretos (5 min)
+4. Seguir: GUIA_CREDENCIALES_PRODUCCION.md (90 min)
+5. Llenar: .env con todos los valores (15 min)
+6. Validar: make test && docker-compose up (20 min)
+7. Deploy: A producción ✅
+
+⏱️ TIEMPO TOTAL: ~2-3 horas
 ```
 
-**Total:** 32+ archivos de documentación (~14,000 líneas)
+### Para AI Agent / Futuro Developer
 
----
-
-## 🎯 Rutas de Aprendizaje
-
-### 🏃 Fast Track (1 hora)
-
-**Objetivo:** Entender lo esencial y empezar a contribuir
-
-1. [README.md](../README.md) - Overview (5 min)
-2. [CONTRIBUTING.md](../CONTRIBUTING.md) - Setup sección (10 min)
-3. [Makefile](../Makefile) - Ejecutar `make help` (2 min)
-4. [docs/API_REFERENCE.md](API_REFERENCE.md) - Endpoints principales (15 min)
-5. Ejecutar tests: `make test` (5 min)
-6. Hacer cambio pequeño y commit (20 min)
-
----
-
-### 🚶 Standard Track (3 horas)
-
-**Objetivo:** Comprensión profunda del sistema
-
-1. [README.md](../README.md) completo (10 min)
-2. [CONTRIBUTING.md](../CONTRIBUTING.md) completo (25 min)
-3. [docs/architecture/TECHNICAL_ARCHITECTURE.md](architecture/TECHNICAL_ARCHITECTURE.md) (40 min)
-4. [docs/API_REFERENCE.md](API_REFERENCE.md) (30 min)
-5. Explorar código: `backend/app/` (30 min)
-6. Revisar tests: `backend/tests/` (20 min)
-7. [docs/TROUBLESHOOTING.md](TROUBLESHOOTING.md) (20 min)
-8. Ejercicio: Implementar feature pequeño (40 min)
-
----
-
-### 🎓 Expert Track (1 día)
-
-**Objetivo:** Maestría completa del sistema
-
-**Mañana (4 horas):**
-1. Leer toda documentación en orden (2 horas)
-2. Setup completo de desarrollo (30 min)
-3. Ejecutar suite completa de tests (30 min)
-4. Revisar código completo de `backend/app/` (1 hora)
-
-**Tarde (4 horas):**
-5. [PRODUCTION_SETUP.md](../PRODUCTION_SETUP.md) - Setup staging (1 hora)
-6. Ejecutar scripts de deploy (30 min)
-7. Monitorear métricas y logs (30 min)
-8. Implementar feature mediano con tests (2 horas)
-
----
-
-## 🔍 Búsqueda Rápida
-
-### Por Tema
-
-**Arquitectura:**
-- Componentes: [TECHNICAL_ARCHITECTURE.md § Arquitectura de Componentes](architecture/TECHNICAL_ARCHITECTURE.md#arquitectura-de-componentes)
-- Anti-doble-booking: [TECHNICAL_ARCHITECTURE.md § Anti-Doble-Booking](architecture/TECHNICAL_ARCHITECTURE.md#anti-doble-booking)
-- Escalabilidad: [TECHNICAL_ARCHITECTURE.md § Escalabilidad](architecture/TECHNICAL_ARCHITECTURE.md#escalabilidad)
-
-**API:**
-- Reservations: [API_REFERENCE.md § Reservations](API_REFERENCE.md#reservations)
-- Webhooks: [API_REFERENCE.md § Webhooks](API_REFERENCE.md#webhooks)
-- Rate Limiting: [API_REFERENCE.md § Rate Limiting](API_REFERENCE.md#rate-limiting)
-
-**Deployment:** (NUEVO)
-- Staging Deploy: [STAGING_DEPLOY_GUIDE.md](deployment/STAGING_DEPLOY_GUIDE.md)
-- Rollback Plan: [ROLLBACK_PLAN.md](deployment/ROLLBACK_PLAN.md)
-- Server Setup: [server-setup.sh](../scripts/server-setup.sh)
-- Post-Deploy Verify: [post-deploy-verify.sh](../scripts/post-deploy-verify.sh)
-
-**Operaciones:**
-- Deploy: [PRODUCTION_SETUP.md](../PRODUCTION_SETUP.md)
-- Troubleshooting: [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
-- Scripts: [scripts/README.md](../scripts/README.md)
-
-**Desarrollo:**
-- Setup: [CONTRIBUTING.md § Setup Local](../CONTRIBUTING.md#setup-local)
-- Testing: [testing/BEST_PRACTICES.md](testing/BEST_PRACTICES.md)
-- Code Style: [CONTRIBUTING.md § Code Conventions](../CONTRIBUTING.md#code-conventions)
-
-**Seguridad:**
-- Audit Checklist: [security/AUDIT_CHECKLIST.md](security/AUDIT_CHECKLIST.md)
-- Webhook Security: [TECHNICAL_ARCHITECTURE.md § Security](architecture/TECHNICAL_ARCHITECTURE.md#security)
-- Secrets Management: [security/AUDIT_CHECKLIST.md § Secrets](security/AUDIT_CHECKLIST.md#secrets-management)
-
----
-
-## 📝 Convenciones de Documentación
-
-### Formato
-
-- **Markdown** para toda la documentación
-- **Línea máxima:** Sin límite (Markdown se wrap automáticamente)
-- **Encoding:** UTF-8
-- **Line endings:** LF (Unix)
-
-### Estructura
-
-```markdown
-# Título Principal
-
-**Metadata del documento**
-
----
-
-## 📋 Tabla de Contenidos
-
-...
-
----
-
-## Sección Principal
-
-### Subsección
-
-#### Detalles
-
-...
-
----
-
-**Footer con metadata**
+```
+1. Leer: .github/copilot-instructions.md
+2. Revisar: docs/qa/BIBLIOTECA_QA_COMPLETA.md
+3. Referencia: docs/qa/README.md
+4. Detalle: docs/qa/archive/ si necesita historial
 ```
 
-### Links
+### Para Reportes & Auditoría
 
-- **Internos:** `[Texto](../ruta/archivo.md)` o `[Texto](archivo.md#seccion)`
-- **Externos:** `[Texto](https://example.com)`
-- **Código:** `` `código inline` `` o bloques con syntax highlighting
-
-### Code Blocks
-
-```python
-# Python con syntax highlighting
-def ejemplo():
-    return "código"
 ```
-
-```bash
-# Bash commands
-make test
-```
-
-```sql
--- SQL queries
-SELECT * FROM table;
+1. STATUS_FINAL_MVP.md (visión general)
+2. AUDITORIA_TECNICA_COMPLETA.md (detalle técnico)
+3. docs/security/threat-model.md (seguridad)
 ```
 
 ---
 
-## 🔄 Mantenimiento de Documentación
+## 📊 RESUMEN EJECUTIVO
 
-### ¿Cuándo Actualizar?
+### Estado del MVP
+- ✅ **Sistema MVP:** 100% Completado
+- ✅ **QA Library:** 20/20 Prompts Validados
+- ✅ **Tests:** 180+ Automatizados
+- ✅ **Coverage:** 85%
+- ✅ **CVEs:** 0 Críticos
+- ✅ **SLOs:** 100% Cumplimiento
+- ✅ **Documentación:** Completa
+- ✅ **Producción:** Listo para Deploy
 
-- **Inmediatamente:**
-  - Cambios en API (endpoints, schemas)
-  - Nuevas features o servicios
-  - Cambios en arquitectura
-  - Nuevos comandos o scripts
+### Los 23 Valores de Credenciales Necesarios
 
-- **Cada Release:**
-  - [CHANGELOG.md](../CHANGELOG.md) con cambios
-  - [README.md](../README.md) si hay features nuevas
-  - [EXECUTIVE_SUMMARY.md](../EXECUTIVE_SUMMARY.md) con métricas
+**7 Auto-generados (Internos):**
+- JWT_SECRET
+- ICS_SALT
+- DB_PASSWORD
+- REDIS_PASSWORD
+- ADMIN_PASSWORD
+- EMAIL_PASSWORD
+- WHATSAPP_APP_SECRET
 
-- **Periódicamente:**
-  - [TROUBLESHOOTING.md](TROUBLESHOOTING.md) con nuevos problemas/soluciones
-  - [FAQ](#faq) con preguntas recurrentes
-  - Screenshots si hay UI (future)
+**11 Desde Terceros:**
+- WHATSAPP_BUSINESS_ACCOUNT_ID
+- WHATSAPP_PHONE_NUMBER_ID
+- WHATSAPP_ACCESS_TOKEN
+- META_APP_ID
+- META_APP_SECRET
+- MERCADOPAGO_ACCESS_TOKEN
+- MERCADOPAGO_PUBLIC_KEY
+- GOOGLE_API_KEY
+- SMTP_PASSWORD
+- IMAP_PASSWORD
+- DOMAIN_NAME
 
-### Checklist Pre-Commit
-
-- [ ] Documentación actualizada con el cambio
-- [ ] Links internos funcionan
-- [ ] Code blocks con syntax highlighting correcto
-- [ ] Ejemplos validados (ejecutables)
-- [ ] CHANGELOG.md actualizado si es release
-- [ ] Pre-commit hooks pasan
-
----
-
-## 🎯 Mejores Prácticas
-
-### Para Escribir Docs
-
-1. **Empieza con el "por qué":** Contexto antes de detalles
-2. **Usa ejemplos:** Code snippets, comandos ejecutables
-3. **Sé específico:** "Ejecutar `make test`" > "Correr tests"
-4. **Estructura clara:** TOC, headings jerárquicos, separadores
-5. **Mantén actualizado:** Docs desactualizados son peor que no tener docs
-
-### Para Leer Docs
-
-1. **Empieza por el índice:** Este archivo
-2. **Sigue las rutas de aprendizaje:** Fast/Standard/Expert track
-3. **Busca por tema:** Usa búsqueda de GitHub o grep
-4. **Ejecuta ejemplos:** Valida que funcionan
-5. **Reporta errores:** Issue o PR con correcciones
+**5 Específicos del Entorno:**
+- DATABASE_URL
+- REDIS_URL
+- API_BASE_URL
+- EMAIL_FROM
+- ADMIN_EMAIL
 
 ---
 
-## 📊 Métricas de Documentación
+## � Links Importantes
 
-### Cobertura Actual
+### Terceros
+- **Meta/WhatsApp:** https://developers.facebook.com/apps/
+- **Mercado Pago:** https://www.mercadopago.com.ar/developers/
+- **Gmail:** https://myaccount.google.com/
 
-| Categoría | Archivos | Líneas | Completitud |
-|-----------|----------|--------|-------------|
-| Getting Started | 2 | 1,100 | ✅ 100% |
-| Architecture | 1 | 800 | ✅ 100% |
-| API Reference | 1 | 650 | ✅ 100% |
-| Troubleshooting | 1 | 600 | ✅ 100% |
-| Testing | 1 | 700 | ✅ 100% |
-| Security | 1 | 900 | ✅ 100% |
-| Operations | 4 | 900 | ✅ 100% |
-| ADRs | 2 | 255 | ✅ 100% |
-| Templates | 3 | 220 | ✅ 100% |
-| **TOTAL** | **29** | **~12,000** | **✅ 10.0/10** |
-
-### Calidad
-
-- **Consistencia:** ✅ Formato uniforme en todos los docs
-- **Actualización:** ✅ Sincronizado con código (v0.9.9)
-- **Ejemplos:** ✅ Todos los ejemplos validados
-- **Links:** ✅ Links internos verificados
-- **Búsqueda:** ✅ TOC y índice completos
-- **Cobertura:** ✅ 100% de features críticas documentadas
+### Repo
+- **Repositorio:** https://github.com/eevans-d/SIST_CABANAS_MVP
+- **Branch Principal:** main
+- **Últimos commits:** Oct 16, 2025 (Credenciales + Status)
 
 ---
 
-## 🆘 ¿Necesitas Ayuda?
+## � Estructura de Archivos
 
-### Documentación no Clara
-
-1. Abre issue: [Report Documentation Issue](https://github.com/eevans-d/SIST_CABANAS_MVP/issues/new)
-2. Especifica:
-   - Documento y sección
-   - Qué no está claro
-   - Sugerencia de mejora (opcional)
-
-### Documentación Faltante
-
-1. Abre issue o PR directamente
-2. Sigue template [000-template.md](adr/000-template.md) para ADRs
-3. Mantén consistencia con docs existentes
-
-### Preguntas Generales
-
-1. Revisa [TROUBLESHOOTING.md](TROUBLESHOOTING.md) primero
-2. Busca en issues cerrados
-3. Abre nuevo issue con detalles completos
-
----
-
-## 🔗 Links Externos Útiles
-
-### Tecnologías Core
-
-- [FastAPI Documentation](https://fastapi.tiangolo.com/)
-- [SQLAlchemy Async](https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html)
-- [PostgreSQL btree_gist](https://www.postgresql.org/docs/current/btree-gist.html)
-- [Redis Commands](https://redis.io/commands)
-
-### Integraciones
-
-- [WhatsApp Business Cloud API](https://developers.facebook.com/docs/whatsapp/cloud-api)
-- [Mercado Pago Developers](https://www.mercadopago.com.ar/developers/es)
-- [iCal RFC 5545](https://datatracker.ietf.org/doc/html/rfc5545)
-
-### Herramientas
-
-- [Prometheus Docs](https://prometheus.io/docs/)
-- [Docker Compose](https://docs.docker.com/compose/)
-- [Pre-commit](https://pre-commit.com/)
+```
+/
+├─ CREDENCIALES_TODO_NECESARIO.md ⭐⭐⭐
+├─ CREDENCIALES_RESUMEN_EJECUTIVO.md ⭐⭐⭐
+├─ GUIA_CREDENCIALES_PRODUCCION.md ⭐⭐⭐⭐
+├─ STATUS_FINAL_MVP.md ⭐⭐⭐
+├─ AUDITORIA_TECNICA_COMPLETA.md
+├─ INDEX.md (← TÚ ESTÁS AQUÍ)
+├─ .github/
+│  └─ copilot-instructions.md ⭐⭐⭐⭐
+├─ docs/
+│  ├─ qa/
+│  │  ├─ BIBLIOTECA_QA_COMPLETA.md ⭐⭐⭐
+│  │  ├─ README.md
+│  │  └─ archive/ (13 docs históricos)
+│  ├─ security/
+│  │  └─ threat-model.md
+│  └─ deployment/
+│     └─ STAGING_DEPLOY_GUIDE.md
+└─ backend/
+   ├─ DEPLOY_CHECKLIST.md
+   └─ [código fuente]
+```
 
 ---
 
-## 📅 Historial de Cambios de Docs
+## ✅ Checklist Para Producción
 
-| Versión | Fecha | Cambios |
-|---------|-------|---------|
-| 1.1 | 2025-10-02 | Testing Best Practices, Security Audit Checklist - 10.0/10 ✨ |
-| 1.0 | 2025-10-02 | Creación de índice maestro, estructura completa |
-| 0.9.8 | 2025-10-02 | Technical Architecture, API Reference, Troubleshooting |
-| 0.9.5 | 2025-10-02 | Production Setup, Scripts README, Status docs |
-| 0.9.0 | 2025-09-29 | README, CONTRIBUTING, EXECUTIVE_SUMMARY |
-| 0.8.0 | 2025-09-24 | Documentación inicial |
+### Lectura & Entendimiento
+- [ ] Leer CREDENCIALES_TODO_NECESARIO.md
+- [ ] Leer STATUS_FINAL_MVP.md
+- [ ] Leer GUIA_CREDENCIALES_PRODUCCION.md
+
+### Obtención de Credenciales (⏱️ ~90 min)
+- [ ] Generar secretos internos (5 min)
+- [ ] Obtener WhatsApp Business API (30 min)
+- [ ] Obtener Mercado Pago (20 min)
+- [ ] Configurar Gmail SMTP/IMAP (15 min)
+- [ ] Configurar dominio (10 min)
+
+### Setup & Validación (⏱️ ~50 min)
+- [ ] Llenar .env (15 min)
+- [ ] `make test` - Debe PASSAR 100% (20 min)
+- [ ] `docker-compose up` - Debe iniciar limpiamente (10 min)
+- [ ] Validar health check: `curl localhost/api/v1/healthz` (5 min)
+
+### Webhooks (⏱️ ~15 min)
+- [ ] Configurar webhook WhatsApp
+- [ ] Configurar webhook Mercado Pago
+- [ ] Validar firmas y test
+
+### Deployment (⏱️ Variable)
+- [ ] Deploy a staging
+- [ ] Smoke tests
+- [ ] Deploy a producción
+
+**TIEMPO TOTAL: ~2-3 horas**
 
 ---
 
-**¡Bienvenido al Sistema MVP Alojamientos!** 🎉
+## 🎬 Próximos Pasos
 
-Este índice es tu punto de partida. Elige una ruta de aprendizaje y comienza a explorar. Si tienes dudas, revisa [TROUBLESHOOTING.md](TROUBLESHOOTING.md) o abre un issue.
-
-**Happy coding!** 💻✨
+1. **Inmediato:** Lee [CREDENCIALES_TODO_NECESARIO.md](./CREDENCIALES_TODO_NECESARIO.md)
+2. **En 5 min:** Entiende qué necesitas (Tabla en RESUMEN_EJECUTIVO.md)
+3. **En 30 min:** Genera secretos y comienza obtención de credenciales
+4. **En 2 horas:** Tienes todo listo
+5. **En 2.5 horas:** Sistema validado y pronto para producción
 
 ---
 
-**Última actualización:** 2025-10-02
-**Mantenido por:** Sistema MVP Alojamientos Team
-**Versión Docs:** 1.0
+## 📞 Soporte Rápido
+
+### ¿Dónde está...?
+- **...la guía para obtener WhatsApp?** → GUIA_CREDENCIALES_PRODUCCION.md, Sección 2
+- **...el script para generar secretos?** → CREDENCIALES_TODO_NECESARIO.md, Sección 2
+- **...la tabla de 23 valores?** → CREDENCIALES_RESUMEN_EJECUTIVO.md, Tabla principal
+- **...el estado del MVP?** → STATUS_FINAL_MVP.md
+- **...las instrucciones para agentes IA?** → .github/copilot-instructions.md
+
+### ¿Cuánto tiempo toma...?
+- **Leer documentación completa:** ~75 min
+- **Obtener credenciales:** ~2-3 horas
+- **Validar y deployar:** ~1 hora
+- **Total MVP a producción:** ~4-5 horas
+
+---
+
+**Siguiente acción:** Lee CREDENCIALES_TODO_NECESARIO.md →
