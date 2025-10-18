@@ -562,6 +562,103 @@ END:VCALENDAR"""
             assert "END:VEVENT" in ical_content
             assert "END:VCALENDAR" in ical_content
 
+    async def test_ical_import_para_irnos(self, db_session, accommodation_factory):
+        """
+        Test de sincronización con Para Irnos:
+        1. Importa evento desde URL iCal de Para Irnos
+        2. Crea reserva bloqueada con source='para_irnos'
+        3. Verifica deduplicación por UID de Para Irnos
+        4. Valida que el doble-booking prevention funciona
+        """
+        accommodation = await accommodation_factory(
+            name="Cabaña Para Irnos Test", capacity=4, base_price=Decimal("12000")
+        )
+
+        # Mock de contenido iCal de Para Irnos
+        ical_content_parairnos = """BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Para Irnos//Para Irnos Calendar//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:para_irnos_event_67890@parairnos.com
+DTSTART;VALUE=DATE:20251115
+DTEND;VALUE=DATE:20251118
+SUMMARY:Reserva Para Irnos - Carlos López
+DESCRIPTION:Reserva en Para Irnos
+X-SOURCE:para_irnos
+X-CODE:PRNOS-XYZ789
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR"""
+
+        async with AsyncClient(app=app, base_url="http://test") as client:
+            with patch("httpx.AsyncClient.get") as mock_ical_fetch:
+                # Mock respuesta de URL iCal de Para Irnos
+                mock_response = Mock()
+                mock_response.status_code = 200
+                mock_response.text = ical_content_parairnos
+                mock_ical_fetch.return_value = mock_response
+
+                # 1. Importar iCal desde Para Irnos
+                response = await client.post(
+                    "/api/v1/admin/ical/import",
+                    json={
+                        "accommodation_id": accommodation.id,
+                        "ical_url": "https://parairnos.com/api/properties/12345/calendar.ics",
+                        "source": "para_irnos",
+                    },
+                )
+
+                assert response.status_code == 200
+                import_data = response.json()
+                assert import_data["events_imported"] >= 1
+
+                # 2. Verificar que se creó reserva bloqueada con source correct
+                reservations = await db_session.execute(
+                    select(Reservation)
+                    .where(Reservation.accommodation_id == accommodation.id)
+                    .where(Reservation.channel_source == "para_irnos")
+                )
+                imported_reservations = reservations.scalars().all()
+                assert len(imported_reservations) == 1
+
+                reservation = imported_reservations[0]
+                assert reservation.check_in == date(2025, 11, 15)
+                assert reservation.check_out == date(2025, 11, 18)
+                assert reservation.reservation_status == "pre_reserved"
+                assert "para_irnos_event_67890@parairnos.com" in reservation.internal_notes
+
+                # 3. Intentar crear reserva que solape → Debe fallar
+                service = ReservationService(db_session)
+                overlap_result = await service.create_prereservation(
+                    accommodation_id=accommodation.id,
+                    check_in=date(2025, 11, 16),
+                    check_out=date(2025, 11, 19),
+                    guests=2,
+                    channel="web",
+                    contact_name="Overlap Test",
+                    contact_phone="+5491111111111",
+                )
+
+                # Debe haber error de overlap
+                assert "error" in overlap_result
+                assert overlap_result["error"] == "date_overlap"
+
+                # 4. Importar de nuevo → Deduplicación (no debe duplicar)
+                response2 = await client.post(
+                    "/api/v1/admin/ical/import",
+                    json={
+                        "accommodation_id": accommodation.id,
+                        "ical_url": "https://parairnos.com/api/properties/12345/calendar.ics",
+                        "source": "para_irnos",
+                    },
+                )
+
+                assert response2.status_code == 200
+                import_data2 = response2.json()
+                assert import_data2["events_imported"] == 0  # No duplica
+
 
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="E2E requiere DB/Redis real + mocks complejos. Fix post-MVP")

@@ -1,0 +1,153 @@
+# ============================================================================
+# ✈️ Fly.io Configuration - SIST_CABAÑAS_MVP Backend
+# ============================================================================
+#
+# Configuración para despliegue en Fly.io
+#
+# Servicios necesarios:
+#   1. Backend (FastAPI) - Esta app
+#   2. PostgreSQL 16 - flyctl postgres create
+#   3. Redis - Upstash Redis (integración oficial)
+#
+# Deploy:
+#   flyctl launch           # Primera vez
+#   flyctl deploy           # Deploys subsecuentes
+#   flyctl secrets set KEY=value  # Variables de entorno
+#
+# Docs: https://fly.io/docs/
+# ============================================================================
+
+app = "sist-cabanas-mvp"
+primary_region = "eze"  # ezeiza (Buenos Aires, Argentina) - Más cercano a usuarios
+
+# ============================================================================
+# Build Configuration
+# ============================================================================
+[build]
+  dockerfile = "backend/Dockerfile"
+  ignorefile = ".dockerignore"
+
+# ============================================================================
+# Environment Variables (no sensibles)
+# ============================================================================
+[env]
+  ENVIRONMENT = "production"
+  PORT = "8080"
+  GUNICORN_WORKERS = "2"
+  GUNICORN_THREADS = "1"
+  GUNICORN_TIMEOUT = "120"
+  LOG_LEVEL = "info"
+  JWT_ALGORITHM = "HS256"
+  JWT_EXPIRATION_HOURS = "24"
+  ADMIN_TOKEN_EXPIRATION_HOURS = "168"
+  LOCK_TTL_SECONDS = "1800"
+  LOCK_RETRY_DELAY_MS = "100"
+  LOCK_MAX_RETRIES = "5"
+  RESERVATION_PRE_EXPIRY_MINUTES = "5"
+  RATE_LIMIT_REQUESTS = "100"
+  RATE_LIMIT_WINDOW = "60"
+  AUDIO_MAX_SIZE_MB = "25"
+  AUDIO_MIN_DURATION_SEC = "1"
+  AUDIO_MAX_DURATION_SEC = "300"
+  STT_CONFIDENCE_THRESHOLD = "0.7"
+  ICAL_EXPORT_TTL_DAYS = "365"
+  ICAL_SYNC_INTERVAL_MINUTES = "5"
+
+# Variables sensibles (configurar con: flyctl secrets set)
+# - DATABASE_URL (desde Fly Postgres: flyctl postgres attach)
+# - REDIS_URL (desde Upstash: ver guía)
+# - JWT_SECRET
+# - WHATSAPP_ACCESS_TOKEN
+# - WHATSAPP_APP_SECRET
+# - WHATSAPP_PHONE_ID
+# - WHATSAPP_VERIFY_TOKEN
+# - MERCADOPAGO_ACCESS_TOKEN
+# - MERCADOPAGO_WEBHOOK_SECRET
+# - ADMIN_ALLOWED_EMAILS
+
+# ============================================================================
+# HTTP Service
+# ============================================================================
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false  # Mantener siempre activo para webhooks
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  # Timeout para requests largos (audio processing)
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 250
+    soft_limit = 200
+
+# ============================================================================
+# Health Checks
+# ============================================================================
+[[http_service.checks]]
+  grace_period = "30s"
+  interval = "15s"
+  method = "GET"
+  timeout = "5s"
+  path = "/api/v1/healthz"
+  protocol = "http"
+
+  # Success criteria
+  [http_service.checks.headers]
+    Content-Type = "application/json"
+
+# ============================================================================
+# VM Resources
+# ============================================================================
+[vm]
+  size = "shared-cpu-1x"  # 1 vCPU, 256MB RAM (free tier)
+  # Upgrade options:
+  # - shared-cpu-2x: 2 vCPU, 512MB RAM
+  # - dedicated-cpu-1x: 1 vCPU, 2GB RAM
+
+# ============================================================================
+# Persistent Storage (opcional para logs/cache)
+# ============================================================================
+# [[mounts]]
+#   source = "data"
+#   destination = "/data"
+#   initial_size = "1GB"
+
+# ============================================================================
+# Metrics & Monitoring
+# ============================================================================
+[metrics]
+  port = 9091  # Prometheus metrics
+  path = "/metrics"
+
+# ============================================================================
+# Deploy Strategy
+# ============================================================================
+[deploy]
+  strategy = "rolling"  # rolling, canary, immediate
+  max_unavailable = 0   # Zero-downtime deploys
+
+# ============================================================================
+# Regions & Scaling
+# ============================================================================
+# Primary: ezeiza (Buenos Aires)
+# Backup regions (opcional):
+# - gru: Sao Paulo, Brazil
+# - mia: Miami, USA
+# - scl: Santiago, Chile
+
+# Para agregar regiones:
+# flyctl regions add gru mia
+
+# ============================================================================
+# Process Groups (opcional)
+# ============================================================================
+[processes]
+  app = "/app/start-fly.sh"
+
+# ============================================================================
+# Experimental Features
+# ============================================================================
+[experimental]
+  auto_rollback = true  # Rollback automático si health check falla

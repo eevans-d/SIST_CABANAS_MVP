@@ -4,62 +4,67 @@ Script para configurar y probar la sincronización de iCal
 Permite importar reservas desde Airbnb/Booking y exportar nuestras reservas
 """
 
+import asyncio
+import json
 import os
 import sys
-import requests
-import json
 from datetime import datetime, timedelta
-import asyncio
+
 import aiohttp
+import requests
+
 
 # Colores para output
 class Colors:
-    GREEN = '\033[92m'
-    RED = '\033[91m'
-    YELLOW = '\033[93m'
-    BLUE = '\033[94m'
-    BOLD = '\033[1m'
-    END = '\033[0m'
+    GREEN = "\033[92m"
+    RED = "\033[91m"
+    YELLOW = "\033[93m"
+    BLUE = "\033[94m"
+    BOLD = "\033[1m"
+    END = "\033[0m"
+
 
 def print_status(message, status="INFO"):
     colors = {
         "SUCCESS": Colors.GREEN + "✅",
-        "ERROR": Colors.RED + "❌", 
+        "ERROR": Colors.RED + "❌",
         "WARNING": Colors.YELLOW + "⚠️ ",
         "INFO": Colors.BLUE + "ℹ️ ",
-        "STEP": Colors.BOLD + "🔧"
+        "STEP": Colors.BOLD + "🔧",
     }
     color = colors.get(status, "")
     print(f"{color} {message}{Colors.END}")
+
 
 def load_env_file():
     """Cargar variables de entorno desde .env"""
     env_vars = {}
     env_file = ".env"
-    
+
     if os.path.exists(env_file):
-        with open(env_file, 'r') as f:
+        with open(env_file, "r") as f:
             for line in f:
                 line = line.strip()
-                if line and not line.startswith('#') and '=' in line:
-                    key, value = line.split('=', 1)
+                if line and not line.startswith("#") and "=" in line:
+                    key, value = line.split("=", 1)
                     env_vars[key.strip()] = value.strip().strip('"').strip("'")
-    
+
     return env_vars
+
 
 def test_ical_endpoint():
     """Probar que el endpoint de iCal esté funcionando"""
     base_url = "http://localhost/api/v1"
-    
+
     print_status("Probando endpoint de iCal...", "STEP")
-    
+
     try:
         # Probar endpoint de export
         response = requests.get(f"{base_url}/ical/export/test-token", timeout=10)
-        
+
         if response.status_code == 200:
             print_status("Endpoint de export funcionando", "SUCCESS")
-            
+
             # Verificar que sea un iCal válido
             content = response.text
             if content.startswith("BEGIN:VCALENDAR"):
@@ -68,22 +73,23 @@ def test_ical_endpoint():
             else:
                 print_status("Formato iCal inválido", "WARNING")
                 return False
-                
+
         elif response.status_code == 404:
             print_status("Endpoint de iCal no encontrado - verificar rutas", "ERROR")
             return False
         else:
             print_status(f"Error en endpoint: HTTP {response.status_code}", "ERROR")
             return False
-            
+
     except requests.exceptions.RequestException as e:
         print_status(f"Error de conectividad: {str(e)}", "ERROR")
         return False
 
+
 def create_test_accommodation():
     """Crear un alojamiento de prueba para iCal"""
     base_url = "http://localhost/api/v1"
-    
+
     # Datos del alojamiento de prueba
     accommodation_data = {
         "name": "Cabaña iCal Test",
@@ -99,18 +105,18 @@ def create_test_accommodation():
             "pool": False,
             "grill": True,
             "tv": True,
-            "heating": True
+            "heating": True,
         },
         "photos": [
             {"url": "https://example.com/cabin1.jpg", "caption": "Vista exterior"},
-            {"url": "https://example.com/cabin2.jpg", "caption": "Interior"}
+            {"url": "https://example.com/cabin2.jpg", "caption": "Interior"},
         ],
         "location": {
             "address": "Calle Test 123",
             "city": "Ciudad Test",
             "province": "Provincia Test",
             "postal_code": "1234",
-            "coordinates": {"lat": -34.6037, "lng": -58.3816}
+            "coordinates": {"lat": -34.6037, "lng": -58.3816},
         },
         "policies": {
             "check_in_time": "15:00",
@@ -118,29 +124,30 @@ def create_test_accommodation():
             "cancellation_policy": "flexible",
             "smoking_allowed": False,
             "pets_allowed": True,
-            "parties_allowed": False
+            "parties_allowed": False,
         },
-        "active": True
+        "active": True,
     }
-    
+
     print_status("Creando alojamiento de prueba para iCal...", "STEP")
-    
+
     try:
         # Necesitaríamos autenticación admin aquí, por ahora solo verificamos estructura
         print_status("Estructura de datos validada", "SUCCESS")
         return {"id": 999, "ical_export_token": "test-ical-token-999"}
-        
+
     except Exception as e:
         print_status(f"Error creando alojamiento: {str(e)}", "ERROR")
         return None
 
+
 def test_ical_import():
     """Probar importación de iCal desde URL externa"""
     base_url = "http://localhost/api/v1"
-    
+
     # URL de iCal de ejemplo (simulada)
     test_ical_url = "https://example.com/calendar.ics"
-    
+
     # Contenido iCal de ejemplo
     sample_ical = """BEGIN:VCALENDAR
 VERSION:2.0
@@ -170,77 +177,72 @@ END:VEVENT
 END:VCALENDAR"""
 
     print_status("Probando importación de iCal...", "STEP")
-    
+
     # Datos para importación
     import_data = {
         "accommodation_id": 1,  # Usar alojamiento existente
         "ical_url": test_ical_url,
-        "source": "test"
+        "source": "test",
     }
-    
+
     print_status("Simulando importación de eventos externos", "INFO")
     print("  📅 Evento 1: Reserva Airbnb (20-23 Nov)")
     print("  📅 Evento 2: Reserva Booking (1-5 Dec)")
-    
+
     # En producción, esto haría POST a /api/v1/ical/import
     print_status("Importación simulada exitosa", "SUCCESS")
     return True
 
+
 def generate_export_url():
     """Generar URL de exportación iCal"""
     base_url = "http://localhost/api/v1"
-    
+
     print_status("Generando URLs de exportación...", "STEP")
-    
+
     # Simular tokens de exportación para diferentes alojamientos
     accommodations = [
         {"id": 1, "name": "Cabaña Familiar", "token": "ical-export-token-1"},
         {"id": 2, "name": "Departamento Céntrico", "token": "ical-export-token-2"},
-        {"id": 3, "name": "Casa Completa", "token": "ical-export-token-3"}
+        {"id": 3, "name": "Casa Completa", "token": "ical-export-token-3"},
     ]
-    
+
     print_status("URLs de exportación generadas:", "SUCCESS")
-    
+
     for acc in accommodations:
         export_url = f"{base_url}/ical/export/{acc['token']}"
         print(f"  🏠 {acc['name']}: {export_url}")
-    
+
     return accommodations
+
 
 def test_ical_sync():
     """Probar sincronización completa de iCal"""
     base_url = "http://localhost/api/v1"
-    
+
     print_status("Iniciando sincronización completa...", "STEP")
-    
+
     # En un sistema real, esto activaría el job de sync
-    sync_data = {
-        "force": True,
-        "accommodation_ids": [1, 2, 3]
-    }
-    
+    sync_data = {"force": True, "accommodation_ids": [1, 2, 3]}
+
     print_status("Simulando sincronización:", "INFO")
     print("  📥 Importando desde Airbnb...")
     print("  📥 Importando desde Booking.com...")
     print("  📤 Exportando reservas locales...")
     print("  🔄 Actualizando cache...")
-    
+
     print_status("Sincronización completada", "SUCCESS")
     return True
 
+
 def validate_ical_format(ical_content):
     """Validar formato iCal"""
-    required_headers = [
-        "BEGIN:VCALENDAR",
-        "VERSION:2.0",
-        "PRODID:",
-        "END:VCALENDAR"
-    ]
-    
+    required_headers = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:", "END:VCALENDAR"]
+
     for header in required_headers:
         if header not in ical_content:
             return False, f"Falta header: {header}"
-    
+
     # Verificar eventos
     if "BEGIN:VEVENT" in ical_content and "END:VEVENT" in ical_content:
         return True, "Formato válido con eventos"
@@ -249,78 +251,93 @@ def validate_ical_format(ical_content):
     else:
         return False, "Formato de eventos inválido"
 
+
 def show_ical_config():
     """Mostrar configuración recomendada para iCal"""
     env_vars = load_env_file()
-    
+
     print_status("Configuración iCal recomendada:", "INFO")
-    
+
     # Variables de configuración
     config_vars = {
         "ICAL_SYNC_INTERVAL_MINUTES": "30",
         "ICAL_MAX_IMPORT_EVENTS": "1000",
         "ICAL_EXPORT_CACHE_TTL": "3600",
-        "ICAL_DEFAULT_TIMEZONE": "America/Argentina/Buenos_Aires"
+        "ICAL_DEFAULT_TIMEZONE": "America/Argentina/Buenos_Aires",
     }
-    
+
     print("\n📝 Variables de entorno recomendadas:")
     for var, default in config_vars.items():
         current = env_vars.get(var, "No configurada")
         print(f"  {var}={current} (recomendado: {default})")
-    
-    print("\n🔗 URLs para configurar en plataformas:")
+
+    print("\n🔗 URLs para configurar en plataformas de alojamiento:")
     domain = env_vars.get("DOMAIN", "su-dominio.com")
     print(f"  Airbnb: https://{domain}/api/v1/ical/export/{{token}}")
     print(f"  Booking: https://{domain}/api/v1/ical/export/{{token}}")
     print(f"  VRBO: https://{domain}/api/v1/ical/export/{{token}}")
+    print(f"  Para Irnos: https://{domain}/api/v1/ical/export/{{token}}")
+
+    print("\n📥 Plataformas soportadas para sincronización:")
+    platforms = {
+        "Airbnb": "https://www.airbnb.com/api/calendars/",
+        "Booking.com": "https://www.booking.com/calendars/",
+        "VRBO": "https://vrbo.com/api/calendars/",
+        "Para Irnos": "https://parairnos.com/api/properties/",
+    }
+    for platform, url_pattern in platforms.items():
+        print(f"  ✓ {platform}: {url_pattern}<id>.ics")
+
 
 def main():
     """Función principal"""
-    
+
     print(f"{Colors.BOLD}📅 Configurador de Sincronización iCal{Colors.END}")
     print("=" * 50)
-    
+
     # 1. Probar endpoint básico
     if not test_ical_endpoint():
         print_status("Endpoint de iCal no disponible", "ERROR")
         return False
-    
+
     # 2. Mostrar configuración
     show_ical_config()
-    
+
     # 3. Generar URLs de exportación
     print(f"\n{Colors.BOLD}📤 Exportación iCal{Colors.END}")
     print("-" * 30)
     accommodations = generate_export_url()
-    
+
     # 4. Probar importación
     print(f"\n{Colors.BOLD}📥 Importación iCal{Colors.END}")
     print("-" * 30)
     test_ical_import()
-    
+
     # 5. Probar sincronización
-    print(f"\n{Colors.BOLD}🔄 Sincronización{Colors.END}")  
+    print(f"\n{Colors.BOLD}🔄 Sincronización{Colors.END}")
     print("-" * 30)
     test_ical_sync()
-    
+
     # Resumen final
     print("\n" + "=" * 50)
     print(f"{Colors.GREEN}🎉 Configuración iCal Completada{Colors.END}")
     print("=" * 50)
-    
+
     print(f"{Colors.YELLOW}📋 Próximos pasos:{Colors.END}")
-    print("1. Configurar URLs de importación desde Airbnb/Booking")
+    print("1. Configurar URLs de importación desde Airbnb/Booking/Para Irnos")
     print("2. Agregar URLs de exportación a las plataformas")
     print("3. Configurar sincronización automática")
     print("4. Monitorear logs de sincronización")
-    
+    print("5. Ver documentación: docs/integrations/PARA_IRNOS_INTEGRATION.md")
+
     print(f"\n{Colors.BLUE}💡 Comandos útiles:{Colors.END}")
     print("  # Sincronización manual:")
     print("  curl -X POST http://localhost/api/v1/ical/sync")
     print("  # Ver logs:")
     print("  docker logs alojamientos_api | grep ical")
-    
+
     return True
+
 
 if __name__ == "__main__":
     try:

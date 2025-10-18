@@ -36,21 +36,26 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy application code
 COPY --chown=appuser:appuser backend/ /app
 
-# Copy start script and make it executable (before switching to non-root user)
-COPY --chown=appuser:appuser start.sh /app/start.sh
-RUN chmod +x /app/start.sh
+# Copy Fly.io start script
+COPY --chown=appuser:appuser backend/start-fly.sh /app/start-fly.sh
+RUN chmod +x /app/start-fly.sh
 
 # Switch to non-root user
 USER appuser
 
-# Health check
+# Expose port (Fly.io usa 8080 por defecto)
+EXPOSE 8080
+
+# Health check (Fly.io maneja esto en fly.toml, pero incluimos por compatibilidad)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=5 \
-    CMD curl -fsS http://localhost:8000/api/v1/healthz || exit 1
+    CMD curl -fsS http://localhost:${PORT:-8080}/api/v1/healthz || exit 1
 
 # Default values para gunicorn (pueden ser sobreescritos por environment variables)
 ENV GUNICORN_WORKERS=2 \
-    GUNICORN_TIMEOUT=60 \
+    GUNICORN_TIMEOUT=120 \
     GUNICORN_GRACEFUL_TIMEOUT=30 \
-    GUNICORN_KEEP_ALIVE=75
+    GUNICORN_KEEP_ALIVE=75 \
+    PORT=8080
 
-ENTRYPOINT ["/app/start.sh"]
+# Fly.io CMD
+CMD ["/app/start-fly.sh"]
