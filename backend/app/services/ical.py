@@ -9,14 +9,14 @@ Simplificaciones MVP:
 - Almacenar eventos importados en tabla reservations con code = "BLK<hash corta>" si no existe ya un rango que solape (usando constraint) y guardando internal_notes con UID.
 - Dedupe: se basa en UID encontrado en internal_notes (pattern UID:<value>).
 """
-from typing import List, Optional
-from datetime import datetime, date, timedelta, timezone
 import hashlib
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from datetime import date, datetime, timedelta, timezone
+from typing import List, Optional
 
 from app.models import Accommodation, Reservation
-from app.models.enums import ReservationStatus, ChannelSource
+from app.models.enums import ChannelSource, ReservationStatus
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 ICS_HEADER = """BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//MVP Alojamientos//ES\nCALSCALE:GREGORIAN"""
 ICS_FOOTER = "END:VCALENDAR"
@@ -117,8 +117,8 @@ class ICalService:
             first = existing.scalar_one_or_none()
             if first:
                 continue
-            # Crear código determinístico
-            code_hash = hashlib.sha1(uid.encode()).hexdigest()[:8].upper()
+            # Crear código determinístico (NO usado para seguridad)
+            code_hash = hashlib.sha1(uid.encode(), usedforsecurity=False).hexdigest()[:8].upper()
             code = f"BLK{code_hash}"
             reservation = Reservation(
                 code=code,
