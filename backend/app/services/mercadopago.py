@@ -18,16 +18,16 @@ Validaciones futuras (firmas, consulta a API MP) se diferirán.
 """
 from datetime import datetime, timezone
 from decimal import Decimal
-from typing import Dict, Any, Optional
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from typing import Any, Dict, Optional
 
-from app.models import Payment, Reservation, Accommodation
-from app.models.enums import ReservationStatus, PaymentStatus
 import structlog
-from app.services.whatsapp import send_payment_approved, send_payment_rejected, send_payment_pending
-from app.utils.retry import retry_async
 from app.core.config import get_settings
+from app.models import Accommodation, Payment, Reservation
+from app.models.enums import PaymentStatus, ReservationStatus
+from app.services.whatsapp import send_payment_approved, send_payment_pending, send_payment_rejected
+from app.utils.retry import retry_async
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = structlog.get_logger()
 settings = get_settings()
@@ -53,17 +53,21 @@ class MercadoPagoService:
         row = result.first()
         return row if row else None
 
-    async def _send_payment_notification(self, reservation_id: int, payment_status: str, amount: Decimal) -> None:
+    async def _send_payment_notification(
+        self, reservation_id: int, payment_status: str, amount: Decimal
+    ) -> None:
         """Envía notificación WhatsApp según el estado del pago"""
         try:
             # Obtener datos completos de reserva y alojamiento
             row = await self._get_reservation_with_accommodation(reservation_id)
             if not row:
-                logger.warning("reservation_not_found_for_notification", reservation_id=reservation_id)
+                logger.warning(
+                    "reservation_not_found_for_notification", reservation_id=reservation_id
+                )
                 return
 
             reservation, accommodation = row
-            
+
             # Formatear fechas para mostrar
             check_in_str = reservation.check_in.strftime("%d/%m/%Y")
             check_out_str = reservation.check_out.strftime("%d/%m/%Y")
@@ -77,37 +81,37 @@ class MercadoPagoService:
                     reservation_code=reservation.code,
                     check_in=check_in_str,
                     check_out=check_out_str,
-                    accommodation_name=accommodation.name
+                    accommodation_name=accommodation.name,
                 )
             elif payment_status == "rejected":
                 await send_payment_rejected(
                     phone=reservation.guest_phone,
                     guest_name=reservation.guest_name,
                     reservation_code=reservation.code,
-                    amount=amount_str
+                    amount=amount_str,
                 )
             elif payment_status == "pending":
                 await send_payment_pending(
                     phone=reservation.guest_phone,
                     guest_name=reservation.guest_name,
                     reservation_code=reservation.code,
-                    amount=amount_str
+                    amount=amount_str,
                 )
-                
+
             logger.info(
                 "payment_notification_sent",
                 reservation_id=reservation_id,
                 payment_status=payment_status,
-                phone=reservation.guest_phone
+                phone=reservation.guest_phone,
             )
-            
+
         except Exception as e:
             # No fallar el webhook por errores de notificación
             logger.error(
                 "payment_notification_failed",
                 reservation_id=reservation_id,
                 payment_status=payment_status,
-                error=str(e)
+                error=str(e),
             )
 
     async def process_webhook(self, payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -140,11 +144,11 @@ class MercadoPagoService:
             payment.amount = amount  # type: ignore
             await self.db.commit()
             await self.db.refresh(payment)
-            
+
             # Si cambió el estado y hay reserva asociada, enviar notificación
             if status_changed and payment.reservation_id is not None:
                 await self._send_payment_notification(int(payment.reservation_id), status, amount)  # type: ignore
-            
+
             return {
                 "status": "ok",
                 "idempotent": True,
@@ -180,11 +184,11 @@ class MercadoPagoService:
         self.db.add(payment)
         await self.db.commit()
         await self.db.refresh(payment)
-        
+
         # Enviar notificación para nuevo pago con reserva asociada
         if reservation_id is not None:
             await self._send_payment_notification(int(reservation_id), status, amount)  # type: ignore
-        
+
         return {
             "status": "ok",
             "idempotent": False,
@@ -196,67 +200,67 @@ class MercadoPagoService:
     async def get_payment_info(self, payment_id: str) -> Dict[str, Any]:
         """
         Consulta información de un pago en MercadoPago API.
-        
+
         Tiene retry automático (3 intentos) para manejar errores transitorios.
-        
+
         Args:
             payment_id: ID del pago en MercadoPago
-            
+
         Returns:
             Dict con información del pago desde API
-            
+
         Raises:
             ValueError: Si no hay access token configurado
             ConnectionError: Si hay error de conectividad (triggerea retry)
             Exception: Otros errores de API
         """
         import httpx
-        
+
         if not settings.MERCADOPAGO_ACCESS_TOKEN or settings.MERCADOPAGO_ACCESS_TOKEN == "dummy":
             raise ValueError("MERCADOPAGO_ACCESS_TOKEN not configured")
-        
+
         url = f"https://api.mercadopago.com/v1/payments/{payment_id}"
         headers = {
             "Authorization": f"Bearer {settings.MERCADOPAGO_ACCESS_TOKEN}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
-        
+
         async with httpx.AsyncClient(timeout=10.0) as client:
             try:
                 response = await client.get(url, headers=headers)
-                
+
                 # Errores transitorios → retry
                 if response.status_code in [429, 500, 502, 503, 504]:
                     logger.warning(
                         "mercadopago_api_transient_error",
                         payment_id=payment_id,
-                        status_code=response.status_code
+                        status_code=response.status_code,
                     )
                     raise ConnectionError(f"MercadoPago API returned {response.status_code}")
-                
+
                 # Errores permanentes → no retry
                 if response.status_code >= 400:
                     logger.error(
                         "mercadopago_api_client_error",
                         payment_id=payment_id,
                         status_code=response.status_code,
-                        response=response.text[:200]
+                        response=response.text[:200],
                     )
                     raise ValueError(f"MercadoPago API error: {response.status_code}")
-                
+
                 # Éxito
                 data = response.json()
                 logger.info(
                     "mercadopago_payment_retrieved",
                     payment_id=payment_id,
-                    status=data.get("status")
+                    status=data.get("status"),
                 )
                 return data
-                
+
             except httpx.TimeoutException as e:
                 logger.warning("mercadopago_api_timeout", payment_id=payment_id)
                 raise ConnectionError(f"MercadoPago API timeout: {e}")
-            
+
             except httpx.NetworkError as e:
                 logger.warning("mercadopago_api_network_error", payment_id=payment_id, error=str(e))
                 raise ConnectionError(f"MercadoPago API network error: {e}")
@@ -265,15 +269,14 @@ class MercadoPagoService:
     async def get_payment_status(self, payment_id: str) -> str:
         """
         Obtiene solo el estado de un pago (método más liviano).
-        
+
         Tiene retry automático (3 intentos) para manejar errores transitorios.
-        
+
         Args:
             payment_id: ID del pago en MercadoPago
-            
+
         Returns:
             Estado del pago (approved, pending, rejected, etc.)
         """
         payment_info = await self.get_payment_info(payment_id)
         return payment_info.get("status", "unknown")
-

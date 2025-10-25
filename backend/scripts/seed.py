@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 import asyncio
-from decimal import Decimal
 from datetime import date
+from decimal import Decimal
 
 from app.core.database import async_session_maker
 from app.models import Accommodation

@@ -1,6 +1,7 @@
+from datetime import UTC, date, datetime, timedelta
+
 import pytest
 from httpx import AsyncClient
-from datetime import date, timedelta, datetime, UTC
 
 pytestmark = pytest.mark.anyio
 
@@ -27,8 +28,8 @@ async def test_prereservation_expires_and_confirm_fails(
     code = data["code"]
 
     # Forzar expiración inmediata en DB
-    from sqlalchemy import select
     from app.models import Reservation
+    from sqlalchemy import select
 
     # Buscar reserva por code y actualizar expires_at para forzar expiración
     res = (

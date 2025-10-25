@@ -1,7 +1,7 @@
 # ✅ Deploy Checklist - Sistema Alojamientos MVP
 
-**Fecha de deploy:** _______________  
-**Versión:** v1.0.0  
+**Fecha de deploy:** _______________
+**Versión:** v1.0.0
 **Responsable:** _______________
 
 ## 🔍 Pre-Deploy Checklist
@@ -133,17 +133,17 @@ curl -w "@curl-format.txt" -s -o /dev/null https://DOMAIN/health
 ## ✅ Sign-off
 
 - [ ] **Deploy ejecutado** sin errores críticos
-- [ ] **Health checks** pasando en producción  
+- [ ] **Health checks** pasando en producción
 - [ ] **Backups** configurados y funcionando
 - [ ] **Monitoring** básico activo
 - [ ] **Rollback** plan verificado y documentado
 - [ ] **Stakeholders** notificados del deploy exitoso
 
-**Deploy completado por:** _______________  
-**Fecha/Hora:** _______________  
-**Notas adicionales:**  
-_____________________________  
-_____________________________  
+**Deploy completado por:** _______________
+**Fecha/Hora:** _______________
+**Notas adicionales:**
+_____________________________
+_____________________________
 
 ---
 

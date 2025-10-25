@@ -6,8 +6,8 @@ Este directorio contiene scripts automatizados para deployment, validación y te
 
 ### 1. `pre-deploy-check.sh` ✅
 
-**Propósito:** Validación completa pre-deploy  
-**Uso:** `./scripts/pre-deploy-check.sh`  
+**Propósito:** Validación completa pre-deploy
+**Uso:** `./scripts/pre-deploy-check.sh`
 **Duración:** ~30 segundos
 
 **Verifica:**
@@ -48,8 +48,8 @@ Este directorio contiene scripts automatizados para deployment, validación y te
 
 ### 2. `smoke-test-prod.sh` 🧪
 
-**Propósito:** Tests básicos contra producción  
-**Uso:** `BASE_URL=https://tu-dominio.com ./scripts/smoke-test-prod.sh`  
+**Propósito:** Tests básicos contra producción
+**Uso:** `BASE_URL=https://tu-dominio.com ./scripts/smoke-test-prod.sh`
 **Duración:** ~10 segundos
 
 **Tests ejecutados:**
@@ -79,8 +79,8 @@ BASE_URL=http://localhost:8000 ./scripts/smoke-test-prod.sh
 
 ### 3. `deploy.sh` 🚀
 
-**Propósito:** Deploy automatizado end-to-end  
-**Uso:** `./scripts/deploy.sh`  
+**Propósito:** Deploy automatizado end-to-end
+**Uso:** `./scripts/deploy.sh`
 **Duración:** ~5-10 minutos
 
 **Fases del deploy:**

@@ -84,7 +84,7 @@ async def expire_prereservations(db: AsyncSession, batch_size: int = 200) -> int
                         accommodation_name = str(r.accommodation_id)
                         if hasattr(r, "accommodation") and r.accommodation:
                             accommodation_name = str(r.accommodation.name)
-                        
+
                         await email_service.send_reservation_expired(
                             guest_email=str(guest_email_val),
                             guest_name=str(getattr(r, "guest_name", "Cliente")),
@@ -168,12 +168,12 @@ async def send_prereservation_reminders(
         if guest_email_val is not None:
             try:
                 guest_name = r.guest_name if r.guest_name is not None else "Cliente"
-                
+
                 # Obtener nombre del alojamiento si disponible
                 accommodation_name = str(r.accommodation_id)
                 if hasattr(r, "accommodation") and r.accommodation:
                     accommodation_name = str(r.accommodation.name)
-                
+
                 # Calcular horas restantes
                 expires_at = r.expires_at
                 if expires_at is not None:
@@ -182,7 +182,7 @@ async def send_prereservation_reminders(
                     hours_remaining = int((expires_at - now).total_seconds() / 3600)
                 else:
                     hours_remaining = 0
-                
+
                 # Renderizar placeholder (sin template real en esta versión)
                 logger.info(
                     "reminder_email_sent",
@@ -191,7 +191,7 @@ async def send_prereservation_reminders(
                     email=str(guest_email_val)[:15] + "...",
                     hours_remaining=hours_remaining,
                 )
-                
+
                 PRERESERVATION_REMINDERS_SENT.labels(channel="email").inc()
             except Exception as e:
                 logger.warning("reminder_email_failed", reservation_id=r.id, error=str(e))

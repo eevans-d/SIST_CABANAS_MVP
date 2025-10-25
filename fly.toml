@@ -40,18 +40,18 @@ primary_region = "eze"  # ezeiza (Buenos Aires, Argentina) - Más cercano a usua
   JWT_ALGORITHM = "HS256"
   JWT_EXPIRATION_HOURS = "24"
   ADMIN_TOKEN_EXPIRATION_HOURS = "168"
-  LOCK_TTL_SECONDS = "1800"
-  LOCK_RETRY_DELAY_MS = "100"
-  LOCK_MAX_RETRIES = "5"
-  RESERVATION_PRE_EXPIRY_MINUTES = "5"
+  # Rate limit (nombres alineados al código)
+  RATE_LIMIT_ENABLED = "true"
   RATE_LIMIT_REQUESTS = "100"
-  RATE_LIMIT_WINDOW = "60"
-  AUDIO_MAX_SIZE_MB = "25"
-  AUDIO_MIN_DURATION_SEC = "1"
-  AUDIO_MAX_DURATION_SEC = "300"
-  STT_CONFIDENCE_THRESHOLD = "0.7"
-  ICAL_EXPORT_TTL_DAYS = "365"
-  ICAL_SYNC_INTERVAL_MINUTES = "5"
+  RATE_LIMIT_WINDOW_SECONDS = "60"
+
+  # Jobs (nombres alineados al código)
+  JOB_EXPIRATION_INTERVAL_SECONDS = "60"
+  JOB_ICAL_INTERVAL_SECONDS = "300"
+
+  # Audio/NLU (parámetros no críticos, el código tolera default)
+  AUDIO_MODEL = "base"
+  AUDIO_MIN_CONFIDENCE = "0.7"
 
 # Variables sensibles (configurar con: flyctl secrets set)
 # - DATABASE_URL (desde Fly Postgres: flyctl postgres attach)
@@ -118,7 +118,8 @@ primary_region = "eze"  # ezeiza (Buenos Aires, Argentina) - Más cercano a usua
 # Metrics & Monitoring
 # ============================================================================
 [metrics]
-  port = 9091  # Prometheus metrics
+  # La app expone /metrics en el mismo puerto HTTP (8080)
+  port = 8080
   path = "/metrics"
 
 # ============================================================================

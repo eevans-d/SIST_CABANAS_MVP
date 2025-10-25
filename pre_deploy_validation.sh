@@ -2,7 +2,7 @@
 # 🔍 PRE-DEPLOYMENT VALIDATION SCRIPT
 # =====================================
 # Valida TODOS los componentes antes de flyctl deploy
-# 
+#
 # Uso: ./pre_deploy_validation.sh
 #
 # Exit codes:
@@ -75,32 +75,32 @@ try:
     import tomllib
     with open('fly.toml', 'rb') as f:
         config = tomllib.load(f)
-    
+
     # Validaciones críticas
     if not config.get('app'):
         print("❌ ERROR: Falta 'app' en fly.toml")
         exit(1)
-    
+
     if config.get('primary_region') != 'eze':
         print("⚠️  WARNING: Región no es 'eze' (Buenos Aires)")
-    
+
     # Validar [deploy]
     deploy = config.get('deploy', {})
     if 'release_command' in deploy:
         print(f"✅ Release command: {deploy['release_command']}")
-    
+
     # Validar [[services]]
     services = config.get('services', [])
     if services and services[0].get('internal_port') != 8080:
         print("❌ ERROR: internal_port debe ser 8080")
         exit(1)
-    
+
     print("✅ fly.toml válido")
 except Exception as e:
     print(f"❌ ERROR: {e}")
     exit(1)
 PYEOF
-    
+
     pyexit=$?
     if [ $pyexit -eq 0 ]; then
         log_success "fly.toml válido"
@@ -119,7 +119,7 @@ else
     grep -q "FROM python:" backend/Dockerfile || log_warning "No especifica base image Python"
     grep -q "EXPOSE 8080" backend/Dockerfile || log_error "No expone puerto 8080"
     grep -q "start-fly.sh" backend/Dockerfile && log_success "Usa start-fly.sh" || log_warning "No usa start-fly.sh"
-    
+
     log_success "Dockerfile presente y validado"
 fi
 
@@ -156,18 +156,18 @@ if [ ! -f backend/requirements.txt ]; then
     log_error "backend/requirements.txt NO EXISTE"
 else
     cd backend
-    
+
     if [ -d .venv ]; then
         source .venv/bin/activate
     fi
-    
+
     # Verificar versiones fijas
     if grep -qE '==|~=' requirements.txt; then
         log_success "requirements.txt con versiones fijas"
     else
         log_warning "requirements.txt sin versiones fijas"
     fi
-    
+
     # CVE check (si pip-audit está disponible)
     if command -v pip-audit &> /dev/null; then
         log_info "Ejecutando pip-audit..."
@@ -184,7 +184,7 @@ else
     else
         log_warning "pip-audit no instalado (skip CVE check)"
     fi
-    
+
     cd ..
 fi
 
@@ -280,7 +280,7 @@ fi
 
 if command -v bandit &> /dev/null; then
     bandit -r app/ -lll -q > /tmp/bandit_pre.log 2>&1
-    
+
     if grep -q "Severity: High" /tmp/bandit_pre.log 2>/dev/null; then
         high_count=$(grep "Severity: High" /tmp/bandit_pre.log | wc -l)
         log_error "$high_count issues HIGH encontrados"
@@ -320,14 +320,14 @@ log_info "PASO 11: Verificando health check endpoint..."
 
 if grep -rq "/healthz" backend/app/routers/health.py 2>/dev/null; then
     log_success "Health check endpoint presente"
-    
+
     # Verificar que tiene checks de DB y Redis
     if grep -A20 "/healthz" backend/app/routers/health.py | grep -q "database"; then
         log_success "Health check valida DB"
     else
         log_warning "Health check sin validación de DB"
     fi
-    
+
     if grep -A20 "/healthz" backend/app/routers/health.py | grep -q "redis"; then
         log_success "Health check valida Redis"
     else
@@ -377,7 +377,7 @@ log_info "PASO 15: Verificando Fly.io CLI..."
 if command -v flyctl &> /dev/null; then
     flyctl_version=$(flyctl version | head -1)
     log_success "flyctl instalado: $flyctl_version"
-    
+
     # Verificar autenticación
     if flyctl auth whoami &> /dev/null; then
         log_success "flyctl autenticado"
@@ -415,12 +415,12 @@ if [ $ERRORS -eq 0 ]; then
 ║                                                                ║
 ╚════════════════════════════════════════════════════════════════╝
 EOF
-    
+
     echo ""
     log_info "Errores:  $ERRORS"
     log_info "Warnings: $WARNINGS"
     echo ""
-    
+
     exit 0
 else
     cat << 'EOF'
@@ -432,11 +432,11 @@ else
 ║                                                                ║
 ╚════════════════════════════════════════════════════════════════╝
 EOF
-    
+
     echo ""
     log_error "Errores:  $ERRORS (BLOQUEANTES)"
     log_warning "Warnings: $WARNINGS"
     echo ""
-    
+
     exit 1
 fi

@@ -1,0 +1,46 @@
+name: Deploy to Fly.io
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Fly Deploy (Staging/Prod)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@v1
+
+      - name: Deploy to Fly.io
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          # Validar sintaxis TOML mínima
+          test -f fly.toml
+
+          # Desplegar (usa dockerfile backend/Dockerfile)
+          flyctl deploy --remote-only --strategy rolling
+
+      - name: Health check
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          # Esperar unos segundos y consultar estado
+          sleep 10
+          flyctl status -a sist-cabanas-mvp
+
+          # Logs de ayuda si algo falla
+          flyctl logs -a sist-cabanas-mvp --lines 100 || true

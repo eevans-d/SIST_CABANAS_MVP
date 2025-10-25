@@ -94,5 +94,5 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 
 ---
 
-**🎉 MVP COMPLETADO - 27 Sep 2025**  
+**🎉 MVP COMPLETADO - 27 Sep 2025**
 **🚀 Ready for Production Deployment**

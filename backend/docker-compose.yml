@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   app:
-    build: .
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
     container_name: alojamientos_api
     restart: unless-stopped
     environment:
@@ -107,7 +109,9 @@ services:
 
   # Contenedor para tareas programadas (iCal sync, cleanup)
   scheduler:
-    build: .
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
     container_name: alojamientos_scheduler
     restart: unless-stopped
     command: python -m app.jobs.scheduler

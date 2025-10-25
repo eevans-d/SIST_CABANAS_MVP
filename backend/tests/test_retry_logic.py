@@ -8,15 +8,16 @@ Verificaciones incluidas:
 - Logging de cada intento
 - Aplicación en WhatsApp service
 """
-import pytest
 import asyncio
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 from app.utils.retry import (
+    RetryExhausted,
     calculate_backoff_delay,
     is_transient_error,
     retry_async,
     retry_sync,
-    RetryExhausted,
 )
 
 
@@ -26,7 +27,7 @@ class TestBackoffCalculation:
     def test_backoff_increases_exponentially(self):
         """El delay crece exponencialmente: 1s, 2s, 4s, 8s, 16s..."""
         # Sin jitter para test predecible
-        with patch('app.utils.retry.random.random', return_value=0.5):  # jitter=0
+        with patch("app.utils.retry.random.random", return_value=0.5):  # jitter=0
             assert 0.8 < calculate_backoff_delay(0, base_delay=1.0) < 1.2  # ~1s
             assert 1.6 < calculate_backoff_delay(1, base_delay=1.0) < 2.4  # ~2s
             assert 3.2 < calculate_backoff_delay(2, base_delay=1.0) < 4.8  # ~4s
@@ -34,7 +35,7 @@ class TestBackoffCalculation:
 
     def test_backoff_respects_max_delay(self):
         """El delay no excede el máximo configurado"""
-        with patch('app.utils.retry.random.random', return_value=0.5):
+        with patch("app.utils.retry.random.random", return_value=0.5):
             delay = calculate_backoff_delay(10, base_delay=1.0, max_delay=10.0)
             assert delay <= 12.0  # max_delay + 20% jitter
 
@@ -47,7 +48,7 @@ class TestBackoffCalculation:
 
     def test_backoff_minimum_delay(self):
         """El delay mínimo es 0.1s incluso con jitter negativo"""
-        with patch('app.utils.retry.random.random', return_value=0):  # jitter máximo negativo
+        with patch("app.utils.retry.random.random", return_value=0):  # jitter máximo negativo
             delay = calculate_backoff_delay(0, base_delay=0.1)
             assert delay >= 0.1
 
@@ -173,14 +174,15 @@ class TestRetryAsyncDecorator:
     @pytest.mark.asyncio
     async def test_logs_retry_attempts(self):
         """Logging detallado de cada intento"""
+
         @retry_async(max_attempts=3, base_delay=0.1, operation_name="test_op")
         async def fails_once():
-            if not hasattr(fails_once, 'called'):
+            if not hasattr(fails_once, "called"):
                 fails_once.called = True  # type: ignore
                 raise ConnectionError("First failure")
             return "ok"
 
-        with patch('app.utils.retry.logger') as mock_logger:
+        with patch("app.utils.retry.logger") as mock_logger:
             result = await fails_once()
 
             assert result == "ok"
@@ -239,7 +241,7 @@ class TestWhatsAppRetryIntegration:
                 self.status_code = status_code
                 self.text = text
                 self._json_data = json_data or {}
-            
+
             def json(self):
                 return self._json_data
 
@@ -250,8 +252,10 @@ class TestWhatsAppRetryIntegration:
                 return MockResponse(500, "Internal Server Error")
             return MockResponse(200, json_data={"messages": [{"id": "wamid.123"}]})
 
-        with patch('httpx.AsyncClient.post', new=mock_post):
-            result = await _send_text_message_with_retry("5491123456789", "Test message", timeout=5.0)
+        with patch("httpx.AsyncClient.post", new=mock_post):
+            result = await _send_text_message_with_retry(
+                "5491123456789", "Test message", timeout=5.0
+            )
 
             assert result["status"] == "sent"
             assert call_count == 3  # Falló 2 veces, exitoso en la 3ra
@@ -267,7 +271,7 @@ class TestWhatsAppRetryIntegration:
             def __init__(self, status_code, text=""):
                 self.status_code = status_code
                 self.text = text
-            
+
             def json(self):
                 return {}
 
@@ -276,7 +280,7 @@ class TestWhatsAppRetryIntegration:
             call_count += 1
             return MockResponse(400, "Bad Request")
 
-        with patch('httpx.AsyncClient.post', new=mock_post):
+        with patch("httpx.AsyncClient.post", new=mock_post):
             with pytest.raises(ValueError):  # Error permanente
                 await _send_text_message_with_retry("invalid", "Test", timeout=5.0)
 
@@ -294,7 +298,7 @@ class TestWhatsAppRetryIntegration:
                 self.status_code = status_code
                 self.text = text
                 self._json_data = json_data or {}
-            
+
             def json(self):
                 return self._json_data
 
@@ -305,7 +309,7 @@ class TestWhatsAppRetryIntegration:
                 return MockResponse(429, "Rate limit exceeded")
             return MockResponse(200, json_data={"messages": [{"id": "wamid.456"}]})
 
-        with patch('httpx.AsyncClient.post', new=mock_post):
+        with patch("httpx.AsyncClient.post", new=mock_post):
             result = await _send_text_message_with_retry("5491123456789", "Test", timeout=5.0)
 
             assert result["status"] == "sent"
@@ -323,7 +327,7 @@ class TestWhatsAppRetryIntegration:
                 self.status_code = status_code
                 self.text = text
                 self._json_data = json_data or {}
-            
+
             def json(self):
                 return self._json_data
 
@@ -334,12 +338,9 @@ class TestWhatsAppRetryIntegration:
                 return MockResponse(503, "Service Unavailable")
             return MockResponse(200, json_data={"messages": [{"id": "wamid.789"}]})
 
-        with patch('httpx.AsyncClient.post', new=mock_post):
+        with patch("httpx.AsyncClient.post", new=mock_post):
             result = await _send_image_message_with_retry(
-                "5491123456789",
-                "https://example.com/image.jpg",
-                caption="Test Image",
-                timeout=5.0
+                "5491123456789", "https://example.com/image.jpg", caption="Test Image", timeout=5.0
             )
 
             assert result["status"] == "sent"

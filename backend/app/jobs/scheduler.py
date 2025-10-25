@@ -9,6 +9,7 @@ Coordina:
 """
 
 import asyncio
+
 import structlog
 from app.core.config import get_settings
 from app.core.database import async_session_maker

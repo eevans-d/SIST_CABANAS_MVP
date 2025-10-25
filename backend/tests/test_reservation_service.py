@@ -1,10 +1,10 @@
-import pytest
 from datetime import date, timedelta
 from decimal import Decimal
 
-from app.services.reservations import ReservationService
+import pytest
 from app.models import Accommodation, Reservation
 from app.models.enums import ReservationStatus
+from app.services.reservations import ReservationService
 
 
 @pytest.mark.asyncio

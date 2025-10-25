@@ -1,6 +1,6 @@
 # 📚 ÍNDICE DE DOCUMENTACIÓN - SIST_CABAÑAS MVP
 
-**Última actualización:** 2025-10-19  
+**Última actualización:** 2025-10-19
 **Estado:** ✅ READY FOR DEPLOYMENT (1 bloqueante pendiente)
 
 ---
@@ -383,5 +383,5 @@ flyctl postgres connect --app sist-cabanas-db
 
 ---
 
-*Documento generado automáticamente durante sesión de validación pre-deployment*  
+*Documento generado automáticamente durante sesión de validación pre-deployment*
 *Última ejecución: ./pre_deploy_validation.sh → 13/15 checks ✅ (86.7%)*

@@ -1,6 +1,7 @@
-import pytest
-from datetime import date
 import asyncio
+from datetime import date
+
+import pytest
 
 
 @pytest.mark.asyncio

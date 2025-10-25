@@ -1,8 +1,8 @@
-import redis.asyncio as redis
-from typing import Optional, AsyncGenerator, Any, Dict
-import structlog
 import os
+from typing import Any, AsyncGenerator, Dict, Optional
 
+import redis.asyncio as redis
+import structlog
 from app.core.config import get_settings
 
 logger = structlog.get_logger()

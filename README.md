@@ -96,7 +96,7 @@
 
 └─────────────────┘    │                  │    └─────────────────┘- Procesamiento de pagos (Mercado Pago)[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)[![FastAPI](https://img.shields.io/badge/fastapi-0.115-009688)](https://fastapi.tiangolo.com/)
 
-                       │  ┌─────────────┐  │    
+                       │  ┌─────────────┐  │
 
 ┌─────────────────┐    │  │   Redis     │  │    ┌─────────────────┐---
 
@@ -260,7 +260,7 @@ Usuario en WhatsApp: "Hola, hay disponibilidad para el fin de semana?"- ✅ **NL
 
   ↓ Bot responde con opciones interactivas
 
-  
+
 
 Usuario selecciona: "Cabaña Premium, 2-3 Feb, 4 personas"---cp backend/.env.template backend/.env
 

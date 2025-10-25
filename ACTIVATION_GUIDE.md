@@ -1,7 +1,7 @@
 # 🚀 Guía de Activación a Producción - SIST_CABAÑAS MVP
 
-**Estado**: ✅ LISTO PARA ACTIVACIÓN  
-**Fecha**: Octubre 20, 2025  
+**Estado**: ✅ LISTO PARA ACTIVACIÓN
+**Fecha**: Octubre 20, 2025
 **Versión**: 1.0
 
 ---
@@ -52,8 +52,8 @@ git status
 
 ## 🚀 Opción A: Activación Automática (RECOMENDADA)
 
-**Tiempo**: ~25 minutos  
-**Complejidad**: Baja  
+**Tiempo**: ~25 minutos
+**Complejidad**: Baja
 **Ventaja**: Todo automatizado, validaciones integradas
 
 ### Paso 1: FASE 0 - Autenticación (2-3 minutos)
@@ -127,8 +127,8 @@ flyctl status --app sist-cabanas-mvp
 
 ## 🔧 Opción B: Activación Manual (CONTROL TOTAL)
 
-**Tiempo**: ~25-30 minutos  
-**Complejidad**: Media  
+**Tiempo**: ~25-30 minutos
+**Complejidad**: Media
 **Ventaja**: Control granular, debugging más fácil
 
 ### FASE 0: Autenticación (2-3 minutos)

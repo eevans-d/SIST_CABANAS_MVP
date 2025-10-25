@@ -1,7 +1,7 @@
 # ✅ DEPLOY READY CHECKLIST - SIST_CABAÑAS MVP
 
-**Fecha:** 2025-10-19  
-**Status:** 🟡 CASI LISTO (1 bloqueante pendiente)  
+**Fecha:** 2025-10-19
+**Status:** 🟡 CASI LISTO (1 bloqueante pendiente)
 **ETA Deploy:** 15 minutos tras resolver bloqueante
 
 ---
@@ -154,9 +154,9 @@ curl https://sist-cabanas-mvp.fly.dev/metrics
 ## ⚠️ WARNINGS (NO BLOQUEANTES)
 
 ### 1. pip-audit no instalado
-**Impacto:** CVE check skipped  
-**Prioridad:** Baja (Bandit ya validó 0 HIGH)  
-**Acción:** Instalar post-deploy  
+**Impacto:** CVE check skipped
+**Prioridad:** Baja (Bandit ya validó 0 HIGH)
+**Acción:** Instalar post-deploy
 ```bash
 cd backend && source .venv/bin/activate
 pip install pip-audit
@@ -164,9 +164,9 @@ pip-audit --desc
 ```
 
 ### 2. Health check sin validación de Redis
-**Impacto:** Redis health no monitoreado  
-**Prioridad:** Media  
-**Acción:** Añadir check post-deploy (3 min)  
+**Impacto:** Redis health no monitoreado
+**Prioridad:** Media
+**Acción:** Añadir check post-deploy (3 min)
 
 ---
 
@@ -340,8 +340,8 @@ AHORA:        Instalar flyctl (5 min)
 
 ---
 
-**ÚLTIMA ACTUALIZACIÓN:** 2025-10-19 19:30 UTC  
-**GIT COMMIT:** c92c034 (pushed to origin/main)  
+**ÚLTIMA ACTUALIZACIÓN:** 2025-10-19 19:30 UTC
+**GIT COMMIT:** c92c034 (pushed to origin/main)
 **ARCHIVOS NUEVOS:** 3 (+1,641 líneas)
 
 ---

@@ -1,25 +1,25 @@
 from __future__ import annotations
 
-from decimal import Decimal
 import uuid
+from decimal import Decimal
+
+from app.models.base import Base, TimestampMixin
+from app.models.enums import PaymentStatus, ReservationStatus
 from sqlalchemy import (
+    NUMERIC,
+    Boolean,
+    CheckConstraint,
     Column,
-    Integer,
-    String,
-    ForeignKey,
     Date,
     DateTime,
-    Text,
-    NUMERIC,
-    CheckConstraint,
+    ForeignKey,
     Index,
-    Boolean,
+    Integer,
+    String,
+    Text,
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-
-from app.models.base import Base, TimestampMixin
-from app.models.enums import ReservationStatus, PaymentStatus
 
 
 class Reservation(Base, TimestampMixin):

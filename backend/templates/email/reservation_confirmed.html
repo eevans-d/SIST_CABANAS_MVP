@@ -21,12 +21,12 @@
             <h1>✅ ¡Reserva Confirmada!</h1>
             <p style="font-size: 18px; margin: 10px 0;">{{ accommodation_name }}</p>
         </div>
-        
+
         <div class="content">
             <p>¡Hola <strong>{{ guest_name }}</strong>!</p>
-            
+
             <p>Tu pago ha sido procesado exitosamente. Tu reserva está <strong>100% confirmada</strong>.</p>
-            
+
             <div class="highlight">
                 <h2>📋 Detalles de tu Reserva</h2>
                 <p><strong>Código:</strong> {{ reservation_code }}</p>
@@ -36,26 +36,26 @@
                 <p><strong>Huéspedes:</strong> {{ guests_count }}</p>
                 <p><strong>Total pagado:</strong> ${{ total_amount }}</p>
             </div>
-            
+
             {% if accommodation_address %}
             <div class="info-box">
                 <h3>📍 Ubicación</h3>
                 <p>{{ accommodation_address }}</p>
             </div>
             {% endif %}
-            
+
             {% if check_in_instructions %}
             <div class="info-box">
                 <h3>🔑 Instrucciones de Check-in</h3>
                 <p>{{ check_in_instructions }}</p>
             </div>
             {% endif %}
-            
+
             <p><strong>Recuerda:</strong> Guarda este correo con tu código de reserva <strong>{{ reservation_code }}</strong>. Lo necesitarás al momento del check-in.</p>
-            
+
             <p>¡Esperamos que disfrutes tu estadía!</p>
         </div>
-        
+
         <div class="footer">
             <p>Si tienes alguna consulta, contáctanos presentando tu código de reserva.</p>
             <p><strong>{{ reservation_code }}</strong></p>

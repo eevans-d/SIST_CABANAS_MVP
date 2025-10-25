@@ -220,7 +220,7 @@ Code Coverage:              85%+ (180+ tests)
 Cyclomatic Complexity:      < 15 average
 Lines of Code:              6,805 (backend)
 Static Analysis:            Flake8 ✅ 0 errors
-Type Checking:              mypy ✅ 0 errors  
+Type Checking:              mypy ✅ 0 errors
 Security Scan:              Bandit ✅ 0 HIGH issues
 Dependency Audit:           pip-audit ✅ 0 critical CVEs
 Frontend Build Size:        < 2MB (gzipped)
@@ -258,7 +258,7 @@ Health Check Failed:
 
 Double Booking Error:
   $ flyctl postgres connect
-  > SELECT * FROM reservations WHERE accommodation_id = ? 
+  > SELECT * FROM reservations WHERE accommodation_id = ?
     AND check_in <= ? AND check_out > ?;
 
 Webhook Not Firing:

@@ -3,8 +3,9 @@ import pytest
 pytestmark = pytest.mark.skip(
     reason="Duplicado E2E: usar tests/test_journey_basic.py con fixtures compartidas"
 )
-from httpx import AsyncClient
 from datetime import date, timedelta
+
+from httpx import AsyncClient
 
 
 @pytest.mark.anyio

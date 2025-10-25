@@ -1,8 +1,8 @@
 # 🔬 AUDITORÍA MOLECULAR - RESUMEN EJECUTIVO
 
-**Fecha**: 19 de octubre de 2025  
-**Proyecto**: SIST_CABAÑAS MVP  
-**Estado**: ✅ **READY FOR PRODUCTION**  
+**Fecha**: 19 de octubre de 2025
+**Proyecto**: SIST_CABAÑAS MVP
+**Estado**: ✅ **READY FOR PRODUCTION**
 **Commit**: `683c7ab` - Molecular audit system + Security fixes
 
 ---
@@ -209,6 +209,6 @@ Métricas SLO: 100% cumplidas
 
 ---
 
-**Generado**: 19 de octubre de 2025 a las 06:59 UTC  
-**Validez**: Este reporte es válido por 30 días o hasta cambios significativos en `backend/app`  
+**Generado**: 19 de octubre de 2025 a las 06:59 UTC
+**Validez**: Este reporte es válido por 30 días o hasta cambios significativos en `backend/app`
 **Actualizar si**: Se agregan módulos, cambios en seguridad, o nuevas dependencias externas

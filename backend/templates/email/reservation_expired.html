@@ -22,12 +22,12 @@
             <h1>⏰ Pre-reserva Expirada</h1>
             <p style="font-size: 18px; margin: 10px 0;">{{ accommodation_name }}</p>
         </div>
-        
+
         <div class="content">
             <p>Hola <strong>{{ guest_name }}</strong>,</p>
-            
+
             <p>Lamentablemente, tu pre-reserva <strong>{{ reservation_code }}</strong> ha expirado porque no se recibió el pago dentro del plazo establecido.</p>
-            
+
             <div class="warning">
                 <h2>📋 Detalles de la Pre-reserva Expirada</h2>
                 <p><strong>Código:</strong> {{ reservation_code }}</p>
@@ -36,19 +36,19 @@
                 <p><strong>Huéspedes:</strong> {{ guests_count }}</p>
                 <p><strong>Fecha de expiración:</strong> {{ expired_at }}</p>
             </div>
-            
+
             <div class="info-box">
                 <h3>¿Sigues interesado?</h3>
                 <p>Si todavía deseas reservar estas fechas, puedes crear una nueva reserva. Ten en cuenta que <strong>la disponibilidad podría haber cambiado</strong>.</p>
-                
+
                 {% if availability_url %}
                 <a href="{{ availability_url }}" class="button">Ver Disponibilidad Actual</a>
                 {% endif %}
             </div>
-            
+
             <p>Si tuviste algún problema con el pago o necesitas asistencia, no dudes en contactarnos.</p>
         </div>
-        
+
         <div class="footer">
             <p>Este correo es informativo. La pre-reserva {{ reservation_code }} ya no está activa.</p>
         </div>

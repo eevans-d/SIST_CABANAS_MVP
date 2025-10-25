@@ -5,8 +5,8 @@ Revises:
 Create Date: 2025-09-24
 """
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
 
 revision = "001_initial_schema"
@@ -113,15 +113,15 @@ def upgrade() -> None:
 
     op.execute(
         """
-        ALTER TABLE reservations 
-        ADD COLUMN period daterange 
+        ALTER TABLE reservations
+        ADD COLUMN period daterange
         GENERATED ALWAYS AS (daterange(check_in, check_out, '[)')) STORED
     """
     )
     op.execute(
         """
-        ALTER TABLE reservations 
-        ADD CONSTRAINT no_overlap_reservations 
+        ALTER TABLE reservations
+        ADD CONSTRAINT no_overlap_reservations
         EXCLUDE USING gist (
             accommodation_id WITH =,
             period WITH &&

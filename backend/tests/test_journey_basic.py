@@ -1,6 +1,7 @@
+from datetime import date, timedelta
+
 import pytest
 from httpx import AsyncClient
-from datetime import date, timedelta
 
 
 @pytest.mark.anyio

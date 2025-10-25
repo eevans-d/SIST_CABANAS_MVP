@@ -1,8 +1,8 @@
 # 📊 Resumen Ejecutivo: Deployment en Fly.io
 
-**Fecha**: Octubre 18, 2025  
-**Status**: ✅ Ready for Production  
-**Tiempo Estimado**: 15 minutos  
+**Fecha**: Octubre 18, 2025
+**Status**: ✅ Ready for Production
+**Tiempo Estimado**: 15 minutos
 **Costo Mensual**: $0 (free tier)
 
 ---
@@ -20,18 +20,18 @@
 | **Free Tier** | No | Sí (3 máquinas) | ✅ MVP ideal |
 | **Edge Performance** | Bueno | Excelente | ✅ Anycast routing |
 
-**Ahorro Total**: **$384-444 anuales** para MVP  
+**Ahorro Total**: **$384-444 anuales** para MVP
 **ROI**: Alcanzado en Mes 1
 
 ### Ventajas de Fly.io
 
-✅ **Región Buenos Aires**: Latencia < 30ms para usuarios locales  
-✅ **Free Tier**: 3 máquinas shared-cpu-1x, 256MB RAM, 3GB storage  
-✅ **Zero-Downtime Deploys**: Rolling strategy automático  
-✅ **Managed PostgreSQL**: Backups automáticos, 7 días retención  
-✅ **Upstash Redis**: Gratis con 10K comandos/día (suficiente para MVP)  
-✅ **IPv6 Nativo**: Mejor connectivity global  
-✅ **Prometheus Metrics**: Built-in observability  
+✅ **Región Buenos Aires**: Latencia < 30ms para usuarios locales
+✅ **Free Tier**: 3 máquinas shared-cpu-1x, 256MB RAM, 3GB storage
+✅ **Zero-Downtime Deploys**: Rolling strategy automático
+✅ **Managed PostgreSQL**: Backups automáticos, 7 días retención
+✅ **Upstash Redis**: Gratis con 10K comandos/día (suficiente para MVP)
+✅ **IPv6 Nativo**: Mejor connectivity global
+✅ **Prometheus Metrics**: Built-in observability
 
 ---
 
@@ -314,8 +314,8 @@ Antes de marcar como "Production Ready":
 
 ---
 
-**Ultima Actualización**: Octubre 18, 2025  
-**Versión**: 1.0 - MVP Ready  
+**Ultima Actualización**: Octubre 18, 2025
+**Versión**: 1.0 - MVP Ready
 **Próximo Review**: Enero 2026 (post-MVP)
 
 🚀 **¡Listo para Deploy!** 🚀

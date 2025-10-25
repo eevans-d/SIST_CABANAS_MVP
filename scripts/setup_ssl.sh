@@ -35,10 +35,10 @@ check_dns() {
     local domain=$1
     local server_ip=$(curl -s https://ipv4.icanhazip.com 2>/dev/null || echo "unknown")
     local dns_ip=$(dig +short $domain 2>/dev/null | tail -n1)
-    
+
     echo -e "${BLUE}ℹ️  IP del servidor: ${server_ip}${NC}"
     echo -e "${BLUE}ℹ️  IP en DNS para $domain: ${dns_ip}${NC}"
-    
+
     if [ "$server_ip" != "unknown" ] && [ "$dns_ip" = "$server_ip" ]; then
         echo -e "${GREEN}✅ DNS configurado correctamente${NC}"
         return 0
@@ -222,7 +222,7 @@ server {
         proxy_set_header X-Forwarded-Proto \$scheme;
         proxy_set_header X-Forwarded-Host \$host;
         proxy_set_header X-Forwarded-Port \$server_port;
-        
+
         # Timeouts
         proxy_connect_timeout 30s;
         proxy_send_timeout 30s;
@@ -244,7 +244,7 @@ server {
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
-        
+
         # Restringir acceso a métricas (opcional)
         # allow 10.0.0.0/8;
         # deny all;

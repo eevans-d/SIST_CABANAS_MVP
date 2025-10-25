@@ -1,5 +1,6 @@
-import redis.asyncio as redis
 import asyncio
+
+import redis.asyncio as redis
 
 
 async def test_redis_connection():

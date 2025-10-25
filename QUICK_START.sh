@@ -114,7 +114,7 @@ Ejecuta cada fase por separado:
     export PATH="/home/eevan/.fly/bin:$PATH" && flyctl auth login
 
 2️⃣  AUTORIZA EN EL BROWSER:
-    
+
     • Se abrirá https://fly.io/app/auth/cli/
     • Si no se abre, copia el link del terminal
     • Pega el device code en el browser
@@ -123,13 +123,13 @@ Ejecuta cada fase por separado:
 3️⃣  VERIFICA AUTENTICACIÓN:
 
     flyctl auth whoami
-    
+
     ✅ Debería mostrar tu email
 
 4️⃣  RE-VALIDA:
 
     ./pre_deploy_validation.sh
-    
+
     ✅ Debería mostrar 15/15 ✅
 
 5️⃣  ENTONCES CONTINÚA:

@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from decimal import Decimal
 import uuid
-from sqlalchemy import Column, Integer, String, Boolean, Text, JSON, NUMERIC, Index, DateTime
-from sqlalchemy.dialects.postgresql import UUID
+from decimal import Decimal
 
 from app.models.base import Base, TimestampMixin
+from sqlalchemy import JSON, NUMERIC, Boolean, Column, DateTime, Index, Integer, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 
 
 class Accommodation(Base, TimestampMixin):

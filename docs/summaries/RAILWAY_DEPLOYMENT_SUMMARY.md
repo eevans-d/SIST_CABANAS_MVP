@@ -172,7 +172,7 @@ URL: https://tu-app.up.railway.app/api/v1/mercadopago/webhook
 **Solución**: Configurar las 12 variables en Railway UI → Variables
 
 ### ❌ "PostgreSQL not available after 60 seconds"
-**Solución**: 
+**Solución**:
 - Verificar servicio PostgreSQL está UP
 - Revisar DATABASE_URL configurada
 - Ambos servicios en mismo proyecto Railway

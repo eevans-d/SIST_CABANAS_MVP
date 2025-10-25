@@ -522,7 +522,7 @@ flyctl postgres logs sist-cabanas-db
    ```bash
    # Obtener URL correcta
    flyctl postgres app sist-cabanas-db
-   
+
    # Actualizar
    flyctl secrets set DATABASE_URL="nueva_url"
    flyctl deploy
@@ -730,6 +730,6 @@ curl https://sist-cabanas-mvp.fly.dev/metrics | grep ical_sync_age
 
 ---
 
-**Última actualización**: Octubre 2025  
-**Versión**: 1.0 - MVP  
+**Última actualización**: Octubre 2025
+**Versión**: 1.0 - MVP
 **Status**: Production Ready ✅

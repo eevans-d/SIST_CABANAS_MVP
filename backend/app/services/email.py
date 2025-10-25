@@ -1,7 +1,8 @@
 """Email Service - MVP placeholder for notifications."""
 
-import structlog
 from typing import Optional
+
+import structlog
 from prometheus_client import Counter
 
 logger = structlog.get_logger()

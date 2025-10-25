@@ -7,20 +7,20 @@ Valida:
 - Sugerencias útiles en errores
 """
 
-import pytest
 from datetime import date, timedelta
 from decimal import Decimal
 
+import pytest
 from app.services.messages import (
+    format_availability_response,
+    format_error_capacity_exceeded,
+    format_error_date_overlap,
+    format_error_generic,
+    format_error_invalid_dates,
+    format_error_no_availability,
+    format_payment_reminder,
     format_prereservation_confirmation,
     format_reservation_confirmed,
-    format_error_date_overlap,
-    format_error_no_availability,
-    format_error_invalid_dates,
-    format_error_capacity_exceeded,
-    format_error_generic,
-    format_availability_response,
-    format_payment_reminder,
     format_reservation_expired,
 )
 
@@ -206,7 +206,14 @@ def test_messages_use_emojis_consistently():
     """Todos los mensajes deben usar emojis para mejor UX."""
     messages = [
         format_prereservation_confirmation(
-            {"code": "X", "check_in": date.today(), "check_out": date.today(), "guests_count": 2, "total_price": 100, "deposit_amount": 30},
+            {
+                "code": "X",
+                "check_in": date.today(),
+                "check_out": date.today(),
+                "guests_count": 2,
+                "total_price": 100,
+                "deposit_amount": 30,
+            },
             {"name": "Test"},
             "https://test.com",
         ),
@@ -216,7 +223,10 @@ def test_messages_use_emojis_consistently():
         format_error_date_overlap("Test", date.today(), date.today() + timedelta(days=1)),
         format_error_no_availability(date.today(), date.today() + timedelta(days=1)),
         format_availability_response(
-            {"name": "Test", "capacity": 4}, date.today(), date.today() + timedelta(days=1), Decimal("100")
+            {"name": "Test", "capacity": 4},
+            date.today(),
+            date.today() + timedelta(days=1),
+            Decimal("100"),
         ),
     ]
 
@@ -257,7 +267,14 @@ def test_messages_have_clear_next_steps():
     """Mensajes deben indicar claramente qué hacer a continuación."""
     # Confirmación → pagar
     prereserv = format_prereservation_confirmation(
-        {"code": "X", "check_in": date.today(), "check_out": date.today(), "guests_count": 2, "total_price": 100, "deposit_amount": 30},
+        {
+            "code": "X",
+            "check_in": date.today(),
+            "check_out": date.today(),
+            "guests_count": 2,
+            "total_price": 100,
+            "deposit_amount": 30,
+        },
         {"name": "Test"},
         "https://pay.com",
     )
@@ -269,6 +286,9 @@ def test_messages_have_clear_next_steps():
 
     # Disponibilidad → reservar
     avail = format_availability_response(
-        {"name": "Test", "capacity": 4}, date.today(), date.today() + timedelta(days=1), Decimal("100")
+        {"name": "Test", "capacity": 4},
+        date.today(),
+        date.today() + timedelta(days=1),
+        Decimal("100"),
     )
     assert "reservar" in avail.lower() or "sí" in avail.lower()

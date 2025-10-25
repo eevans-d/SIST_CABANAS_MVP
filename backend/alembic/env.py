@@ -1,21 +1,22 @@
 import asyncio
+import os
+import sys
 from logging.config import fileConfig
+from pathlib import Path
+
+from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
-from alembic import context
-import os
-import sys
-from pathlib import Path
 
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent.parent))
 
-from app.models.base import Base
 from app.core.config import get_settings
 
 # Import all models to ensure they're registered
 from app.models import *
+from app.models.base import Base
 
 config = context.config
 settings = get_settings()

@@ -1,11 +1,12 @@
 from __future__ import annotations
-from fastapi import APIRouter, Depends, Response
-from sqlalchemy.ext.asyncio import AsyncSession
-from pydantic import BaseModel
+
 from typing import Optional
 
 from app.core.database import get_db
 from app.services.ical import ICalService
+from fastapi import APIRouter, Depends, Response
+from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/ical", tags=["ical"])
 

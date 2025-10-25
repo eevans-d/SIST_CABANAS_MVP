@@ -1,8 +1,9 @@
+from datetime import UTC, date, datetime, timedelta
+
 import pytest
-from datetime import date, timedelta, datetime, UTC
-from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import Reservation
 from app.models.enums import ReservationStatus
+from sqlalchemy.ext.asyncio import AsyncSession
 
 pytestmark = pytest.mark.asyncio
 

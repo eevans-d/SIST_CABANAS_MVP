@@ -80,9 +80,7 @@ Una vez acreditado el pago, recibirás la confirmación definitiva.
     return message
 
 
-def format_reservation_confirmed(
-    reservation: Dict[str, Any], accommodation: Dict[str, Any]
-) -> str:
+def format_reservation_confirmed(reservation: Dict[str, Any], accommodation: Dict[str, Any]) -> str:
     """Genera mensaje de confirmación definitiva de reserva (post-pago).
 
     Args:
@@ -123,9 +121,7 @@ Para cualquier consulta, estamos a tu disposición."""
     return message
 
 
-def format_error_date_overlap(
-    accommodation_name: str, check_in: date, check_out: date
-) -> str:
+def format_error_date_overlap(accommodation_name: str, check_in: date, check_out: date) -> str:
     """Mensaje de error cuando las fechas no están disponibles.
 
     Args:
@@ -309,7 +305,9 @@ Las fechas han quedado liberadas nuevamente.
 ¿Quieres volver a reservar? Puedo ayudarte a verificar disponibilidad 😊"""
 
 
-def format_payment_approved(guest_name: str, reservation_code: str, check_in: str, check_out: str, accommodation_name: str) -> str:
+def format_payment_approved(
+    guest_name: str, reservation_code: str, check_in: str, check_out: str, accommodation_name: str
+) -> str:
     """Mensaje cuando el pago fue aprobado exitosamente.
 
     Args:

@@ -3,14 +3,14 @@
 Script para probar la conexión a Redis con la nueva configuración.
 """
 import asyncio
-import sys
 import os
+import sys
 
 # Asegurarse de que el directorio raíz esté en el path para las importaciones
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from app.core.config import get_settings
-from app.core.redis import get_redis_pool, check_redis_health
+from app.core.redis import check_redis_health, get_redis_pool
 
 
 async def test_redis_connection():

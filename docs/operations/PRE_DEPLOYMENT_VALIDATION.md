@@ -1,9 +1,9 @@
 # 🔍 PRE-DEPLOYMENT VALIDATION PLAN - Fly.io
 ## Ingeniería Inversa: Prevención de Errores Críticos
 
-**Fecha**: 19 de octubre de 2025  
-**Proyecto**: SIST_CABAÑAS MVP  
-**Plataforma**: Fly.io (región: eze)  
+**Fecha**: 19 de octubre de 2025
+**Proyecto**: SIST_CABAÑAS MVP
+**Plataforma**: Fly.io (región: eze)
 **Objetivo**: Validar TODOS los componentes ANTES de `flyctl deploy`
 
 ---
@@ -28,30 +28,30 @@ try:
     import tomllib
     with open('fly.toml', 'rb') as f:
         config = tomllib.load(f)
-    
+
     # Validaciones críticas
     assert config.get('app'), "❌ Falta 'app' en fly.toml"
     assert config.get('primary_region') == 'eze', "❌ Región no es 'eze'"
-    
+
     # Validar [build]
     build = config.get('build', {})
     if not build:
         print("⚠️  WARNING: No se especifica [build], Fly.io usará auto-detect")
-    
+
     # Validar [deploy]
     deploy = config.get('deploy', {})
     if 'release_command' in deploy:
         print(f"✅ Release command: {deploy['release_command']}")
         # CRÍTICO: Si hay release_command, DEBE haber DATABASE_URL
         print("⚠️  REQUIERE: DATABASE_URL configurado en Fly.io")
-    
+
     # Validar [env]
     env = config.get('env', {})
     required_env = ['PORT', 'DATABASE_URL', 'REDIS_URL']
     for var in required_env:
         if var not in env and var != 'DATABASE_URL':  # DATABASE_URL va en secrets
             print(f"⚠️  {var} no está en [env]")
-    
+
     # Validar [[services]]
     services = config.get('services', [])
     if services:
@@ -60,7 +60,7 @@ try:
         if internal_port != 8080:
             print("❌ ERROR: internal_port debe ser 8080")
             exit(1)
-    
+
     print("✅ fly.toml validado correctamente")
 except Exception as e:
     print(f"❌ ERROR en fly.toml: {e}")
@@ -260,7 +260,7 @@ for file in versions_dir.glob('*.py'):
         content = f.read()
         revision = re.search(r"revision = ['\"]([^'\"]+)['\"]", content)
         down_revision = re.search(r"down_revision = ['\"]([^'\"]+)['\"]", content)
-        
+
         if revision:
             migrations.append({
                 'file': file.name,
@@ -809,6 +809,6 @@ flyctl deploy --app sist-cabanas-mvp
 
 ---
 
-**Generado**: 19 de octubre de 2025  
-**Validez**: Permanente hasta cambios en arquitectura  
+**Generado**: 19 de octubre de 2025
+**Validez**: Permanente hasta cambios en arquitectura
 **Próxima revisión**: Después de primer deploy exitoso

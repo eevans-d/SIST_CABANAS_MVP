@@ -7,18 +7,18 @@ Verificaciones incluidas:
 - No hay regresiones en funcionalidad de retry
 - Métricas exportables en /metrics endpoint
 """
-import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
-from prometheus_client import REGISTRY
+from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
 from app.utils.retry import (
-    retry_async,
-    retry_sync,
-    RetryExhausted,
     RETRY_ATTEMPTS,
     RETRY_DELAYS,
     RETRY_EXHAUSTED,
+    RetryExhausted,
+    retry_async,
+    retry_sync,
 )
+from prometheus_client import REGISTRY
 
 
 class TestRetryMetricsDeclaration:
@@ -56,14 +56,25 @@ class TestRetryMetricsDeclaration:
             for sample in m.samples:
                 if sample.name not in metric_names:
                     # Extraer nombre base del sample
-                    base_name = sample.name.replace("_total", "").replace("_count", "").replace("_bucket", "").replace("_sum", "")
+                    base_name = (
+                        sample.name.replace("_total", "")
+                        .replace("_count", "")
+                        .replace("_bucket", "")
+                        .replace("_sum", "")
+                    )
                     if base_name not in metric_names:
                         metric_names.append(base_name)
-        
+
         # Verificar que nuestras métricas están presentes (nombre base o con sufijo)
-        assert any("retry_attempts" in name for name in metric_names), f"retry_attempts not found in {metric_names}"
-        assert any("retry_delay" in name for name in metric_names), f"retry_delay not found in {metric_names}"
-        assert any("retry_exhausted" in name for name in metric_names), f"retry_exhausted not found in {metric_names}"
+        assert any(
+            "retry_attempts" in name for name in metric_names
+        ), f"retry_attempts not found in {metric_names}"
+        assert any(
+            "retry_delay" in name for name in metric_names
+        ), f"retry_delay not found in {metric_names}"
+        assert any(
+            "retry_exhausted" in name for name in metric_names
+        ), f"retry_exhausted not found in {metric_names}"
 
 
 class TestRetryWithMetricsEnabled:
@@ -72,6 +83,7 @@ class TestRetryWithMetricsEnabled:
     @pytest.mark.asyncio
     async def test_async_retry_with_metrics_succeeds_first_attempt(self):
         """Decorador async con métricas funciona en primer intento"""
+
         @retry_async(max_attempts=3, base_delay=0.1, operation_name="test_async_success")
         async def successful_operation():
             return "ok"
@@ -99,6 +111,7 @@ class TestRetryWithMetricsEnabled:
     @pytest.mark.asyncio
     async def test_async_retry_with_metrics_fails_on_permanent_error(self):
         """Decorador async con métricas falla correctamente en errores permanentes"""
+
         @retry_async(max_attempts=3, base_delay=0.1, operation_name="test_async_permanent")
         async def permanent_failure():
             raise ValueError("Permanent error")
@@ -109,6 +122,7 @@ class TestRetryWithMetricsEnabled:
     @pytest.mark.asyncio
     async def test_async_retry_with_metrics_exhausts_retries(self):
         """Decorador async con métricas agota reintentos correctamente"""
+
         @retry_async(max_attempts=2, base_delay=0.1, operation_name="test_async_exhausted")
         async def always_fails():
             raise ConnectionError("Always fails")
@@ -118,6 +132,7 @@ class TestRetryWithMetricsEnabled:
 
     def test_sync_retry_with_metrics_succeeds(self):
         """Decorador sync con métricas funciona correctamente"""
+
         @retry_sync(max_attempts=3, base_delay=0.1, operation_name="test_sync_success")
         def sync_operation():
             return "sync_ok"
@@ -148,11 +163,7 @@ class TestMetricsCanBeIncremented:
     def test_retry_attempts_counter_can_increment(self):
         """Counter retry_attempts_total se puede incrementar"""
         # No debe lanzar excepción
-        RETRY_ATTEMPTS.labels(
-            operation="test_op",
-            attempt_number="1",
-            result="success"
-        ).inc()
+        RETRY_ATTEMPTS.labels(operation="test_op", attempt_number="1", result="success").inc()
 
     def test_retry_delays_histogram_can_observe(self):
         """Histogram retry_delay_seconds puede registrar valores"""
@@ -162,17 +173,14 @@ class TestMetricsCanBeIncremented:
     def test_retry_exhausted_counter_can_increment(self):
         """Counter retry_exhausted_total se puede incrementar"""
         # No debe lanzar excepción
-        RETRY_EXHAUSTED.labels(
-            operation="test_op",
-            error_type="ConnectionError"
-        ).inc()
+        RETRY_EXHAUSTED.labels(operation="test_op", error_type="ConnectionError").inc()
 
 
 class TestMetricsIntegrationSmokeTest:
     """Smoke tests de integración con métricas"""
 
     @pytest.mark.asyncio
-    @patch('app.utils.retry.RETRY_ATTEMPTS')
+    @patch("app.utils.retry.RETRY_ATTEMPTS")
     async def test_metrics_are_called_on_success(self, mock_counter):
         """Métricas son llamadas cuando hay éxito"""
         mock_labels = MagicMock()
@@ -190,7 +198,7 @@ class TestMetricsIntegrationSmokeTest:
         mock_labels.inc.assert_called()
 
     @pytest.mark.asyncio
-    @patch('app.utils.retry.RETRY_DELAYS')
+    @patch("app.utils.retry.RETRY_DELAYS")
     async def test_delay_histogram_is_called_on_retry(self, mock_histogram):
         """Histogram de delays es llamado en reintentos"""
         mock_labels = MagicMock()
@@ -211,7 +219,7 @@ class TestMetricsIntegrationSmokeTest:
         mock_labels.observe.assert_called()
 
     @pytest.mark.asyncio
-    @patch('app.utils.retry.RETRY_EXHAUSTED')
+    @patch("app.utils.retry.RETRY_EXHAUSTED")
     async def test_exhausted_counter_is_called_on_exhaustion(self, mock_counter):
         """Counter de exhaustion es llamado cuando se agotan intentos"""
         mock_labels = MagicMock()
@@ -235,9 +243,15 @@ class TestMetricsDocumentation:
     def test_metrics_have_descriptions(self):
         """Métricas tienen descripciones útiles"""
         for metric in REGISTRY.collect():
-            if metric.name in ["retry_attempts_total", "retry_delay_seconds", "retry_exhausted_total"]:
+            if metric.name in [
+                "retry_attempts_total",
+                "retry_delay_seconds",
+                "retry_exhausted_total",
+            ]:
                 assert metric.documentation, f"Metric {metric.name} should have documentation"
-                assert len(metric.documentation) > 10, f"Metric {metric.name} documentation is too short"
+                assert (
+                    len(metric.documentation) > 10
+                ), f"Metric {metric.name} documentation is too short"
 
     def test_histogram_has_reasonable_buckets(self):
         """Histogram tiene buckets razonables para delays esperados"""
@@ -253,4 +267,3 @@ class TestMetricsDocumentation:
                         if le_value and le_value != "+Inf":
                             assert 0.1 <= float(le_value) <= 64.0
                 assert buckets_found, "Histogram should have buckets"
-

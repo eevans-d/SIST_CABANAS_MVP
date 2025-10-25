@@ -5,31 +5,31 @@ Guía para crear dashboards de observabilidad para el sistema de retry y circuit
 ## 📊 Dashboard 1: Retry Logic Overview
 
 ### Panel 1: Rate de Reintentos por Operación
-**Tipo:** Time Series  
+**Tipo:** Time Series
 **Query:**
 ```promql
 rate(retry_attempts_total{result="retry"}[5m])
 ```
-**Descripción:** Muestra la tasa de reintentos por segundo para cada operación.  
+**Descripción:** Muestra la tasa de reintentos por segundo para cada operación.
 **Alertas sugeridas:**
 - Warning: rate > 0.1 (más de 6 reintentos/minuto)
 - Critical: rate > 0.5 (más de 30 reintentos/minuto)
 
 ### Panel 2: Tasa de Éxito Eventual
-**Tipo:** Gauge  
+**Tipo:** Gauge
 **Query:**
 ```promql
-sum(rate(retry_attempts_total{result="success"}[5m])) / 
+sum(rate(retry_attempts_total{result="success"}[5m])) /
 sum(rate(retry_attempts_total[5m])) * 100
 ```
-**Descripción:** Porcentaje de operaciones que eventualmente tienen éxito (incluye éxito después de retry).  
+**Descripción:** Porcentaje de operaciones que eventualmente tienen éxito (incluye éxito después de retry).
 **Umbrales:**
 - Verde: > 95%
 - Amarillo: 90-95%
 - Rojo: < 90%
 
 ### Panel 3: Distribución de Número de Intentos
-**Tipo:** Bar Chart  
+**Tipo:** Bar Chart
 **Query:**
 ```promql
 sum by (attempt_number) (increase(retry_attempts_total{result="success"}[1h]))
@@ -37,7 +37,7 @@ sum by (attempt_number) (increase(retry_attempts_total{result="success"}[1h]))
 **Descripción:** Muestra cuántas operaciones tuvieron éxito en el intento 1, 2, 3, etc.
 
 ### Panel 4: P50/P95/P99 de Delays de Retry
-**Tipo:** Time Series  
+**Tipo:** Time Series
 **Queries:**
 ```promql
 # P50
@@ -52,16 +52,16 @@ histogram_quantile(0.99, rate(retry_delay_seconds_bucket[5m]))
 **Descripción:** Percentiles de delays entre reintentos. Útil para optimizar backoff.
 
 ### Panel 5: Operaciones con Retry Agotado
-**Tipo:** Table  
+**Tipo:** Table
 **Query:**
 ```promql
 topk(10, increase(retry_exhausted_total[1h]))
 ```
-**Descripción:** Top 10 operaciones que agotaron todos los intentos de retry.  
+**Descripción:** Top 10 operaciones que agotaron todos los intentos de retry.
 **Alerta:** Si > 5 por hora → investigar
 
 ### Panel 6: Fallos Permanentes vs Transitorios
-**Tipo:** Pie Chart  
+**Tipo:** Pie Chart
 **Query:**
 ```promql
 # Permanentes
@@ -73,7 +73,7 @@ sum(increase(retry_attempts_total{result="retry"}[1h]))
 **Descripción:** Proporción de errores permanentes vs transitorios.
 
 ### Panel 7: Timeline de Eventos de Retry (por operación)
-**Tipo:** Heatmap  
+**Tipo:** Heatmap
 **Query:**
 ```promql
 sum by (operation) (rate(retry_attempts_total{result="retry"}[1m]))
@@ -85,19 +85,19 @@ sum by (operation) (rate(retry_attempts_total{result="retry"}[1m]))
 ## 🔌 Dashboard 2: Circuit Breaker Status
 
 ### Panel 1: Estado Actual de Circuit Breakers
-**Tipo:** Stat  
+**Tipo:** Stat
 **Query:**
 ```promql
 circuit_breaker_state
 ```
-**Descripción:** Estado actual de cada circuit breaker (0=CLOSED, 1=OPEN, 2=HALF_OPEN).  
+**Descripción:** Estado actual de cada circuit breaker (0=CLOSED, 1=OPEN, 2=HALF_OPEN).
 **Colores:**
 - Verde (0): Normal, requests pasan
 - Rojo (1): Circuit abierto, servicio caído
 - Amarillo (2): Probando recuperación
 
 ### Panel 2: Historial de Cambios de Estado
-**Tipo:** Time Series (Staircase)  
+**Tipo:** Time Series (Staircase)
 **Query:**
 ```promql
 circuit_breaker_state
@@ -105,7 +105,7 @@ circuit_breaker_state
 **Descripción:** Visualización temporal de transiciones de estado.
 
 ### Panel 3: Rate de Fallos por Circuit
-**Tipo:** Time Series  
+**Tipo:** Time Series
 **Query:**
 ```promql
 rate(circuit_breaker_failures_total[5m])
@@ -113,16 +113,16 @@ rate(circuit_breaker_failures_total[5m])
 **Descripción:** Tasa de fallos detectados por cada circuit breaker.
 
 ### Panel 4: Rate de Requests Rechazados
-**Tipo:** Time Series  
+**Tipo:** Time Series
 **Query:**
 ```promql
 rate(circuit_breaker_rejections_total[5m])
 ```
-**Descripción:** Requests rechazados por circuit breaker OPEN.  
+**Descripción:** Requests rechazados por circuit breaker OPEN.
 **Alerta:** Si > 0 → notificar DevOps
 
 ### Panel 5: Transiciones de Estado (Contador)
-**Tipo:** Table  
+**Tipo:** Table
 **Query:**
 ```promql
 sum by (circuit_name, from_state, to_state) (
@@ -132,14 +132,14 @@ sum by (circuit_name, from_state, to_state) (
 **Descripción:** Tabla de transiciones de estado en la última hora.
 
 ### Panel 6: Ratio de Éxito por Circuit
-**Tipo:** Gauge (por circuit)  
+**Tipo:** Gauge (por circuit)
 **Query:**
 ```promql
 sum by (circuit_name) (rate(circuit_breaker_successes_total[5m])) /
 (sum by (circuit_name) (rate(circuit_breaker_successes_total[5m])) +
  sum by (circuit_name) (rate(circuit_breaker_failures_total[5m]))) * 100
 ```
-**Descripción:** Porcentaje de éxito de cada circuit breaker.  
+**Descripción:** Porcentaje de éxito de cada circuit breaker.
 **Umbrales:**
 - Verde: > 95%
 - Amarillo: 90-95%
@@ -150,7 +150,7 @@ sum by (circuit_name) (rate(circuit_breaker_successes_total[5m])) /
 ## 🎯 Dashboard 3: WhatsApp & MercadoPago APIs
 
 ### Panel 1: WhatsApp API Health
-**Tipo:** Time Series  
+**Tipo:** Time Series
 **Queries:**
 ```promql
 # Rate de éxito
@@ -165,7 +165,7 @@ rate(retry_attempts_total{operation=~"whatsapp.*", result="failed_permanent"}[5m
 **Descripción:** Health overview de WhatsApp API.
 
 ### Panel 2: MercadoPago API Health
-**Tipo:** Time Series  
+**Tipo:** Time Series
 **Queries:**
 ```promql
 # Rate de éxito
@@ -177,7 +177,7 @@ rate(retry_attempts_total{operation=~"mercadopago.*", result="retry"}[5m])
 **Descripción:** Health overview de MercadoPago API.
 
 ### Panel 3: Notificaciones de Pago (Retry Breakdown)
-**Tipo:** Bar Chart  
+**Tipo:** Bar Chart
 **Query:**
 ```promql
 sum by (attempt_number) (
@@ -187,17 +187,17 @@ sum by (attempt_number) (
 **Descripción:** Distribución de intentos para notificaciones de pago.
 
 ### Panel 4: Delays de Retry - WhatsApp
-**Tipo:** Histogram  
+**Tipo:** Histogram
 **Query:**
 ```promql
-histogram_quantile(0.95, 
+histogram_quantile(0.95,
   rate(retry_delay_seconds_bucket{operation=~"whatsapp.*"}[5m])
 )
 ```
 **Descripción:** P95 de delays en operaciones WhatsApp.
 
 ### Panel 5: Delays de Retry - MercadoPago
-**Tipo:** Histogram  
+**Tipo:** Histogram
 **Query:**
 ```promql
 histogram_quantile(0.95,
@@ -207,12 +207,12 @@ histogram_quantile(0.95,
 **Descripción:** P95 de delays en operaciones MercadoPago.
 
 ### Panel 6: Rate Limits Detectados (429s)
-**Tipo:** Counter  
+**Tipo:** Counter
 **Query:**
 ```promql
 increase(retry_attempts_total{result="retry"}[5m])
 ```
-**Descripción:** Detecta cuando se están alcanzando rate limits de APIs externas.  
+**Descripción:** Detecta cuando se están alcanzando rate limits de APIs externas.
 **Alerta:** Si > 10 por 5min → posible throttling
 
 ---

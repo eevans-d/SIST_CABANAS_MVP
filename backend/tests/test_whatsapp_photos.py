@@ -7,12 +7,10 @@ Valida:
 - Selección de foto primary
 """
 
-import pytest
 from unittest.mock import AsyncMock, patch
-from app.services.whatsapp import (
-    send_image_message,
-    send_accommodation_info_with_photo,
-)
+
+import pytest
+from app.services.whatsapp import send_accommodation_info_with_photo, send_image_message
 
 
 @pytest.mark.asyncio
@@ -285,9 +283,7 @@ async def test_photo_with_empty_url_not_sent(mock_send_text, mock_send_image):
         "capacity": 4,
         "base_price": 100,
         "description": "Test",
-        "photos": [
-            {"url": "", "is_primary": True}  # URL vacía
-        ],
+        "photos": [{"url": "", "is_primary": True}],  # URL vacía
     }
 
     await send_accommodation_info_with_photo(phone="+5491112345678", accommodation=accommodation)

@@ -13,21 +13,20 @@ Reglas (según especificación .github/copilot-instructions.md):
 NO se implementa todavía: Mercado Pago, pricing avanzado, extensión de lock.
 """
 
-from datetime import datetime, timedelta, date, timezone
-from decimal import Decimal
 import uuid
-from typing import Optional, Dict, Any
+from datetime import date, datetime, timedelta, timezone
+from decimal import Decimal
+from typing import Any, Dict, Optional
 
-from sqlalchemy.ext.asyncio import AsyncSession
+import redis.asyncio as redis
+from app.core.redis import acquire_lock, get_redis_pool, release_lock
+from app.models import Accommodation, Reservation
+from app.models.enums import PaymentStatus, ReservationStatus
+from app.services.email import email_service
+from prometheus_client import Counter
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-
-from app.models import Accommodation, Reservation
-from prometheus_client import Counter
-from app.models.enums import ReservationStatus, PaymentStatus
-from app.core.redis import acquire_lock, release_lock, get_redis_pool
-import redis.asyncio as redis
-from app.services.email import email_service
+from sqlalchemy.ext.asyncio import AsyncSession
 
 LOCK_TTL_SECONDS = 1800  # 30 minutos
 PRERESERVATION_EXPIRY_MINUTES = 30
@@ -154,7 +153,7 @@ class ReservationService:
 
             # Incrementar métrica (flush implícito la expone en /metrics inmediatamente)
             RESERVATIONS_CREATED.labels(channel=channel).inc()
-            
+
             # Enviar email de pre-reserva si hay email (best-effort, no bloquea)
             if contact_email:
                 try:
@@ -171,7 +170,7 @@ class ReservationService:
                     )
                 except Exception:  # pragma: no cover
                     pass  # log pero no fallar transacción
-            
+
             return {
                 "code": reservation.code,
                 "expires_at": (
@@ -259,7 +258,7 @@ class ReservationService:
             RESERVATIONS_CONFIRMED.labels(channel=channel).inc()
         except Exception:  # pragma: no cover
             pass
-        
+
         # Enviar email de confirmación si hay email (best-effort)
         guest_email_val = getattr(reservation, "guest_email", None)
         if guest_email_val:
@@ -268,7 +267,7 @@ class ReservationService:
                 accommodation_name = str(reservation.accommodation_id)
                 if hasattr(reservation, "accommodation") and reservation.accommodation:
                     accommodation_name = str(reservation.accommodation.name)
-                
+
                 await email_service.send_reservation_confirmed(
                     guest_email=str(guest_email_val),
                     guest_name=str(getattr(reservation, "guest_name", "Cliente")),
@@ -281,7 +280,7 @@ class ReservationService:
                 )
             except Exception:  # pragma: no cover
                 pass
-        
+
         return {
             "code": original_code,
             "status": ReservationStatus.CONFIRMED.value,

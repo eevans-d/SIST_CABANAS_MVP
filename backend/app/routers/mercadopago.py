@@ -1,12 +1,14 @@
 from __future__ import annotations
-from fastapi import APIRouter, Depends, Request, HTTPException
-from pydantic import BaseModel
+
 from typing import Any, Dict, Optional
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.database import get_db
-from app.services.mercadopago import MercadoPagoService
-from app.core.security import verify_mercadopago_signature
+
 from app.core.config import get_settings
+from app.core.database import get_db
+from app.core.security import verify_mercadopago_signature
+from app.services.mercadopago import MercadoPagoService
+from fastapi import APIRouter, Depends, HTTPException, Request
+from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter()
 

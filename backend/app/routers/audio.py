@@ -1,6 +1,6 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
-from app.services.audio import transcribe_audio
 from app.services import nlu
+from app.services.audio import transcribe_audio
+from fastapi import APIRouter, File, HTTPException, UploadFile
 
 router = APIRouter(prefix="/audio", tags=["audio"])
 

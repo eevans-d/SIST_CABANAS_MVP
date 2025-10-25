@@ -23,17 +23,17 @@
             <h1>⏰ Recordatorio de Pago</h1>
             <p style="font-size: 18px; margin: 10px 0;">{{ accommodation_name }}</p>
         </div>
-        
+
         <div class="content">
             <p>Hola <strong>{{ guest_name }}</strong>,</p>
-            
+
             <p>Te recordamos que tu pre-reserva está esperando el pago para confirmarse.</p>
-            
+
             <div class="warning">
                 <p class="urgent">⚠️ Tu pre-reserva expira en: {{ hours_remaining }} horas</p>
                 <p>Si no completás el pago antes de <strong>{{ expires_at }}</strong>, las fechas quedarán liberadas automáticamente.</p>
             </div>
-            
+
             <div class="highlight">
                 <h2>📋 Resumen de tu Pre-reserva</h2>
                 <p><strong>Código:</strong> {{ reservation_code }}</p>
@@ -43,21 +43,21 @@
                 <p><strong>Huéspedes:</strong> {{ guests_count }}</p>
                 <p><strong>Total a pagar:</strong> ${{ total_amount }}</p>
             </div>
-            
+
             <div style="text-align: center;">
                 <a href="{{ payment_link }}" class="button">💳 Completar Pago Ahora</a>
             </div>
-            
+
             <p><strong>¿Por qué es importante pagar pronto?</strong></p>
             <ul>
                 <li>Asegurás tus fechas antes que otro huésped</li>
                 <li>Evitás perder la disponibilidad</li>
                 <li>Recibís la confirmación inmediata</li>
             </ul>
-            
+
             <p>Si ya realizaste el pago, este correo puede ser ignorado. La confirmación llegará en breve.</p>
         </div>
-        
+
         <div class="footer">
             <p>¿Problemas con el pago? Contáctanos con el código <strong>{{ reservation_code }}</strong></p>
         </div>

@@ -1,6 +1,7 @@
-import pytest
 import re
 from datetime import date
+
+import pytest
 
 
 def _extract_metric(body: str, channel: str) -> int:

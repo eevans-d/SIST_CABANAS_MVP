@@ -1,5 +1,6 @@
+from datetime import UTC, date, datetime, timedelta
+
 import pytest
-from datetime import date, timedelta, datetime, UTC
 
 
 @pytest.mark.asyncio

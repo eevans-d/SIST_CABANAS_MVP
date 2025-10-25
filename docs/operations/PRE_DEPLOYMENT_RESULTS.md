@@ -1,7 +1,7 @@
 # 🔍 PRE-DEPLOYMENT VALIDATION RESULTS
-**Fecha:** 2025-10-19  
-**Proyecto:** SIST_CABAÑAS MVP  
-**Script:** `pre_deploy_validation.sh`  
+**Fecha:** 2025-10-19
+**Proyecto:** SIST_CABAÑAS MVP
+**Script:** `pre_deploy_validation.sh`
 **Duración:** 6 segundos
 
 ---
@@ -380,6 +380,6 @@ flyctl secrets list --app sist-cabanas-mvp
 
 ---
 
-**CONCLUSIÓN:** Sistema validado y **READY FOR DEPLOYMENT** tras instalar flyctl (5 min). 
+**CONCLUSIÓN:** Sistema validado y **READY FOR DEPLOYMENT** tras instalar flyctl (5 min).
 
 **ROI del script:** Detectó 1 error crítico antes de deploy → Ahorro de 1 hora de debugging en producción.

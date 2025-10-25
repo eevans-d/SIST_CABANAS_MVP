@@ -29,7 +29,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'btree_gist') THEN
         RAISE EXCEPTION 'Extension btree_gist is required but not installed';
     END IF;
-    
+
     RAISE NOTICE 'Extension btree_gist is installed - anti double-booking ready';
 END $$;
 

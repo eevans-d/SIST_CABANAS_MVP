@@ -3,12 +3,12 @@
 Prueba de las funciones de Redis lock (acquire, release, extend)
 """
 import asyncio
-import sys
 import os
+import sys
 
 sys.path.insert(0, "/app")
 
-from app.core.redis import get_redis, acquire_lock, release_lock, extend_lock
+from app.core.redis import acquire_lock, extend_lock, get_redis, release_lock
 
 
 async def test_redis_locks():

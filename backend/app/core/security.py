@@ -1,14 +1,14 @@
-import hmac
 import hashlib
+import hmac
 import secrets
-from datetime import datetime, timedelta, UTC
-from typing import Optional, Dict, Any
+from datetime import UTC, datetime, timedelta
+from typing import Any, Dict, Optional
+
+import structlog
+from app.core.config import get_settings
+from fastapi import HTTPException, Request
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from fastapi import Request, HTTPException
-import structlog
-
-from app.core.config import get_settings
 
 logger = structlog.get_logger()
 settings = get_settings()

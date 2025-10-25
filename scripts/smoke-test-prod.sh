@@ -24,7 +24,7 @@ FAILED=0
 run_test() {
     local test_name="$1"
     local test_command="$2"
-    
+
     log_info "$test_name"
     if eval "$test_command" > /dev/null 2>&1; then
         log_success "$test_name"

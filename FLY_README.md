@@ -322,6 +322,6 @@ flyctl scale count 2 -a sist-cabanas-mvp
 
 ---
 
-**Última actualización**: Octubre 2025  
-**Versión**: 1.0 - MVP  
+**Última actualización**: Octubre 2025
+**Versión**: 1.0 - MVP
 **Región**: eze (Buenos Aires, Argentina)

@@ -1,11 +1,12 @@
-import pytest
 from datetime import date
+
+import pytest
 
 
 @pytest.mark.asyncio
 async def test_weekend_multiplier_applied(db_session, accommodation_factory):  # type: ignore
-    from app.services.reservations import ReservationService
     from app.models.reservation import Reservation
+    from app.services.reservations import ReservationService
 
     acc = await accommodation_factory(weekend_multiplier=1.5, base_price=12000)
     service = ReservationService(db_session)

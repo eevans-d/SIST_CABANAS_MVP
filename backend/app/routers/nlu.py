@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
-from typing import Optional, Any, Dict, List
 from datetime import date
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from typing import Any, Dict, List, Optional
 
 from app.core.database import get_db
+from app.metrics import NLU_PRE_RESERVE
+from app.models import Accommodation
 from app.services import nlu as nlu_service
 from app.services.reservations import ReservationService
-from app.models import Accommodation
-from app.metrics import NLU_PRE_RESERVE
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/nlu", tags=["nlu"])
 

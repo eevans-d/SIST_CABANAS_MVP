@@ -1,8 +1,8 @@
 # 🚀 NEXT ACTIONS - Fases de Activación Post-Validación
 
-**Fecha:** 2025-10-19  
-**Estado Actual:** ✅ Validación pre-deployment completada (13/15)  
-**Bloqueante:** Flyctl CLI (5 min)  
+**Fecha:** 2025-10-19
+**Estado Actual:** ✅ Validación pre-deployment completada (13/15)
+**Bloqueante:** Flyctl CLI (5 min)
 **Próxima Fase:** Deploy a Fly.io (15 min total)
 
 ---
@@ -250,7 +250,7 @@ curl -s https://sist-cabanas-mvp.fly.dev/metrics | head -20
 curl -I https://sist-cabanas-mvp.fly.dev/
 
 # Esperado:
-# HTTP/2 200 
+# HTTP/2 200
 # content-type: text/html; charset=utf-8
 ```
 
@@ -307,7 +307,7 @@ INICIO: Instalar flyctl (5 min)
    ├─ Metrics
    ├─ Homepage
    └─ Database
-   
+
 TOTAL: ~25 minutos
 RESULTADO: ✅ PRODUCTION LIVE
 ```
@@ -487,11 +487,11 @@ cd /home/eevan/ProyectosIA/SIST_CABAÑAS
 
 ---
 
-**Estado:** 🟡 BLOQUEADO en Flyctl CLI (5 min)  
-**Después:** 🟢 READY FOR DEPLOYMENT (20 min)  
+**Estado:** 🟡 BLOQUEADO en Flyctl CLI (5 min)
+**Después:** 🟢 READY FOR DEPLOYMENT (20 min)
 **Final:** 🎉 PRODUCTION LIVE (25 min total)
 
 ---
 
-*Documento generado como guía paso-a-paso para fases posteriores a validación*  
+*Documento generado como guía paso-a-paso para fases posteriores a validación*
 *Última ejecución del script: ./pre_deploy_validation.sh (13/15 PASADOS)*

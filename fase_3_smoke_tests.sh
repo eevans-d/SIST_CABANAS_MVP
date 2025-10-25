@@ -38,21 +38,21 @@ test_endpoint() {
     local test_name=$2
     local endpoint=$3
     local expected_status=$4
-    
+
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "TEST $test_num: $test_name"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    
+
     local url="${APP_URL}${endpoint}"
     echo "📍 URL: $url"
     echo "⏳ Enviando request..."
     echo ""
-    
+
     local response=$(curl -s -w "\n%{http_code}" "$url" 2>/dev/null || echo -e "\nfailed")
     local http_code=$(echo "$response" | tail -n1)
     local body=$(echo "$response" | head -n-1)
-    
+
     if [ "$http_code" = "200" ] || [ "$http_code" = "$expected_status" ]; then
         echo "✅ HTTP $http_code (esperado: $expected_status)"
         if [ -n "$body" ] && [ "$body" != "failed" ]; then

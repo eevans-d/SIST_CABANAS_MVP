@@ -53,7 +53,7 @@ echo ""
 if [ -f "./pre_deploy_validation.sh" ]; then
     echo "⏳ Ejecutando validación..."
     bash ./pre_deploy_validation.sh
-    
+
     VALIDATION_RESULT=$?
     if [ $VALIDATION_RESULT -ne 0 ]; then
         echo ""

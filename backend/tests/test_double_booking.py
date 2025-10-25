@@ -5,14 +5,14 @@ CRÍTICO: Estos tests DEBEN usar PostgreSQL real, no SQLite.
 El constraint EXCLUDE USING gist con daterange solo funciona en Postgres.
 """
 
-import pytest
 from datetime import date, timedelta
 from decimal import Decimal
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy import select
 
+import pytest
 from app.models import Accommodation, Reservation
 from app.models.enums import ReservationStatus
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 
 
 @pytest.mark.asyncio

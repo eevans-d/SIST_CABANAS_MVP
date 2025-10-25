@@ -1,18 +1,20 @@
 from __future__ import annotations
+
+import uuid
 from decimal import Decimal
+
+from app.models.base import Base, TimestampMixin
 from sqlalchemy import (
+    NUMERIC,
     Column,
+    DateTime,
+    ForeignKey,
+    Index,
     Integer,
     String,
-    ForeignKey,
-    DateTime,
-    NUMERIC,
-    Index,
     UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import UUID
-import uuid
-from app.models.base import Base, TimestampMixin
 
 
 class Payment(Base, TimestampMixin):
