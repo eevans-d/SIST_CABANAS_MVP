@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Create a sample accommodation for testing."""
+# flake8: noqa: E402
 
 import asyncio
 import sys

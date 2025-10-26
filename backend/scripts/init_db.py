@@ -5,6 +5,7 @@ Quick DB initialization script for MVP testing.
 Creates tables directly from SQLAlchemy models without alembic.
 WARNING: Only for development/testing. Do NOT use in production.
 """
+# flake8: noqa: E402
 
 import asyncio
 import sys
@@ -33,7 +34,8 @@ async def init_db():
         # Create all tables
         async with engine.begin() as conn:
             # PostgreSQL extensions
-            if "postgresql" in settings.DATABASE_URL:
+            db_url = settings.DATABASE_URL or ""
+            if db_url.startswith("postgresql"):
                 from sqlalchemy import text
 
                 await conn.execute(text("CREATE EXTENSION IF NOT EXISTS btree_gist"))
