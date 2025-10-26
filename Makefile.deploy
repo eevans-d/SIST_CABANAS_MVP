@@ -1,0 +1,26 @@
+# Makefile targets para deploy
+
+.PHONY: validate-predeploy
+validate-predeploy:
+	@echo "🔍 Running pre-deploy validation..."
+	python backend/scripts/validate_predeploy.py --repo-root .
+
+.PHONY: deploy-summary
+deploy-summary:
+	@echo "📊 Generating deployment summary..."
+	python backend/scripts/generate_deployment_summary.py --repo-root . --output backend/docs/DEPLOYMENT_SUMMARY.md
+	@echo "📄 See: backend/docs/DEPLOYMENT_SUMMARY.md"
+
+.PHONY: deploy-readiness
+deploy-readiness: validate-predeploy deploy-summary
+	@echo "✅ Deployment readiness check complete"
+	@echo "Next steps:"
+	@echo "  1. Review backend/docs/DEPLOYMENT_SUMMARY.md"
+	@echo "  2. git add -A && git commit -m 'pre-deploy: final validations'"
+	@echo "  3. git push origin main"
+	@echo "  4. Use ops/STAGING_DEPLOYMENT_PLAYBOOK.md for staging deploy"
+
+.PHONY: validate-json
+validate-json:
+	@echo "🔍 Validation report (JSON format):"
+	python backend/scripts/validate_predeploy.py --repo-root . --json
