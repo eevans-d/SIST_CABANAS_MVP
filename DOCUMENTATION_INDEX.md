@@ -337,6 +337,7 @@ Checks: Daily + post-deploy + on-call
 - [Full Playbook (60 min)](./ops/STAGING_DEPLOYMENT_PLAYBOOK.md)
 - [Decision Tree](./ops/DEPLOYMENT_DECISION_MAP.md)
 - [Plan Completo Fly.io + UX Admin](./ops/PLAN_COMPLETO_FLYIO_UX_ADMIN.md)
+ - [Blueprint-Checklist 100% (paso a paso)](./ops/BLUEPRINT_CHECKLIST_100_PORCIENTO.md)
 
 **Operations:**
 - [Incident Response](./ops/INCIDENT_RESPONSE_RUNBOOK.md)
