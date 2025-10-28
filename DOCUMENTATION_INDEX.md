@@ -48,8 +48,9 @@
 | `ops/GO_NO_GO_CHECKLIST.md` | ✅ Verificación final pre-deploy | 5 min |
 | `env/.env.fly.staging.template` | 🔑 Plantilla de secretos a llenar | 10 min |
 | `ops/DEPLOYMENT_DECISION_MAP.md` | 🗺️ Árbol de decisiones + comandos | 3 min |
+| `ops/GUIA_OBTENER_SECRETOS_PASO_A_PASO.md` | 🔐 Guía paso a paso: dónde obtener CADA secreto/API key/URL | 20 min |
 
-**Punto de partida:** GO_NO_GO_CHECKLIST
+**Punto de partida:** GUIA_OBTENER_SECRETOS_PASO_A_PASO.md (luego GO_NO_GO_CHECKLIST)
 
 ---
 
@@ -327,6 +328,7 @@ Checks: Daily + post-deploy + on-call
 ## 🔗 QUICK LINKS
 
 **Start Here:**
+- [Guía Obtener Secretos (PRIMERO)](./ops/GUIA_OBTENER_SECRETOS_PASO_A_PASO.md)
 - [GO/NO-GO Checklist](./ops/GO_NO_GO_CHECKLIST.md)
 - [Interactive Deployment Script](./ops/staging-deploy-interactive.sh)
 

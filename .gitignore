@@ -42,6 +42,8 @@ thumbs.db
 
 # Environment variables
 .env
+env/.env.fly.staging
+env/*.env
 
 # Docker
 *.log
