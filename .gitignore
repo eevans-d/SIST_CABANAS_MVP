@@ -75,3 +75,9 @@ archive/
 SESSION_SUMMARY_*.md
 CIERRE_JORNADA_*.md
 FASE_*_COMPLETADA.md
+
+# Frontend artifacts
+node_modules/
+frontend/**/node_modules/
+frontend/**/dist/
+frontend/**/.env.local

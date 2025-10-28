@@ -1,6 +1,6 @@
 # 📑 SIST CABAÑAS MVP - DOCUMENTACIÓN INDEX
 
-> **Última actualización:** Octubre 26, 2025 - 04:30 UTC
+> **Última actualización:** Octubre 28, 2025 - 15:00 UTC
 > **Estado:** 🟢 **STAGING DEPLOYMENT READY**
 > **Próximo paso:** Ejecutar `./ops/staging-deploy-interactive.sh`
 
@@ -20,6 +20,7 @@
 1. ops/DEPLOYMENT_DECISION_MAP.md (visual + quick commands)
 2. ops/STAGING_DEPLOYMENT_PLAYBOOK.md (detallado)
 3. backend/docs/DEPLOYMENT_SUMMARY.md (status actual)
+4. ops/BLUEPRINT_CHECKLIST_OPTIMIZACION_UX.md (plan post-MVP)
 ```
 
 ### 🔥 ALGO FALLÓ
@@ -114,6 +115,18 @@
 
 ## 🔧 ARCHIVOS POR CATEGORÍA
 
+### 🎨 FASE 7: OPTIMIZACIÓN/UX (Post-MVP)
+
+| Archivo | Propósito | Duración |
+|---------|----------|----------|
+| `ops/BLUEPRINT_CHECKLIST_OPTIMIZACION_UX.md` | 🧭 Blueprint por fases (A–F) para mejoras de UX, API, obs y seguridad | 5 min lectura |
+| `frontend/admin-dashboard/README.md` | 🚪 Quick Start del Admin (React + Vite + Tailwind) | 5 min |
+| `frontend/admin-dashboard/DEPLOYMENT_STATUS.md` | 📌 Estado y notas de despliegue del Admin | 3 min |
+
+**Punto de partida:** Blueprint UX + README del Admin
+
+---
+
 ### 📋 Checklists
 ```
 ✅ ops/GO_NO_GO_CHECKLIST.md
@@ -161,6 +174,7 @@
 ```
 📄 backend/docs/DEPLOYMENT_SUMMARY.md (auto-generado)
 📄 JORNADA_26OCT_RESUMEN_FINAL.md (summary hoy)
+🎨 ops/BLUEPRINT_CHECKLIST_OPTIMIZACION_UX.md (plan UX post-MVP)
 ```
 
 ---
@@ -330,6 +344,10 @@ Checks: Daily + post-deploy + on-call
 - [Status Dashboard](./backend/scripts/deployment_dashboard.py)
 - [Smoke & Benchmark](./ops/smoke_and_benchmark.sh)
 - [Overlap Test](./backend/scripts/concurrency_overlap_test.py)
+
+**Frontend Admin:**
+- [Admin Dashboard README](./frontend/admin-dashboard/README.md)
+- [Blueprint UX/Optimización](./ops/BLUEPRINT_CHECKLIST_OPTIMIZACION_UX.md)
 
 ---
 
