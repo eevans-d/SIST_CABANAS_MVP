@@ -6,7 +6,8 @@
 	lint format check deploy smoke-test pre-deploy-check \
 	backup restore docs restart ps status info version \
 	backup-db backup-redis restore-db restore-redis \
-	monitoring-up monitoring-down monitoring-validate monitoring-test-alert
+	monitoring-up monitoring-down monitoring-validate monitoring-test-alert \
+	admin-install admin-dev admin-build admin-preview
 
 # Python interpreter path (ajustar si es necesario)
 PYTHON := python3
@@ -250,6 +251,31 @@ monitoring-validate: ## Validar configs de Prometheus/Alertmanager y dashboards
 
 monitoring-test-alert: ## Enviar alerta de prueba a Alertmanager/Slack
 	ALERTMANAGER_URL=$${ALERTMANAGER_URL:-http://localhost:9093} ./ops/monitoring-tools/test_alert_slack.sh
+
+##@ Frontend Admin
+
+ADMIN_DIR := frontend/admin-dashboard
+
+admin-install: ## Instalar dependencias del Admin Dashboard (npm ci)
+	@echo "$(GREEN)Instalando dependencias del Admin...$(NC)"
+	cd $(ADMIN_DIR) && npm ci
+	@echo "$(GREEN)✓ Admin dependencias instaladas$(NC)"
+
+admin-dev: ## Levantar Admin en modo desarrollo (Vite dev server)
+	@echo "$(GREEN)Levantando Admin (dev)...$(NC)"
+ifeq (,$(wildcard $(ADMIN_DIR)/.env))
+	@echo "$(YELLOW)Nota: crea $(ADMIN_DIR)/.env desde .env.example y ajusta VITE_API_URL$(NC)"
+endif
+	cd $(ADMIN_DIR) && npm run dev
+
+admin-build: ## Compilar Admin para producción (Vite build)
+	@echo "$(GREEN)Compilando Admin (build)...$(NC)"
+	cd $(ADMIN_DIR) && npm run build
+	@echo "$(GREEN)✓ Build generado en $(ADMIN_DIR)/dist$(NC)"
+
+admin-preview: ## Previsualizar build de Admin (Vite preview)
+	@echo "$(GREEN)Previsualizando Admin (preview)...$(NC)"
+	cd $(ADMIN_DIR) && npm run preview
 
 ##@ Utilities
 
