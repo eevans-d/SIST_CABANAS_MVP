@@ -243,6 +243,21 @@ docker-compose -f docker-compose.yml -f docker-compose.dashboard.yml restart api
 ---
 
 **Status**: ✅ **PRODUCTION READY** (pending UAT validation)
-**Last Updated**: Oct 17, 2025 05:10 UTC
+**Last Updated**: Oct 28, 2025 15:25 UTC
 **Deployed By**: GitHub Copilot Agent
 **Version**: 1.0.0
+
+---
+
+### Build Smoke (Oct 28, 2025)
+
+```
+npm run build
+vite v7.1.1
+✓ 1103 modules transformed.
+dist/index.html             0.46 kB (gzip 0.30 kB)
+dist/assets/index-*.css    14.29 kB (gzip 3.20 kB)
+dist/assets/index-*.js    414.75 kB (gzip 132.01 kB)
+✓ built in 3.2s
+Resultado: ✅ OK
+```

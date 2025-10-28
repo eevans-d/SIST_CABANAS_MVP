@@ -923,6 +923,37 @@ curl -X POST http://localhost:8000/api/v1/admin/accommodations \
 
 ``````sql
 
+  ## 🧭 Frontend Admin (Quick Start)
+
+  > Panel administrativo (React + Vite + Tailwind) para KPIs, listado de reservas, filtros y monitoreo.
+
+  1) Variables del frontend
+
+  ```
+  cd frontend/admin-dashboard
+  cp .env.example .env
+  # Editar .env y configurar:
+  # VITE_API_URL=https://sist-cabanas-mvp.fly.dev/api/v1   # o tu backend local: http://localhost:8000/api/v1
+  ```
+
+  2) Correr en local (dev) o compilar
+
+  ```
+  # Dev (hot reload)
+  npm ci
+  npm run dev
+
+  # Build de producción
+  npm run build
+  # Opcional: preview del build
+  npm run preview
+  ```
+
+  Docs del Admin:
+  - README del Admin: `frontend/admin-dashboard/README.md`
+  - Estado de Deploy: `frontend/admin-dashboard/DEPLOYMENT_STATUS.md`
+
+
 
 
 ### **Consultar Disponibilidad**SELECT conname FROM pg_constraint cd backend
