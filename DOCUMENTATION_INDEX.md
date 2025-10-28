@@ -334,6 +334,7 @@ Checks: Daily + post-deploy + on-call
 - [Quick Start (30 min)](./ops/STAGING_DEPLOYMENT_QUICK_START.md)
 - [Full Playbook (60 min)](./ops/STAGING_DEPLOYMENT_PLAYBOOK.md)
 - [Decision Tree](./ops/DEPLOYMENT_DECISION_MAP.md)
+- [Plan Completo Fly.io + UX Admin](./ops/PLAN_COMPLETO_FLYIO_UX_ADMIN.md)
 
 **Operations:**
 - [Incident Response](./ops/INCIDENT_RESPONSE_RUNBOOK.md)
