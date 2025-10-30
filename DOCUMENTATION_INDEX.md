@@ -1,7 +1,7 @@
 # 📑 SIST CABAÑAS MVP - DOCUMENTACIÓN INDEX
 
-> **Última actualización:** Octubre 28, 2025 - 15:00 UTC
-> **Estado:** 🟢 **STAGING DEPLOYMENT READY**
+> **Última actualización:** Octubre 30, 2025 - 07:45 UTC
+> **Estado:** 🟢 **STAGING DEPLOYMENT READY** | 📋 **Repositorio Sincronizado**
 > **Próximo paso:** Ejecutar `./ops/staging-deploy-interactive.sh`
 
 ---
@@ -353,14 +353,22 @@ Checks: Daily + post-deploy + on-call
 - [Admin Dashboard README](./frontend/admin-dashboard/README.md)
 - [Blueprint UX/Optimización](./ops/BLUEPRINT_CHECKLIST_OPTIMIZACION_UX.md)
 
+**QA & Testing (Minimax M2 Integration):**
+- [Testing Report Oct 29](./docs/qa/MINIMAX_TESTING_REPORT_2025-10-29.md) - E2E, Performance, Security
+- [Integrations Analysis](./docs/integrations/integrations_analysis.md) - Mercado Pago, WhatsApp
+- [TODO Metadata](../.memory/todo_meta.json) - Progress tracking Fase 2A
+
+**Repository Status:**
+- [Sync Status Report](./REPO_SYNC_STATUS.md) - main vs master consolidation (Oct 30)
+
 ---
 
-**Estado Final:** 🟢 **READY FOR STAGING**
+**Estado Final:** 🟢 **READY FOR STAGING** | 📋 **Repository Consolidated (Oct 30)**
 
 Ejecuta: `./ops/staging-deploy-interactive.sh` o lee `ops/STAGING_DEPLOYMENT_QUICK_START.md`
 
 ---
 
-*Generated: Oct 26, 2025 - 04:30 UTC*
-*Git: 7f46b87 (main branch)*
-*Commits: 4 successful, all pushed*
+*Generated: Oct 30, 2025 - 07:45 UTC*
+*Git: integration/minimax-work (consolidating branches)*
+*Latest: Minimax testing reports integrated*
