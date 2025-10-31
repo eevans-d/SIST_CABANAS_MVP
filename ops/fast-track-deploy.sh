@@ -1,6 +1,101 @@
 #!/bin/bash
 # Fast Track Deploy - Solo necesita DATABASE_URL y REDIS_URL
-set -e
+set -euo pipefail
+
+# ============================================================
+# 🔒 DEPLOYMENT GUARD (ANTI-DUPLICADOS / CONTROL DE COSTOS)
+#
+# Este script ABORTA si:
+#  - No confirmas explicitamente los costos (DEPLOY_ACK requerido)
+#  - Hay más de 1 app Fly con prefijo "sist-cabanas"
+#  - Existen >1 máquinas RUNNING para esta app
+#  - La app o región no coinciden con la política (app=sist-cabanas-mvp, region=gru)
+#
+# Para continuar debes exportar antes:
+#   export DEPLOY_ACK="I_ACCEPT_SINGLE_APP_COSTS"
+# ============================================================
+
+APP_NAME="sist-cabanas-mvp"
+PRIMARY_REGION="gru"
+
+require_ack() {
+  if [[ "${DEPLOY_ACK:-}" != "I_ACCEPT_SINGLE_APP_COSTS" ]]; then
+    echo "❌ ABORTADO: Falta confirmación de costos."
+    echo "   Exporta la variable y reintenta:"
+    echo "   export DEPLOY_ACK=\"I_ACCEPT_SINGLE_APP_COSTS\""
+    exit 1
+  fi
+}
+
+check_fly_context() {
+  if ! command -v fly >/dev/null 2>&1; then
+    echo "❌ flyctl no está instalado en el PATH. Instálalo y loguéate: https://fly.io/docs/hands-on/installing/"
+    exit 1
+  fi
+  if ! fly auth token >/dev/null 2>&1; then
+    echo "❌ No hay sesión activa en flyctl. Ejecuta: fly auth login"
+    exit 1
+  fi
+}
+
+abort_on_duplicate_apps() {
+  echo "🔎 Verificando apps en Fly con prefijo 'sist-cabanas'..."
+  local apps
+  apps=$(fly apps list --json | jq -r '.[].Name' | grep -E '^sist-cabanas' || true)
+  local count
+  count=$(echo "$apps" | sed '/^$/d' | wc -l | tr -d ' ')
+  printf "   Apps detectadas:\n%s\n" "$apps"
+  if [[ "$count" -gt 1 ]]; then
+    echo "❌ ABORTADO: Se detectaron múltiples apps con prefijo 'sist-cabanas'. Evitar costos duplicados."
+    echo "   Mantén SOLO una app (sugerido: $APP_NAME). Elimina las demás con: fly apps destroy <app>"
+    exit 1
+  fi
+  if [[ "$count" -eq 1 ]]; then
+    local only
+    only=$(echo "$apps" | head -n1)
+    if [[ "$only" != "$APP_NAME" ]]; then
+      echo "❌ ABORTADO: La única app existente no coincide con '$APP_NAME' (encontrada: $only)."
+      echo "   Ajusta APP_NAME o consolida tu app en '$APP_NAME' para simplificar costos."
+      exit 1
+    fi
+  fi
+}
+
+abort_on_multiple_machines() {
+  echo "🔎 Verificando máquinas activas para $APP_NAME..."
+  local machines_json
+  machines_json=$(fly machines list -a "$APP_NAME" --json || echo '[]')
+  local running
+  running=$(echo "$machines_json" | jq -r '.[] | select(.state=="started" or .state=="running").id' | wc -l | tr -d ' ')
+  echo "   Máquinas RUNNING: $running"
+  if [[ "$running" -gt 1 ]]; then
+    echo "❌ ABORTADO: Más de 1 máquina RUNNING para $APP_NAME. Política de costo: single instance."
+    echo "   Detén o destruye máquinas extra con: fly machines list -a $APP_NAME && fly machines stop <id>"
+    exit 1
+  fi
+}
+
+assert_region_and_app() {
+  echo "🔎 Verificando configuración: app=$APP_NAME, region=$PRIMARY_REGION..."
+  local cfg_app
+  cfg_app=$(grep -E '^app\s*=\s*"' fly.toml | sed -E 's/app\s*=\s*"([^"]+)"/\1/')
+  if [[ "$cfg_app" != "$APP_NAME" ]]; then
+    echo "❌ ABORTADO: fly.toml app='$cfg_app' distinto de '$APP_NAME'"
+    exit 1
+  fi
+  local cfg_region
+  cfg_region=$(grep -E '^primary_region\s*=\s*"' fly.toml | sed -E 's/primary_region\s*=\s*"([^"]+)"/\1/')
+  if [[ "$cfg_region" != "$PRIMARY_REGION" ]]; then
+    echo "❌ ABORTADO: primary_region='$cfg_region' distinto de '$PRIMARY_REGION'"
+    exit 1
+  fi
+}
+
+require_ack
+check_fly_context
+abort_on_duplicate_apps
+assert_region_and_app
+abort_on_multiple_machines
 
 echo "🚀 SIST_CABAÑAS - Fast Track Staging Deploy"
 echo "============================================"
@@ -91,7 +186,7 @@ if ! fly secrets set \
   BACKEND_URL="$BACKEND_URL" \
   FRONTEND_URL="$FRONTEND_URL" \
   ALLOWED_ORIGINS="$ALLOWED_ORIGINS" \
-  -a sist-cabanas-mvp; then
+  -a "$APP_NAME"; then
   echo "❌ ERROR: Fallo al cargar secrets en Fly"
   exit 1
 fi
@@ -102,7 +197,7 @@ echo ""
 echo "🚢 Iniciando deploy a Fly.io..."
 echo ""
 
-if ! fly deploy -a sist-cabanas-mvp; then
+if ! fly deploy -a "$APP_NAME" --ha=false; then
   echo "❌ ERROR: Deploy falló"
   exit 1
 fi
@@ -116,7 +211,7 @@ echo ""
 sleep 10  # Dar tiempo a que arranque
 
 # Health check
-HEALTH_URL="https://sist-cabanas-mvp.fly.dev/api/v1/healthz"
+HEALTH_URL="https://$APP_NAME.fly.dev/api/v1/healthz"
 echo "Verificando $HEALTH_URL ..."
 
 HEALTH_RESPONSE=$(curl -s -w "\n%{http_code}" "$HEALTH_URL" || echo "000")
@@ -136,7 +231,7 @@ fi
 
 echo ""
 echo "📊 Verificando metrics..."
-METRICS_URL="https://sist-cabanas-mvp.fly.dev/metrics"
+METRICS_URL="https://$APP_NAME.fly.dev/metrics"
 METRICS_RESPONSE=$(curl -s -w "\n%{http_code}" "$METRICS_URL" || echo "000")
 METRICS_HTTP_CODE=$(echo "$METRICS_RESPONSE" | tail -n1)
 
@@ -152,13 +247,13 @@ echo "🎉 DEPLOY COMPLETADO"
 echo "============================================"
 echo ""
 echo "URLs:"
-echo "  - App: https://sist-cabanas-mvp.fly.dev"
+echo "  - App: https://$APP_NAME.fly.dev"
 echo "  - Health: $HEALTH_URL"
 echo "  - Metrics: $METRICS_URL"
 echo "  - Docs: https://sist-cabanas-mvp.fly.dev/docs"
 echo ""
 echo "Ver logs en tiempo real:"
-echo "  fly logs -a sist-cabanas-mvp"
+echo "  fly logs -a $APP_NAME"
 echo ""
 echo "Próximos pasos:"
 echo "  1. Ejecutar: ./ops/smoke_and_benchmark.sh"

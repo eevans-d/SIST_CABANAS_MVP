@@ -2,6 +2,18 @@
 # ✈️ Fly.io Configuration - SIST_CABAÑAS_MVP Backend
 # ============================================================================
 #
+# ⚠️ Política ANTI-DUPLICADOS / COST GUARD
+# ------------------------------------------------------------
+# - App única permitida: app = "sist-cabanas-mvp"
+# - Región primaria única: primary_region = "gru"
+# - Single instance (máximo 1 máquina RUNNING)
+# - Antes de cualquier deploy, ejecutar:
+#     export DEPLOY_ACK="I_ACCEPT_SINGLE_APP_COSTS"
+#     ./ops/deploy-check.sh
+#
+# Cualquier desviación debe ser aprobada explícitamente antes de proceder.
+# Esto evita costos innecesarios por despliegues duplicados.
+#
 # Configuración para despliegue en Fly.io
 #
 # Servicios necesarios:
@@ -18,7 +30,7 @@
 # ============================================================================
 
 app = "sist-cabanas-mvp"
-primary_region = "gru"  # São Paulo, Brazil (eze deprecada, gru es la más cercana)
+primary_region = "gru"  # São Paulo, Brazil (eze deprecada; gru es la más cercana)
 
 # ============================================================================
 # Build Configuration
@@ -132,14 +144,9 @@ primary_region = "gru"  # São Paulo, Brazil (eze deprecada, gru es la más cerc
 # ============================================================================
 # Regions & Scaling
 # ============================================================================
-# Primary: ezeiza (Buenos Aires)
-# Backup regions (opcional):
-# - gru: Sao Paulo, Brazil
-# - mia: Miami, USA
-# - scl: Santiago, Chile
-
-# Para agregar regiones:
-# flyctl regions add gru mia
+# Política: UNA sola región primaria (gru). No agregar regiones secundarias
+# para evitar costos inesperados. Si se requiere multi-región, documentar
+# explícitamente el rational y el plan de costos antes.
 
 # ============================================================================
 # Process Groups (opcional)

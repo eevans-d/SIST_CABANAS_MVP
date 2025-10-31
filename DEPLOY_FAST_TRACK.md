@@ -1,5 +1,18 @@
 # 🚀 Fast Track Deployment - Staging
 
+> ⚠️ Cost Guard (Anti-duplicados) — Obligatorio antes de desplegar
+>
+> 1) Exportar confirmación explícita de costos:
+>
+>    export DEPLOY_ACK="I_ACCEPT_SINGLE_APP_COSTS"
+>
+> 2) Ejecutar chequeo de seguridad:
+>
+>    ./ops/deploy-check.sh
+>
+> El despliegue se ABORTA si hay apps duplicadas, múltiples máquinas RUNNING,
+> app/region distintas (app=sist-cabanas-mvp, region=gru) o falta DEPLOY_ACK.
+
 **Fecha:** 31 de octubre 2025
 **Objetivo:** Deploy staging en <30 minutos
 
@@ -76,6 +89,10 @@ ALLOWED_ORIGINS="https://sist-cabanas-mvp.fly.dev"
 Una vez tengas `DATABASE_URL` y `REDIS_URL`:
 
 ```bash
+# 0. Guardas de costo (obligatorio)
+export DEPLOY_ACK="I_ACCEPT_SINGLE_APP_COSTS"
+./ops/deploy-check.sh  # debe retornar: CHECKS OK
+
 # 1. Cargar secrets en Fly
 fly secrets set \
   DATABASE_URL="postgresql://..." \
@@ -96,8 +113,8 @@ fly secrets set \
   ALLOWED_ORIGINS="https://sist-cabanas-mvp.fly.dev" \
   -a sist-cabanas-mvp
 
-# 2. Deploy
-fly deploy -a sist-cabanas-mvp
+# 2. Deploy (single instance)
+fly deploy -a sist-cabanas-mvp --ha=false
 
 # 3. Validar health
 curl https://sist-cabanas-mvp.fly.dev/api/v1/healthz
