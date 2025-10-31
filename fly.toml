@@ -18,7 +18,7 @@
 # ============================================================================
 
 app = "sist-cabanas-mvp"
-primary_region = "eze"  # ezeiza (Buenos Aires, Argentina) - Más cercano a usuarios
+primary_region = "gru"  # São Paulo, Brazil (eze deprecada, gru es la más cercana)
 
 # ============================================================================
 # Build Configuration
