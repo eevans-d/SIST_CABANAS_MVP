@@ -258,8 +258,8 @@ git push origin --delete master  # ✅ master eliminado
 git branch -d integration/minimax-work  # ✅ cleanup local
 ```
 
-**Tiempo total:** 15 minutos  
-**Conflictos:** 0  
+**Tiempo total:** 15 minutos
+**Conflictos:** 0
 **Errores:** 0 (pre-commit hooks auto-fixed whitespace/EOF)
 
 ---
