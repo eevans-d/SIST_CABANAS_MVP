@@ -1,63 +1,20 @@
-# 🚀 Guía Rápida de Deployy a Fly.io
+> Documento unificado: usa estas guías canónicas. Este archivo fue simplificado para evitar duplicados.
 
-## Overview
+# 🚀 Deploy en Fly.io — Referencias canónicas
 
-Este documento proporciona los pasos básicos para desplegar el sistema MVP en **Fly.io**.
+Para despliegues en Fly.io utiliza:
 
-- **Plataforma**: Fly.io (https://fly.io)
-- **Región**: Buenos Aires, Argentina (`eze`)
-- **Instancia**: shared-cpu-1x, 256MB RAM (free tier)
-- **Tiempo estimado**: 10-15 minutos
+- `DEPLOY_FAST_TRACK.md` (resumen rápido)
+- `ops/STAGING_DEPLOYMENT_QUICK_START.md` (paso a paso)
+- `ops/staging-deploy-interactive.sh` (guiado)
+- `ops/FLY_DEPLOYMENT_GUIDE.md` (detallado)
+- `ops/FLY_DEPLOY_CHECKLIST.md` (checklist)
 
-## ✅ Requisitos Previos
+Recordatorio:
+- App única: `sist-cabanas-mvp` en `gru`
+- Ejecuta `./ops/deploy-check.sh` antes de cualquier `fly deploy`
 
-- [ ] Cuenta en Fly.io (https://fly.io/app/sign-up)
-- [ ] `flyctl` CLI instalado
-- [ ] PostgreSQL 16+ en Fly.io o externo
-- [ ] Redis en Fly.io (Upstash) o externo
-- [ ] Todas las variables de `.env` configuradas
-
-## 🚀 Quickstart (5 minutos)
-
-### 1. Instalar flyctl
-
-```bash
-# macOS
-brew install flyctl
-
-# Linux
-curl -L https://fly.io/install.sh | sh
-
-# Windows (WSL)
-powershell -Command "iwr https://fly.io/install.ps1 -useb | iex"
-
-# Verificar instalación
-flyctl version
-```
-
-### 2. Autenticarse
-
-```bash
-flyctl auth login
-# Se abrirá navegador con login/signup
-```
-
-### 3. Crear PostgreSQL
-
-```bash
-# Crear una app PostgreSQL
-flyctl postgres create --name sist-cabanas-db --region eze --vm-size shared-cpu-1x
-
-# Guardará la URL en formato:
-# DATABASE_URL=postgresql://app:password@sist-cabanas-db.internal:5432/postgres
-```
-
-### 4. Crear Redis (Upstash)
-
-Fly.io recomienda Upstash para Redis.
-
-**Opción A**: Vía dashboard de Upstash
-1. Ve a https://upstash.com
+Índice completo: `DOCUMENTATION_INDEX.md`.
 2. Crea un proyecto Redis en región `us-east-1` (latencia baja)
 3. Copia la URL: `redis://:password@host:port`
 

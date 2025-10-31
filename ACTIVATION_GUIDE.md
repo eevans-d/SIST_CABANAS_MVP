@@ -1,62 +1,22 @@
-# 🚀 Guía de Activación a Producción - SIST_CABAÑAS MVP
+> Documento unificado: usa estas guías canónicas. Este archivo fue simplificado para evitar duplicados.
 
-**Estado**: ✅ LISTO PARA ACTIVACIÓN
-**Fecha**: Octubre 20, 2025
-**Versión**: 1.0
+# 🚀 Activación y Deploy — Referencia Canónica
 
----
+Para activación y despliegue, utiliza SIEMPRE estas guías:
 
-## 📋 Tabla de Contenidos
+- Pre-deploy (Go/No-Go): `ops/GO_NO_GO_CHECKLIST.md`
+- Despliegue a Staging (rápido): `ops/STAGING_DEPLOYMENT_QUICK_START.md`
+- Despliegue a Staging (interactivo): `ops/staging-deploy-interactive.sh`
+- Árbol de decisiones de deploy: `ops/DEPLOYMENT_DECISION_MAP.md`
+- Playbook detallado: `ops/STAGING_DEPLOYMENT_PLAYBOOK.md`
+- Post-deploy (smoke + benchmark): `ops/SMOKE_TESTS.md` y `ops/smoke-and-benchmark.sh`
+- Producción (readiness): `ops/PROD_READINESS_CHECKLIST.md`
 
-1. [Estado Actual](#estado-actual)
-2. [Prerequisitos](#prerequisitos)
-3. [Opción A: Activación Automática (Recomendada)](#opción-a-activación-automática)
-4. [Opción B: Activación Manual (Control Total)](#opción-b-activación-manual)
-5. [Troubleshooting](#troubleshooting)
-6. [Post-Deploy](#post-deploy)
+Notas importantes:
+- El repo aplica “Anti-Duplicados de Deploy” (cost guard). Ejecuta antes: `./ops/deploy-check.sh`.
+- App única en Fly: `sist-cabanas-mvp` (region `gru`). Usa `--ha=false` para 1 sola instancia.
 
----
-
-## 🎯 Estado Actual
-
-| Componente | Estado | Detalles |
-|---|---|---|
-| Backend MVP | ✅ Completo | 6,805 líneas, 180+ tests, 85%+ coverage |
-| Fly.io CLI | ✅ Instalado | v0.3.195, PATH configurado |
-| Autenticación Fly.io | ⏳ Pendiente | Requiere login interactivo (2-3 min) |
-| Scripts Activación | ✅ Completos | 5 archivos, 920+ líneas totales |
-| Validación Pre-Deploy | ✅ Lista | 15/15 checks disponibles |
-| Git | ✅ Committed | Commit 44cc3a8, pushed a origin/main |
-
----
-
-## ✅ Prerequisitos
-
-Antes de empezar, verifica:
-
-```bash
-# 1. Terminal en directorio correcto
-cd /home/eevan/ProyectosIA/SIST_CABAÑAS
-
-# 2. Flyctl disponible
-export PATH="/home/eevan/.fly/bin:$PATH"
-flyctl version
-# Debería mostrar: flyctl v0.3.195 linux/amd64
-
-# 3. Git clean
-git status
-# Debería mostrar: nothing to commit, working tree clean
-```
-
----
-
-## 🚀 Opción A: Activación Automática (RECOMENDADA)
-
-**Tiempo**: ~25 minutos
-**Complejidad**: Baja
-**Ventaja**: Todo automatizado, validaciones integradas
-
-### Paso 1: FASE 0 - Autenticación (2-3 minutos)
+Para navegación completa, consulta `DOCUMENTATION_INDEX.md`.
 
 ```bash
 # Configurar PATH

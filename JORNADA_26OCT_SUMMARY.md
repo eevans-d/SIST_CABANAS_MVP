@@ -1,5 +1,7 @@
 # 🎯 JORNADA 26 OCT: OPERACIONES COMPLETADAS
 
+> ARCHIVADO (histórico). Para documentación vigente y navegación usa `DOCUMENTATION_INDEX.md`.
+
 **Status Final:** ✅ 100% READY FOR STAGING DEPLOYMENT
 
 ---

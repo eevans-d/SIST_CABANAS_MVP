@@ -1,5 +1,7 @@
 # 📑 Repository Analysis - Complete Index
 
+> ARCHIVADO (histórico). Para documentación vigente y navegación usa `DOCUMENTATION_INDEX.md`.
+
 This directory contains a comprehensive analysis of the SIST_CABANAS_MVP repository responding to 16 detailed extraction prompts.
 
 ---
@@ -7,7 +9,7 @@ This directory contains a comprehensive analysis of the SIST_CABANAS_MVP reposit
 ## 📚 Available Documents
 
 ### 1. 🔍 [REPOSITORY_ANALYSIS_COMPLETE.md](./REPOSITORY_ANALYSIS_COMPLETE.md)
-**The Complete Analysis** - 2,005 lines  
+**The Complete Analysis** - 2,005 lines
 Comprehensive JSON-formatted responses to all 16 prompts with evidence:
 
 - ✅ PROMPT 1: Project Metadata & Context
@@ -32,7 +34,7 @@ Comprehensive JSON-formatted responses to all 16 prompts with evidence:
 ---
 
 ### 2. 📋 [ANALYSIS_SUMMARY.md](./ANALYSIS_SUMMARY.md)
-**Quick Reference** - 260 lines  
+**Quick Reference** - 260 lines
 Essential metrics, architecture overview, and checklists:
 
 - Key Metrics Dashboard
@@ -200,10 +202,10 @@ If you need clarification on any part of this analysis:
 
 ---
 
-**Analysis Generated:** 2025-10-01  
-**Analyzer:** GitHub Copilot  
-**Repository:** https://github.com/eevans-d/SIST_CABANAS_MVP  
-**Commit:** Latest on main branch  
+**Analysis Generated:** 2025-10-01
+**Analyzer:** GitHub Copilot
+**Repository:** https://github.com/eevans-d/SIST_CABANAS_MVP
+**Commit:** Latest on main branch
 **Analysis Version:** 1.0
 
 ---

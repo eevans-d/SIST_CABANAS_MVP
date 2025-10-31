@@ -1,7 +1,10 @@
-# 📑 SIST CABAÑAS MVP - DOCUMENTACIÓN INDEX
+# 📑 SIST CABAÑAS MVP - DOCUMENTACIÓN INDEX (Canónico)
 
+> Este índice es la única fuente de verdad para documentación vigente.
+> Cualquier guía duplicada en la raíz fue reemplazada por punteros a estas referencias o marcada como ARCHIVADA (histórico).
+>
 > **Última actualización:** Octubre 31, 2025 - 19:00 UTC
-> **Estado:** 🟢 **MVP BACKEND COMPLETE** | � **FRONTEND UX EN DESARROLLO**
+> **Estado:** 🟢 **MVP BACKEND COMPLETE** | 🔶 **FRONTEND UX EN DESARROLLO**
 > **Fase actual:** Implementando Dashboard Admin (Fase 1 UX Master Plan)
 
 ---

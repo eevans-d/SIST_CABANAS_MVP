@@ -1,63 +1,14 @@
-# 🚀 NEXT ACTIONS - Fases de Activación Post-Validación
+> Documento consolidado. Usa el plan unificado y los playbooks canónicos a continuación.
 
-**Fecha:** 2025-10-19
-**Estado Actual:** ✅ Validación pre-deployment completada (13/15)
-**Bloqueante:** Flyctl CLI (5 min)
-**Próxima Fase:** Deploy a Fly.io (15 min total)
+# 🚀 Siguientes Pasos — Referencia única
 
----
+- Plan UX completo (Admin + Guests): `ops/UX_MASTER_PLAN_ADMIN_GUEST.md`
+- Próximos pasos post-MVP: `docs/planning/POST_MVP_ROADMAP.md`
+- Despliegue (staging): `ops/STAGING_DEPLOYMENT_QUICK_START.md`
+- Readiness para producción: `ops/PROD_READINESS_CHECKLIST.md`
+- Resumen ejecutivo del proyecto: `PROJECT_SUMMARY.md`
 
-## 📋 FASES DE ACTIVACIÓN
-
-### ⏱️ FASE 0: AHORA (5 minutos) - Resolver Bloqueante
-
-```bash
-# 1. Instalar Fly.io CLI
-curl -L https://fly.io/install.sh | sh
-
-# 2. Configurar PATH
-echo 'export PATH="/home/eevan/.fly/bin:$PATH"' >> ~/.bashrc
-source ~/.bashrc
-
-# 3. Verificar instalación
-flyctl version
-flyctl auth whoami  # Debe estar autenticado
-
-# 4. Re-validar sistema
-cd /home/eevan/ProyectosIA/SIST_CABAÑAS
-./pre_deploy_validation.sh
-# Resultado esperado: ✅ 15/15 checks PASADOS (100%)
-```
-
-**Success Criteria:**
-```
-✅ 15/15 checks PASADOS
-✅ Bloqueante resuélto
-⏱️ Tiempo: 5 min
-→ Proceder a FASE 1
-```
-
----
-
-### ⏱️ FASE 1: Setup de Fly.io (10 minutos)
-
-#### Paso 1A: Crear PostgreSQL (1 min)
-
-```bash
-flyctl postgres create \
-  --name sist-cabanas-db \
-  --region eze \
-  --initial-cluster-size 1 \
-  --vm-size shared-cpu-1x \
-  --volume-size 1
-
-# Respuesta esperada:
-# "Your postgres cluster 'sist-cabanas-db' is ready!"
-```
-
-#### Paso 1B: Conectar DB a la App (1 min)
-
-```bash
+Índice completo: `DOCUMENTATION_INDEX.md`.
 flyctl postgres attach sist-cabanas-db --app sist-cabanas-mvp
 
 # Verifica que DATABASE_URL se añadió como secreto

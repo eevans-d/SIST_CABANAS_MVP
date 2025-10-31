@@ -1,63 +1,17 @@
-# ✅ DEPLOY READY CHECKLIST - SIST_CABAÑAS MVP
+> Documento unificado: usa estas guías canónicas. Este archivo fue simplificado para evitar duplicados.
 
-**Fecha:** 2025-10-19
-**Status:** 🟡 CASI LISTO (1 bloqueante pendiente)
-**ETA Deploy:** 15 minutos tras resolver bloqueante
+# ✅ Checklist de Deploy – Referencia canónica
 
----
+Utiliza la checklist centralizada y scripts integrados:
 
-## 🚦 STATUS GENERAL
+- `ops/GO_NO_GO_CHECKLIST.md` (checklist única pre-deploy)
+- `ops/STAGING_DEPLOYMENT_QUICK_START.md` (pasos rápidos)
+- `ops/staging-deploy-interactive.sh` (guiado)
+- `ops/PROD_READINESS_CHECKLIST.md` (antes de producción)
 
-```
-┌─────────────────────────────────────────┐
-│  VALIDACIÓN: 13/15 ✅ (86.7%)           │
-│  BLOQUEANTES: 1 ❌ (flyctl)             │
-│  WARNINGS: 2 ⚠️ (NO bloqueantes)        │
-│  TIEMPO PARA DEPLOY: 15 minutos         │
-└─────────────────────────────────────────┘
-```
+Validaciones automatizadas: `./ops/deploy-check.sh` y `./ops/smoke-and-benchmark.sh`.
 
----
-
-## 🔴 ACCIÓN INMEDIATA REQUERIDA
-
-### 1. Instalar Fly.io CLI (5 minutos)
-
-```bash
-# Instalar
-curl -L https://fly.io/install.sh | sh
-
-# Añadir al PATH (añade a ~/.bashrc)
-export PATH="/home/eevan/.fly/bin:$PATH"
-source ~/.bashrc
-
-# Autenticar
-flyctl auth login
-
-# Verificar
-flyctl version
-flyctl auth whoami
-```
-
-### 2. Re-ejecutar Validación (1 minuto)
-
-```bash
-cd /home/eevan/ProyectosIA/SIST_CABAÑAS
-./pre_deploy_validation.sh
-```
-
-**Resultado esperado:** `✅ VALIDACIÓN EXITOSA - 15/15 checks`
-
----
-
-## 🟢 DEPLOY PROCEDURE (10 minutos)
-
-### Paso 1: Crear PostgreSQL en Fly.io
-
-```bash
-flyctl postgres create \
-  --name sist-cabanas-db \
-  --region eze \
+Índice completo: `DOCUMENTATION_INDEX.md`.
   --initial-cluster-size 1 \
   --vm-size shared-cpu-1x \
   --volume-size 1

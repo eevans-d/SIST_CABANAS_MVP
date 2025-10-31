@@ -1,15 +1,17 @@
 # 📋 Quick Reference - Repository Analysis Summary
 
+> ARCHIVADO (histórico). Para documentación vigente y navegación usa `DOCUMENTATION_INDEX.md`.
+
 **Full Analysis:** See [REPOSITORY_ANALYSIS_COMPLETE.md](./REPOSITORY_ANALYSIS_COMPLETE.md) (2,005 lines, all 16 prompts)
 
 ---
 
 ## 🎯 Project Overview
 
-**Name:** Sistema MVP Reservas Alojamientos  
-**Version:** 1.0.0  
-**Status:** Production Ready (2025-09-27)  
-**Development Time:** 10-12 days (achieved)  
+**Name:** Sistema MVP Reservas Alojamientos
+**Version:** 1.0.0
+**Status:** Production Ready (2025-09-27)
+**Development Time:** 10-12 days (achieved)
 **Philosophy:** SHIPPING > PERFECTION
 
 ## 📊 Key Metrics
@@ -26,7 +28,7 @@
 
 ## 🏗️ Architecture
 
-**Pattern:** Monolithic Modular (FastAPI)  
+**Pattern:** Monolithic Modular (FastAPI)
 **NOT an AI Agent System** - Uses heuristic NLU + Whisper STT only
 
 ### Core Components
@@ -45,10 +47,10 @@
 
 ## 🔒 Security Highlights
 
-✅ **HMAC Validation:** WhatsApp (SHA-256) + Mercado Pago (x-signature v1)  
-✅ **No Hardcoded Secrets:** All from environment variables  
-✅ **Input Validation:** Pydantic automatic  
-✅ **SQL Injection Protection:** SQLAlchemy ORM parameterized queries  
+✅ **HMAC Validation:** WhatsApp (SHA-256) + Mercado Pago (x-signature v1)
+✅ **No Hardcoded Secrets:** All from environment variables
+✅ **Input Validation:** Pydantic automatic
+✅ **SQL Injection Protection:** SQLAlchemy ORM parameterized queries
 ✅ **Rate Limiting:** Redis-based, 60 req/60s per IP+path
 
 ## 🚀 Tech Stack
@@ -255,6 +257,6 @@ Sistema MVP completado exitosamente en el plazo establecido (10-12 días). Arqui
 
 ---
 
-**Generated:** 2025-10-01  
-**Analyzer:** GitHub Copilot  
+**Generated:** 2025-10-01
+**Analyzer:** GitHub Copilot
 **Analysis Version:** 1.0

@@ -1,5 +1,7 @@
 # 📊 Repository Analysis - SIST_CABANAS_MVP
 
+> ARCHIVADO (histórico). Para documentación vigente y navegación usa `DOCUMENTATION_INDEX.md`.
+
 **Comprehensive analysis responding to 16 detailed extraction prompts**
 
 ---
@@ -8,7 +10,7 @@
 
 Choose the document that fits your needs:
 
-### 📋 Need a Quick Overview? 
+### 📋 Need a Quick Overview?
 → **[ANALYSIS_SUMMARY.md](./ANALYSIS_SUMMARY.md)** (8.7 KB, ~5 min read)
 - Project metrics and architecture overview
 - Tech stack and API endpoints
@@ -98,7 +100,7 @@ Choose the document that fits your needs:
 - No alerting system (Prometheus without Alertmanager)
 
 ### 📈 Risk Assessment
-**Overall Risk:** LOW ✅  
+**Overall Risk:** LOW ✅
 **Recommendation:** Approved for production with monitoring
 
 ---
@@ -169,9 +171,9 @@ See PROMPT 3 in [REPOSITORY_ANALYSIS_COMPLETE.md](./REPOSITORY_ANALYSIS_COMPLETE
 
 ---
 
-**Analysis Generated:** 2025-10-01  
-**Repository:** https://github.com/eevans-d/SIST_CABANAS_MVP  
-**Version Analyzed:** 1.0.0  
+**Analysis Generated:** 2025-10-01
+**Repository:** https://github.com/eevans-d/SIST_CABANAS_MVP
+**Version Analyzed:** 1.0.0
 **Analysis Version:** 1.0
 
 ---

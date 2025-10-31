@@ -1,5 +1,7 @@
 # 🚀 JORNADA 26 OCT - RESUMEN INTEGRADO FINAL
 
+> ARCHIVADO (histórico). Para documentación vigente y navegación usa `DOCUMENTATION_INDEX.md`.
+
 **Fecha:** Octubre 26, 2025 (04:00 UTC)
 **Estado:** ✅ **STAGING DEPLOYMENT READY**
 **Commits:** d30d11f (27 archivos + 2,340 insertions)
