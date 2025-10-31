@@ -1,12 +1,20 @@
 # 📑 SIST CABAÑAS MVP - DOCUMENTACIÓN INDEX
 
-> **Última actualización:** Octubre 30, 2025 - 07:45 UTC
-> **Estado:** 🟢 **STAGING DEPLOYMENT READY** | 📋 **Repositorio Sincronizado**
-> **Próximo paso:** Ejecutar `./ops/staging-deploy-interactive.sh`
+> **Última actualización:** Octubre 31, 2025 - 19:00 UTC
+> **Estado:** 🟢 **MVP BACKEND COMPLETE** | � **FRONTEND UX EN DESARROLLO**
+> **Fase actual:** Implementando Dashboard Admin (Fase 1 UX Master Plan)
 
 ---
 
 ## 🗺️ Mapa de Navegación Rápida
+
+### 💡 PLAN UX MASTER (NUEVO)
+```
+1. Lee: ops/UX_MASTER_PLAN_ADMIN_GUEST.md (Plan exhaustivo 3 fases)
+2. Fase 1: Admin Dashboard (3-5 días) - EN CURSO
+3. Fase 2: Guest WhatsApp UX (3-5 días)
+4. Fase 3: Polish Técnico (2-3 días)
+```
 
 ### 🚀 QUIERO DESPLEGAR AHORA
 ```

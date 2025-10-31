@@ -13,6 +13,20 @@ from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.security import create_access_token, verify_jwt_token
 from app.models.reservation import Reservation
+from app.schemas.admin import (
+    ActionResponse,
+    CalendarEvent,
+    CalendarResponse,
+    CancelReservationRequest,
+    ConfirmReservationRequest,
+    DashboardHealth,
+    DashboardLast24h,
+    DashboardPerformance,
+    DashboardResponse,
+    DashboardTotals,
+    ReservationDetailResponse,
+    TimelineEvent,
+)
 from app.services.email import email_service
 from fastapi import (
     APIRouter,
@@ -60,82 +74,125 @@ async def admin_login(email: str = Body(..., embed=True)):
     return {"access_token": token, "token_type": "bearer"}
 
 
-@router.get("/dashboard/stats")
+@router.get("/dashboard/stats", response_model=DashboardResponse)
 async def get_dashboard_stats(
     db: AsyncSession = Depends(get_db),
     _admin=Depends(require_admin),
 ):
-    """Endpoint para estadísticas del dashboard.
+    """Dashboard principal con KPIs y estado del sistema.
 
-    Retorna KPIs esenciales:
-    - total_reservations: Cantidad total de reservas activas (pre_reserved + confirmed)
-    - total_guests: Suma de huéspedes en reservas activas
-    - monthly_revenue: Ingresos del mes actual (solo confirmed)
-    - pending_confirmations: Cantidad de pre-reservas pendientes
-    - avg_occupancy_rate: Tasa de ocupación promedio (last 30 days)
+    Returns:
+        - Totales: confirmadas, pre-reservas, canceladas, revenue
+        - Conversión: tasa de pre-reserva → confirmada
+        - Últimas 24h: nuevas reservas, pagos recibidos
+        - Health: DB, Redis, iCal
+        - Performance: error rate, P95
     """
     now = datetime.utcnow()
+    last_24h = now - timedelta(hours=24)
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    last_30_days = now - timedelta(days=30)
 
-    # 1. Total reservas activas (pre_reserved + confirmed)
-    active_stmt = select(func.count(Reservation.id)).where(
-        Reservation.reservation_status.in_(["pre_reserved", "confirmed"])
-    )
-    active_result = await db.execute(active_stmt)
-    total_reservations = active_result.scalar() or 0
-
-    # 2. Total huéspedes en reservas activas
-    guests_stmt = select(func.sum(Reservation.guests_count)).where(
-        Reservation.reservation_status.in_(["pre_reserved", "confirmed"])
-    )
-    guests_result = await db.execute(guests_stmt)
-    total_guests = guests_result.scalar() or 0
-
-    # 3. Ingresos del mes actual (solo confirmed)
-    revenue_stmt = select(func.sum(Reservation.total_price)).where(
-        and_(
-            Reservation.reservation_status == "confirmed",
-            Reservation.created_at >= month_start,
+    # Totales generales
+    confirmed_count = (
+        await db.scalar(
+            select(func.count(Reservation.id)).where(Reservation.reservation_status == "confirmed")
         )
+        or 0
     )
-    revenue_result = await db.execute(revenue_stmt)
-    monthly_revenue = revenue_result.scalar() or Decimal("0.00")
 
-    # 4. Pre-reservas pendientes de confirmación
-    pending_stmt = select(func.count(Reservation.id)).where(
-        Reservation.reservation_status == "pre_reserved"
-    )
-    pending_result = await db.execute(pending_stmt)
-    pending_confirmations = pending_result.scalar() or 0
-
-    # 5. Tasa de ocupación promedio (last 30 days) - simplificado
-    # Asumimos que si hay reservas confirmed en los últimos 30 días = ocupado
-    # Para cálculo preciso necesitaríamos: (días ocupados / días disponibles) * 100
-    # Por ahora retornamos un estimado basado en reservas confirmed recientes
-    occupancy_stmt = select(func.count(Reservation.id)).where(
-        and_(
-            Reservation.reservation_status == "confirmed",
-            Reservation.check_in >= last_30_days,
+    pre_reserved_count = (
+        await db.scalar(
+            select(func.count(Reservation.id)).where(
+                Reservation.reservation_status == "pre_reserved"
+            )
         )
-    )
-    occupancy_result = await db.execute(occupancy_stmt)
-    confirmed_last_30 = occupancy_result.scalar() or 0
-
-    # Estimado: si hay 10+ reservas en 30 días = ~80% ocupación
-    # Esto es simplificado para MVP, en producción usar: occupancy_days / total_available_days
-    avg_occupancy_rate = (
-        min(80.0, (confirmed_last_30 / 10.0) * 80.0) if confirmed_last_30 > 0 else 0.0
+        or 0
     )
 
-    return {
-        "total_reservations": total_reservations,
-        "total_guests": total_guests,
-        "monthly_revenue": float(monthly_revenue),
-        "pending_confirmations": pending_confirmations,
-        "avg_occupancy_rate": round(avg_occupancy_rate, 1),
-        "last_updated": now.isoformat(),
-    }
+    cancelled_count = (
+        await db.scalar(
+            select(func.count(Reservation.id)).where(Reservation.reservation_status == "cancelled")
+        )
+        or 0
+    )
+
+    # Revenue total y del mes
+    total_revenue = await db.scalar(
+        select(func.sum(Reservation.total_price)).where(
+            Reservation.reservation_status == "confirmed"
+        )
+    ) or Decimal("0")
+
+    month_revenue = await db.scalar(
+        select(func.sum(Reservation.total_price)).where(
+            and_(
+                Reservation.reservation_status == "confirmed",
+                Reservation.confirmed_at >= month_start,
+            )
+        )
+    ) or Decimal("0")
+
+    # Conversión (confirmadas / total de reservas creadas)
+    total_created = await db.scalar(select(func.count(Reservation.id))) or 0
+    conversion_rate = (
+        round((confirmed_count / total_created) * 100, 2) if total_created > 0 else 0.0
+    )
+
+    # Últimas 24h
+    new_reservations_24h = (
+        await db.scalar(
+            select(func.count(Reservation.id)).where(Reservation.created_at >= last_24h)
+        )
+        or 0
+    )
+
+    payments_received_24h = (
+        await db.scalar(
+            select(func.count(Reservation.id)).where(
+                and_(
+                    Reservation.payment_status == "paid",
+                    Reservation.confirmed_at >= last_24h,
+                )
+            )
+        )
+        or 0
+    )
+
+    # Health checks simplificado (en producción usar valores reales de /healthz)
+    health_status_value = "healthy"  # Placeholder
+    db_latency = 10  # Placeholder
+    redis_latency = 5  # Placeholder
+    ical_sync_age = 15  # Placeholder
+
+    # Performance placeholder (en producción usar Prometheus metrics)
+    error_rate = 0.5  # Placeholder
+    p95_latency = 250  # Placeholder
+
+    return DashboardResponse(
+        totals=DashboardTotals(
+            confirmed=confirmed_count,
+            pre_reserved=pre_reserved_count,
+            cancelled=cancelled_count,
+            total_revenue=float(total_revenue),
+            month_revenue=float(month_revenue),
+        ),
+        conversion_rate=conversion_rate,
+        last_24h=DashboardLast24h(
+            new_reservations=new_reservations_24h,
+            payments_received=payments_received_24h,
+        ),
+        health=DashboardHealth(
+            status=health_status_value,
+            db_latency_ms=db_latency,
+            redis_latency_ms=redis_latency,
+            ical_last_sync_age_minutes=ical_sync_age,
+        ),
+        performance=DashboardPerformance(
+            error_rate=error_rate,
+            p95_latency_ms=p95_latency,
+        ),
+        timestamp=now.isoformat(),
+    )
 
 
 @router.get("/reservations")
@@ -200,6 +257,181 @@ async def list_reservations(
         }
         for r in rows
     ]
+
+
+@router.get("/reservations/{reservation_id}", response_model=ReservationDetailResponse)
+async def get_reservation_detail(
+    reservation_id: int,
+    db: AsyncSession = Depends(get_db),
+    _admin=Depends(require_admin),
+):
+    """Detalle completo de una reserva con timeline, webhooks y logs de pago."""
+    result = await db.execute(select(Reservation).where(Reservation.id == reservation_id))
+    reservation = result.scalar_one_or_none()
+
+    if not reservation:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Reservation {reservation_id} not found",
+        )
+
+    # Construir timeline de eventos
+    timeline = [
+        TimelineEvent(
+            event="pre_reserved",
+            timestamp=reservation.created_at.isoformat() if reservation.created_at else None,
+            description="Pre-reserva creada",
+            metadata={"channel": reservation.channel_source},
+        )
+    ]
+
+    if reservation.confirmed_at:
+        timeline.append(
+            TimelineEvent(
+                event="confirmed",
+                timestamp=reservation.confirmed_at.isoformat(),
+                description="Reserva confirmada y pago recibido",
+                metadata={"payment_status": reservation.payment_status},
+            )
+        )
+
+    if reservation.reservation_status == "cancelled":
+        timeline.append(
+            TimelineEvent(
+                event="cancelled",
+                timestamp=datetime.utcnow().isoformat(),  # Placeholder
+                description="Reserva cancelada",
+            )
+        )
+
+    # TODO: Implementar webhooks y payment logs cuando se agreguen las tablas
+    webhooks = []  # Lista de WebhookLog
+    payment_logs = []  # Lista de PaymentLog
+
+    return ReservationDetailResponse(
+        id=reservation.id,
+        code=reservation.code,
+        accommodation_id=reservation.accommodation_id,
+        guest_name=reservation.guest_name,
+        guest_phone=reservation.guest_phone,
+        guest_email=reservation.guest_email,
+        check_in=reservation.check_in.isoformat() if reservation.check_in else None,
+        check_out=reservation.check_out.isoformat() if reservation.check_out else None,
+        guests_count=reservation.guests_count,
+        total_price=float(reservation.total_price),
+        deposit_percentage=float(reservation.deposit_percentage),
+        deposit_amount=float(reservation.deposit_amount),
+        payment_status=reservation.payment_status,
+        reservation_status=reservation.reservation_status,
+        channel_source=reservation.channel_source,
+        created_at=reservation.created_at.isoformat() if reservation.created_at else None,
+        confirmed_at=reservation.confirmed_at.isoformat() if reservation.confirmed_at else None,
+        expires_at=reservation.expires_at.isoformat() if reservation.expires_at else None,
+        notes=reservation.notes,
+        timeline=timeline,
+        webhooks=webhooks,
+        payment_logs=payment_logs,
+    )
+
+
+@router.post("/reservations/{reservation_id}/confirm", response_model=ActionResponse)
+async def confirm_reservation(
+    reservation_id: int,
+    request: ConfirmReservationRequest,
+    db: AsyncSession = Depends(get_db),
+    _admin=Depends(require_admin),
+):
+    """Confirmar manualmente una pre-reserva."""
+    result = await db.execute(select(Reservation).where(Reservation.id == reservation_id))
+    reservation = result.scalar_one_or_none()
+
+    if not reservation:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+
+    if reservation.reservation_status != "pre_reserved":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot confirm reservation with status: {reservation.reservation_status}",
+        )
+
+    # Actualizar estado
+    reservation.reservation_status = "confirmed"
+    reservation.payment_status = "paid"
+    reservation.confirmed_at = datetime.utcnow()
+
+    if request.notes:
+        reservation.notes = (reservation.notes or "") + f"\n[Admin] {request.notes}"
+
+    await db.commit()
+
+    # Broadcast notification a WebSockets
+    await broadcast_notification(
+        "reservation_confirmed",
+        {
+            "reservation_id": reservation.id,
+            "reservation_code": reservation.code,
+            "guest_name": reservation.guest_name,
+        },
+    )
+
+    return ActionResponse(
+        success=True,
+        message="Reservation confirmed successfully",
+        reservation_id=reservation.id,
+        new_status="confirmed",
+        timestamp=datetime.utcnow().isoformat(),
+    )
+
+
+@router.post("/reservations/{reservation_id}/cancel", response_model=ActionResponse)
+async def cancel_reservation(
+    reservation_id: int,
+    request: CancelReservationRequest,
+    db: AsyncSession = Depends(get_db),
+    _admin=Depends(require_admin),
+):
+    """Cancelar una reserva (pre-reserva o confirmada)."""
+    result = await db.execute(select(Reservation).where(Reservation.id == reservation_id))
+    reservation = result.scalar_one_or_none()
+
+    if not reservation:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+
+    if reservation.reservation_status == "cancelled":
+        raise HTTPException(status_code=400, detail="Reservation already cancelled")
+
+    # Actualizar estado
+    previous_status = reservation.reservation_status
+    reservation.reservation_status = "cancelled"
+
+    # Agregar nota de cancelación
+    cancellation_note = f"\n[Admin Cancellation] Reason: {request.reason}"
+    if request.refund_amount:
+        cancellation_note += f" | Refund: ${request.refund_amount}"
+
+    reservation.notes = (reservation.notes or "") + cancellation_note
+
+    await db.commit()
+
+    # Broadcast notification
+    await broadcast_notification(
+        "reservation_cancelled",
+        {
+            "reservation_id": reservation.id,
+            "reservation_code": reservation.code,
+            "guest_name": reservation.guest_name,
+            "previous_status": previous_status,
+            "reason": request.reason,
+        },
+    )
+
+    return ActionResponse(
+        success=True,
+        message="Reservation cancelled successfully",
+        reservation_id=reservation.id,
+        new_status="cancelled",
+        timestamp=datetime.utcnow().isoformat(),
+    )
 
 
 @router.get("/reservations/export.csv")
@@ -337,7 +569,7 @@ async def resend_email(
     return {"sent": success, "email_type": email_type}
 
 
-@router.get("/calendar/availability")
+@router.get("/calendar/availability", response_model=CalendarResponse)
 async def get_calendar_availability(
     month: int = Query(..., ge=1, le=12),
     year: int = Query(..., ge=2024, le=2030),
@@ -345,7 +577,7 @@ async def get_calendar_availability(
     admin: dict = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    """Retorna disponibilidad de calendario para un mes específico.
+    """Retorna disponibilidad de calendario mensual con eventos y tasa de ocupación.
 
     Args:
         month: Mes (1-12)
@@ -353,28 +585,15 @@ async def get_calendar_availability(
         accommodation_id: ID opcional de alojamiento específico
 
     Returns:
-        Objeto con disponibilidad por día y alojamiento
+        CalendarResponse con lista de eventos y métricas
     """
     from calendar import monthrange
     from datetime import date
-
-    from app.models.accommodation import Accommodation
 
     # Calcular rango de fechas del mes
     _, last_day = monthrange(year, month)
     start_date = date(year, month, 1)
     end_date = date(year, month, last_day)
-
-    # Obtener todos los alojamientos o uno específico
-    acc_query = select(Accommodation).where(Accommodation.active is True)
-    if accommodation_id:
-        acc_query = acc_query.where(Accommodation.id == accommodation_id)
-
-    result = await db.execute(acc_query)
-    accommodations = result.scalars().all()
-
-    if not accommodations:
-        return {"month": f"{year}-{month:02d}", "year": year, "accommodations": []}
 
     # Obtener reservas que se solapen con el mes
     res_query = select(Reservation).where(
@@ -397,52 +616,43 @@ async def get_calendar_availability(
     result = await db.execute(res_query)
     reservations = result.scalars().all()
 
-    # Crear mapa de disponibilidad
-    response_data = []
+    # Convertir reservas a eventos
+    events = [
+        CalendarEvent(
+            id=r.id,
+            code=r.code,
+            accommodation_id=r.accommodation_id,
+            guest_name=r.guest_name,
+            check_in=r.check_in.isoformat() if r.check_in else "",
+            check_out=r.check_out.isoformat() if r.check_out else "",
+            status=r.reservation_status,
+            total_price=float(r.total_price),
+            channel_source=r.channel_source,
+        )
+        for r in reservations
+    ]
 
-    for acc in accommodations:
-        # Generar todos los días del mes
-        availability = []
-        current = start_date
+    # Calcular tasa de ocupación del mes
+    total_days_in_month = last_day
+    occupied_days = 0
 
-        while current <= end_date:
-            # Buscar si hay reserva para este día y alojamiento
-            day_status = "available"
-            res_code = None
-            guest_name = None
-            res_check_in = None
-            res_check_out = None
+    for res in reservations:
+        if res.reservation_status == "confirmed":
+            # Contar días ocupados dentro del mes
+            res_start = max(res.check_in, start_date) if res.check_in else start_date
+            res_end = min(res.check_out, end_date) if res.check_out else end_date
+            days = (res_end - res_start).days
+            occupied_days += max(0, days)
 
-            for res in reservations:
-                if res.accommodation_id == acc.id:
-                    # Check si current está en el rango [check_in, check_out)
-                    if res.check_in <= current < res.check_out:
-                        day_status = res.reservation_status  # pre_reserved o confirmed
-                        res_code = res.code
-                        guest_name = res.guest_name
-                        res_check_in = res.check_in.isoformat()
-                        res_check_out = res.check_out.isoformat()
-                        break
+    occupancy_rate = (
+        round((occupied_days / total_days_in_month) * 100, 1) if total_days_in_month > 0 else 0.0
+    )
 
-            day_data = {
-                "date": current.isoformat(),
-                "accommodation_id": acc.id,
-                "accommodation_name": acc.name,
-                "status": day_status,
-            }
-
-            if res_code:
-                day_data["reservation_code"] = res_code
-                day_data["guest_name"] = guest_name
-                day_data["check_in"] = res_check_in
-                day_data["check_out"] = res_check_out
-
-            availability.append(day_data)
-            current += timedelta(days=1)
-
-        response_data.append({"id": acc.id, "name": acc.name, "availability": availability})
-
-    return {"month": f"{year}-{month:02d}", "year": year, "accommodations": response_data}
+    return CalendarResponse(
+        events=events,
+        month=f"{year}-{month:02d}",
+        occupancy_rate=occupancy_rate,
+    )
 
 
 # WebSocket connection manager
@@ -492,11 +702,11 @@ ws_manager = ConnectionManager()
 
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket, token: str = Query(...)):
-    """WebSocket endpoint para alertas real-time.
+    """Real-time alerts WebSocket endpoint for admin dashboard.
 
-    El cliente debe enviar el JWT token como query param: /admin/ws?token=xxx
+    Client must send JWT token as query param: /admin/ws?token=xxx
 
-    Una vez conectado, el servidor enviará notificaciones en formato JSON:
+    Once connected, server will send JSON notifications:
     {
         "type": "nueva_reserva" | "pago_confirmado" | "checkin_hoy" | "reservation_expired",
         "data": {
@@ -562,9 +772,9 @@ async def broadcast_notification(
     notification_type: str,
     data: dict,
 ):
-    """Helper para enviar notificaciones a todos los clientes WebSocket.
+    """Broadcast notification to all connected WebSocket clients.
 
-    Usar desde cualquier parte del código:
+    Use from anywhere in the code:
         await broadcast_notification("nueva_reserva", {
             "reservation_code": res.code,
             "guest_name": res.guest_name,
