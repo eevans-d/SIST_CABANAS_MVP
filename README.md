@@ -118,404 +118,119 @@
 
 ```
 
-- ✅ **WhatsApp Business Cloud API** - Conversaciones automatizadas con botones interactivos- **Anti doble-booking**: PostgreSQL constraint + Redis locks
+# 🏠 SIST CABAÑAS MVP — Sistema de Automatización de Reservas
 
-### Stack Tecnológico
+Sistema de automatización de reservas con FastAPI + PostgreSQL + Redis, integraciones con WhatsApp Business y Mercado Pago, y sincronización iCal (Airbnb/Booking). Backend MVP 100% completado; Admin Dashboard (React + Vite) en desarrollo.
 
-- **Backend:** FastAPI + SQLAlchemy Async + Pydantic V2- ✅ **Email (IMAP/SMTP)** - Procesamiento de consultas por correo
+Estado: 🟢 Backend listo | 🔶 Frontend Admin en curso | 180+ tests | 85% coverage
 
-- **Database:** PostgreSQL 16 + btree_gist extension
+---
 
-- **Cache/Locks:** Redis 7 + async client- ✅ **Audio a Texto** - Transcripción con Whisper (faster-whisper)- **Idempotencia**: Prevención de webhooks duplicados (48h TTL)[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+## 🚀 Quick Start (Docker Compose)
 
-- **Audio:** Whisper (faster-whisper) + FFmpeg
+Requisitos: Docker 24+, Docker Compose, Python 3.12+ (opcional para scripts), FFmpeg (para audio opcional).
 
-- **Payments:** Mercado Pago API v1
+1) Configura variables de entorno
 
-- **Messaging:** WhatsApp Business Cloud API
+```bash
+cp .env.template .env
+# Edita .env con tus credenciales (DB, Redis, WhatsApp, Mercado Pago)
+```
 
-- **Deploy:** Docker Compose + Nginx### **Gestión de Reservas**- **Circuit Breaker**: Resilencia ante fallos externos
+2) Levanta los servicios
 
-
-
----- ✅ **Pre-reserva Efímera** - Sistema de 60 minutos con auto-expiración
-
-
-
-## ⚡ Instalación Rápida (3 comandos)- ✅ **Anti Doble-Booking** - Constraint PostgreSQL + Redis locks (0% colisiones)- **Rate Limiting**: 60 req/min por IP> **Sistema de automatización completo** para reservas de alojamientos con WhatsApp Business, anti-doble-booking garantizado y pagos integrados con Mercado Pago.[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
-
-
-
-```bash- ✅ **Pricing Dinámico** - Multiplicadores de fin de semana configurables
-
-# 1. Clonar y configurar entorno
-
-git clone https://github.com/eevans-d/SIST_CABANAS_MVP.git- ✅ **Estados de Reserva** - Pre-reservada, Confirmada, Expirada, Cancelada
-
-cd SIST_CABANAS_MVP
-
-cp .env.template .env  # Ajustar variables de entorno
-
-
-
-# 2. Levantar con Docker Compose### **Pagos**### 📊 Observabilidad
-
+```bash
 docker-compose up -d
-
-- ✅ **Mercado Pago** - Integración completa con webhooks idempotentes
-
-# 3. Aplicar migraciones y verificar
-
-docker-compose exec backend alembic upgrade head- ✅ **Links de Pago** - Generación automática con tracking- 20+ métricas Prometheus
-
-curl http://localhost:8000/api/v1/healthz
-
-```- ✅ **Confirmación Automática** - Reserva confirmada al recibir pago
-
-
-
-✅ **¡Listo!** API disponible en `http://localhost:8000` | Docs en `/docs`- Structured logging (JSON + trace-id)---> **Sistema de automatización completo** para reservas de alojamientos con WhatsApp Business, anti-doble-booking garantizado y pagos integrados.
-
-
-
----### **Sincronización Externa**
-
-
-
-## 🔧 Configuración- ✅ **iCal Import/Export** - Sincronización bidireccional con Airbnb/Booking- Health checks comprehensivos
-
-
-
-### Variables de Entorno Críticas- ✅ **Deduplicación** - Prevención de eventos duplicados
-
-
-
-Edita `.env` con tus credenciales:- ✅ **Auto-sync** - Cada 5 minutos (configurable)
-
-
-
-```bash
-
-# Base de datos (OBLIGATORIO)
-
-DATABASE_URL=postgresql+asyncpg://user:pass@host:5432/db### **Robustez**## 🚀 Quick Start
-
-
-
-# Redis para locks (OBLIGATORIO)- ✅ **Idempotencia** - Middleware con hash SHA-256 (TTL 48h)
-
-REDIS_URL=redis://localhost:6379/0
-
-- ✅ **Retry Logic** - Backoff exponencial con circuit breaker## 🎯 Estado del Proyecto---
-
-# WhatsApp Business (OBLIGATORIO para producción)
-
-WHATSAPP_ACCESS_TOKEN=EAABxxxxxx- ✅ **Rate Limiting** - Por IP + path (Redis-backed)
-
-WHATSAPP_APP_SECRET=abcd1234
-
-WHATSAPP_PHONE_ID=15551234567- ✅ **Health Checks** - Endpoint comprehensivo con chequeo de dependencias```bash
-
-
-
-# Mercado Pago (OBLIGATORIO para pagos)
-
-MERCADOPAGO_ACCESS_TOKEN=APP_USR-xxxxx
-
-MERCADOPAGO_WEBHOOK_SECRET=tu_secreto### **Observabilidad**# 1. Clonar
-
-
-
-# Aplicación- ✅ **Prometheus Metrics** - 20+ métricas de negocio y sistema
-
-BASE_URL=https://tu-dominio.com
-
-ENVIRONMENT=production- ✅ **Structured Logging** - JSON con trace-id para correlacióngit clone https://github.com/eevans-d/SIST_CABANAS_MVP.git
-
 ```
 
-- ✅ **Grafana Dashboards** - Visualización de métricas clave
+3) Migra base de datos y valida health
 
-📋 **Ver `.env.template`** para lista completa con documentación detallada.
+```bash
+docker-compose exec backend alembic upgrade head
+curl -s http://localhost:8000/api/v1/healthz | jq .
+```
 
-cd SIST_CABANAS_MVP✅ **MVP Core Completado** - Todos los componentes críticos funcionando  ## 🎯 Estado del Proyecto
+Documentación interactiva: http://localhost:8000/docs
 
 ---
 
-### **UX Avanzada**
+## 🧱 Stack
 
-## 🚀 Uso del Sistema
-
-- ✅ **Botones Interactivos WhatsApp** - Reply buttons (3 max) y listas (10 max)
-
-### 1. Flujo Típico de Reserva
-
-- ✅ **Flujos Guiados** - 6 flujos completos con 20+ handlers de callbacks
-
-```
-
-Usuario en WhatsApp: "Hola, hay disponibilidad para el fin de semana?"- ✅ **NLU Básico** - Detección de intents con dateparser + regex# 2. Configurar✅ **Fase 4 en Progreso** - 60% completada (4.1 ✅, 4.2 ✅, 4.3 → siguiente)
-
-  ↓ NLU detecta intent: consulta_disponibilidad
-
-  ↓ Bot responde con opciones interactivas
-
-
-
-Usuario selecciona: "Cabaña Premium, 2-3 Feb, 4 personas"---cp backend/.env.template backend/.env
-
-  ↓ Sistema calcula precio (weekend_multiplier aplicado)
-
-  ↓ Crea pre-reserva con lock Redis
-
-  ↓ Genera link de pago Mercado Pago
-
-  ## 🏗️ Arquitectura del Sistema# Editar backend/.env con tus credenciales✅ **37 Tests Pasando** - Suite completa con 87% coverage  ✅ **MVP COMPLETAMENTE FUNCIONAL** - Fase 4 en progreso (60% completada)
-
-Usuario paga en MP:
-
-  ↓ Webhook MP → confirmación automática
-
-  ↓ Envío de código de reserva por WhatsApp
-
-  ↓ Export a iCal para bloqueo en otras plataformas### **Diagrama de Alto Nivel**
-
-```
-
-
-
-### 2. Comandos de Audio
-
-```# 3. Iniciar✅ **CI/CD Automatizado** - GitHub Actions con deploy automático  ✅ **37 Tests Pasando** - Suite completa con 87% coverage
-
-```
-
-Usuario envía audio: "Quiero reservar para mañana"┌──────────────────────────────────────────────────────────┐
-
-  ↓ Transcripción con Whisper
-
-  ↓ Si confidence > 0.6 → procesa como texto│                      USUARIOS                            │docker-compose up -d
-
-  ↓ Si confidence < 0.6 → solicita texto manual
-
-```│  📱 WhatsApp │ 📧 Email │ 🎤 Audio │ 📅 Airbnb/Booking  │
-
-
-
-### 3. Gestión de Concurrencia└───────────────────────┬──────────────────────────────────┘✅ **Production Ready** - Listo para deployment  ✅ **CI/CD Automatizado** - GitHub Actions con tests, linting, security scan
-
-
-
-```python                        │
-
-# El sistema garantiza que dos usuarios NO puedan reservar
-
-# las mismas fechas simultáneamente usando:                        ▼# 4. Migrar
-
-
-
-# A. Lock Redis (primera línea de defensa)┌──────────────────────────────────────────────────────────┐
-
-lock_key = f"lock:acc:{id}:{checkin}:{checkout}"
-
-await acquire_lock(lock_key, timeout=1800)│                 API GATEWAY (FastAPI)                    │docker-compose exec backend alembic upgrade head✅ **Deploy Automatizado** - Scripts de validación, deploy y rollback
-
-
-
-# B. Constraint PostgreSQL (garantía definitiva)│  • CORS + Security Headers                               │
-
-EXCLUDE USING gist (accommodation_id WITH =, period WITH &&)
-
-WHERE (reservation_status IN ('pre_reserved', 'confirmed'))│  • Rate Limiting (Redis)                                 │
-
-```
-
-│  • Idempotency Middleware                                │
+- Backend: FastAPI, SQLAlchemy Async, Pydantic v2
+- DB: PostgreSQL 16 (+ btree_gist para anti overlap)
+- Cache/Locks: Redis 7 (locks para concurrencia)
+- Integraciones: WhatsApp Business Cloud API, Mercado Pago, iCal
+- Observabilidad: Prometheus `/metrics`, health checks `/api/v1/healthz`
+- Frontend (admin): React 18 + Vite + Tailwind
 
 ---
 
-│  • Structured Logging                                    │# 5. Verificar---✅ **Documentación Exhaustiva** - 32 archivos, 14,000+ líneas
+## 🔒 Anti doble-booking (core)
 
-## 📡 API Endpoints
+- Constraint PostgreSQL: `EXCLUDE USING gist` sobre `period` (`daterange(check_in, check_out, '[)')`) activo para `pre_reserved|confirmed`.
+- Locks Redis: `lock:acc:{id}:{checkin}:{checkout}` con TTL 1800s.
+- Tests de concurrencia y solapamiento incluidos.
 
-└───────────────────────┬──────────────────────────────────┘
+---
 
-### Core APIs
+## 🛫 Deploy (Fly.io)
 
-```                        │curl http://localhost:8000/api/v1/healthz
+El repo está configurado para una sola app en Fly (`sist-cabanas-mvp`, region `gru`) y con guardas anti-duplicados de costo.
 
-GET  /api/v1/healthz              # Health check + métricas
-
-POST /api/v1/webhooks/whatsapp    # Webhook WhatsApp Business                        ▼
-
-POST /api/v1/webhooks/mercadopago # Webhook Mercado Pago
-
-POST /api/v1/audio/transcribe     # Transcripción de audio┌──────────────────────────────────────────────────────────┐```
-
-```
-
-│                   SERVICES LAYER                         │
-
-### Reservas
-
-```│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  │
-
-POST /api/v1/reservations          # Crear pre-reserva
-
-PUT  /api/v1/reservations/{id}     # Confirmar/cancelar│  │Reservation│ │ WhatsApp │ │MercadoPago│ │   iCal   │  │
-
-GET  /api/v1/reservations/{id}     # Estado de reserva
-
-```│  └──────────┘ └──────────┘ └──────────┘ └──────────┘  │## 📚 Documentación## 🚀 Características Principales---
-
-
-
-### iCal Sync│  ┌──────────┐ ┌──────────┐ ┌──────────┐               │
-
-```
-
-GET  /api/v1/ical/export/{id}/{token}  # Export calendario│  │   NLU    │ │  Audio   │ │  Buttons │               │
-
-POST /api/v1/ical/import               # Import desde external
-
-GET  /api/v1/ical/status               # Estado de sync│  └──────────┘ └──────────┘ └──────────┘               │
-
-```
-
-└───────────────────────┬──────────────────────────────────┘- **API Docs**: http://localhost:8000/docs
-
-### Admin Panel
-
-```                        │
-
-GET  /api/v1/admin/dashboard       # Panel de control
-
-GET  /api/v1/admin/reservations    # Lista de reservas                        ▼- **Metrics**: http://localhost:8000/metrics
-
-GET  /api/v1/admin/metrics         # Métricas del sistema
-
-```┌──────────────────────────────────────────────────────────┐
-
-
-
-📚 **Documentación completa:** `http://localhost:8000/docs` (Swagger UI)│                    DATA LAYER                            │- **[Estado del MVP](./MVP_STATUS.md)**### 🔒 Anti-Doble-Booking Garantizado## 🚀 Características Principales
-
-
-
----│  ┌──────────────────┐    ┌───────────────────┐          │
-
-
-
-## 🧪 Testing│  │  PostgreSQL 16   │    │     Redis 7       │          │- **[Deployment Guide](./DEPLOYMENT.md)**
-
-
-
-```bash│  │  • btree_gist    │    │  • Locks          │          │
-
-# Tests unitarios (SQLite, rápidos)
-
-cd backend && python -m pytest tests/ -v│  │  • Constraints   │    │  • Rate Limit     │          │- **PostgreSQL Constraint:** `EXCLUDE USING gist` con daterange
-
-
-
-# Tests E2E (Docker Compose, completos)│  └──────────────────┘    └───────────────────┘          │
-
-make test-e2e
-
-└──────────────────────────────────────────────────────────┘## 🔧 Configuración Crítica
-
-# Tests específicos
-
-pytest tests/test_double_booking.py -v      # Anti doble-booking```
-
-pytest tests/test_constraint_validation.py  # Constraints DB
-
-pytest tests/test_audio.py                  # Whisper STT- **Redis Locks:** Locks distribuidos con TTL 30 minutos### Anti-Doble-Booking Garantizado
-
-pytest tests/test_ical.py                   # Sync iCal
-
-```### **Patrón Anti Doble-Booking**
-
-
-
-**Estado actual:** 173 passed, 6 failed, 62 xfailed, 18 skipped```env
-
-
-
-**Coverage crítico:** ✅ Doble-booking ✅ Payments ✅ WhatsApp ✅ Audio ✅ iCal```python
-
-
-
----# 1. Constraint PostgreSQL (nivel DB)# WhatsApp- **Prevención multicapa:** Race condition handling DB + aplicación- **PostgreSQL Constraint:** `EXCLUDE USING gist` con daterange
-
-
-
-## 🌐 Deployment en ProducciónEXCLUDE USING gist (accommodation_id WITH =, period WITH &&)
-
-
-
-### Opción A: Docker Compose (Simple)WHERE (reservation_status IN ('pre_reserved','confirmed'))WHATSAPP_ACCESS_TOKEN=tu_token
-
-
+1) Cargar secretos en Fly (previo)
 
 ```bash
+export DEPLOY_ACK="I_ACCEPT_SINGLE_APP_COSTS"
+./ops/deploy-check.sh   # Debe decir: CHECKS OK
+```
 
-# 1. Configurar producción
+2) Desplegar
 
-cp .env.template .env.prod# 2. Lock Redis (nivel aplicación)WHATSAPP_APP_SECRET=tu_secret- **Redis Locks:** Locks distribuidos con TTL 30 minutos
+```bash
+fly deploy -a sist-cabanas-mvp --ha=false
+```
 
-# Editar .env.prod con valores reales
+3) Validar
 
-lock_key = f"lock:acc:{id}:{checkin}:{checkout}"
+```bash
+./ops/smoke-tests.sh https://sist-cabanas-mvp.fly.dev
+```
 
-# 2. Deploy con SSL automático
+Más detalles en `DEPLOY_FAST_TRACK.md` y `ops/STAGING_DEPLOYMENT_QUICK_START.md`.
 
-docker-compose -f docker-compose.prod.yml up -dlock_acquired = await redis.set(lock_key, uuid4(), nx=True, ex=1800)
+---
 
+## � Documentación principal
 
+- Guía de navegación: `DOCUMENTATION_INDEX.md`
+- Resumen ejecutivo: `PROJECT_SUMMARY.md`
+- UX Master Plan (Admin/Guest): `ops/UX_MASTER_PLAN_ADMIN_GUEST.md`
+- Playbooks de deploy/operaciones: `ops/*.md`
 
-# 3. Verificar salud
+---
 
-curl https://tu-dominio.com/api/v1/healthz
+## 🔐 Seguridad (mandatorios)
 
-```# 3. Manejo de IntegrityError# Mercado Pago### 📱 Integración WhatsApp Business- **Prevención multicapa:** Race condition handling a nivel DB y aplicación
+- Validar SIEMPRE firmas de webhooks (WhatsApp `X-Hub-Signature-256`, Mercado Pago `x-signature`).
+- No subir secretos al repo. Usar `.env` y secrets en Fly.
+- Rate limiting por IP+path respaldado por Redis. JWT para admin.
 
+---
 
+## 🧪 Tests
 
-### Opción B: Kubernetes (Escalable)try:
+```bash
+cd backend
+pytest -q
+```
 
+Suite >180 tests, cobertura ~85%. Algunos tests de overlap requieren Postgres real con `btree_gist`.
 
+---
 
-```bash    await db.commit()MERCADOPAGO_ACCESS_TOKEN=tu_token
+## 📄 Licencia
 
-# 1. Build image
-
-docker build -t tu-registry/cabanas-backend:v1.0 backend/except IntegrityError:
-
-
-
-# 2. Deploy con Helm    return {"error": "date_overlap"}- **Webhooks seguros:** Validación HMAC-SHA256
-
-helm install cabanas-mvp k8s/chart/ \
-
-  --set image.tag=v1.0 \```
-
-  --set env.DATABASE_URL=postgresql://... \
-
-  --set env.REDIS_URL=redis://...# Database
-
-
-
-# 3. Configurar ingress + cert-manager---
-
-kubectl apply -f k8s/ingress.yml
-
-```DATABASE_URL=postgresql+asyncpg://user:pass@localhost:5432/db- **Audio STT:** Transcripción con Whisper + FFmpeg### Integración WhatsApp Business
-
-
-
-### Variables Críticas para Producción## 🛠️ Stack Tecnológico
-
+MIT. Ver `LICENSE`.
 
 
 ```bashREDIS_URL=redis://localhost:6379/0
