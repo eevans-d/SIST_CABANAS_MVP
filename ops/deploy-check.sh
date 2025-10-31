@@ -42,12 +42,12 @@ if [[ "$running" -gt 1 ]]; then
 fi
 
 echo "🔎 [3/4] Verificando fly.toml (app/region)..."
-cfg_app=$(grep -E '^app\s*=\s*"' fly.toml | sed -E 's/app\s*=\s*"([^"]+)"/\1/')
+cfg_app=$(awk -F '"' '/^app[[:space:]]*=/{print $2; exit}' fly.toml)
 if [[ "$cfg_app" != "$APP_NAME" ]]; then
   echo "❌ fly.toml app='$cfg_app' distinto de '$APP_NAME'"
   status=1
 fi
-cfg_region=$(grep -E '^primary_region\s*=\s*"' fly.toml | sed -E 's/primary_region\s*=\s*"([^"]+)"/\1/')
+cfg_region=$(awk -F '"' '/^primary_region[[:space:]]*=/{print $2; exit}' fly.toml)
 if [[ "$cfg_region" != "$PRIMARY_REGION" ]]; then
   echo "❌ primary_region='$cfg_region' distinto de '$PRIMARY_REGION'"
   status=1

@@ -78,13 +78,13 @@ abort_on_multiple_machines() {
 assert_region_and_app() {
   echo "🔎 Verificando configuración: app=$APP_NAME, region=$PRIMARY_REGION..."
   local cfg_app
-  cfg_app=$(grep -E '^app\s*=\s*"' fly.toml | sed -E 's/app\s*=\s*"([^"]+)"/\1/')
+  cfg_app=$(awk -F '"' '/^app[[:space:]]*=/{print $2; exit}' fly.toml)
   if [[ "$cfg_app" != "$APP_NAME" ]]; then
     echo "❌ ABORTADO: fly.toml app='$cfg_app' distinto de '$APP_NAME'"
     exit 1
   fi
   local cfg_region
-  cfg_region=$(grep -E '^primary_region\s*=\s*"' fly.toml | sed -E 's/primary_region\s*=\s*"([^"]+)"/\1/')
+  cfg_region=$(awk -F '"' '/^primary_region[[:space:]]*=/{print $2; exit}' fly.toml)
   if [[ "$cfg_region" != "$PRIMARY_REGION" ]]; then
     echo "❌ ABORTADO: primary_region='$cfg_region' distinto de '$PRIMARY_REGION'"
     exit 1
