@@ -70,6 +70,12 @@ test_fallback.db*.code-workspace
 docs/archive/
 archive/
 
+# Backups and DB artifacts
+backups/
+*.sql.gz
+*.rdb
+backend/test_fallback.db
+
 # Zone.Identifier files from Windows
 *.Zone.Identifier
 

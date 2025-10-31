@@ -6,6 +6,35 @@
 
 ---
 
+## ♻️ Nueva limpieza incremental — 31 de Octubre 2025
+
+Objetivo: remover artefactos binarios y configuraciones no usadas, más unificar índice de documentación.
+
+### Archivos eliminados en esta pasada
+```
+❌ backups/postgres/pg_alojamientos_full_2025-10-06_04-52-40.sql.gz
+❌ backups/redis/redis_2025-10-06_04-54-41.rdb
+❌ backend/test_fallback.db
+❌ INDEX.md (duplicado de DOCUMENTATION_INDEX.md)
+❌ RAILWAY_README.md (proveedor no utilizado)
+❌ railway.toml (proveedor no utilizado)
+❌ Procfile (no utilizado)
+❌ audit_output.log (artefacto temporal)
+❌ docs/INDEX.md.old (obsoleto)
+```
+
+### Cambios preventivos
+```
+🛡️ .gitignore: añadir backups/, *.sql.gz, *.rdb, backend/test_fallback.db
+```
+
+Resultados:
+- Espacio recuperado: ~55–80 MB (según backups)
+- Menos ruido en el historial y PRs
+- Única fuente de verdad para índice: DOCUMENTATION_INDEX.md
+
+Nota: Los directorios vacíos bajo backups/ quedan sin seguimiento en Git (no se versionan por diseño).
+
 ## 📊 RESUMEN DE LA OPERACIÓN
 
 ### Objetivos
