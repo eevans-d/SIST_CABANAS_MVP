@@ -34,7 +34,12 @@
 4. ops/BLUEPRINT_CHECKLIST_OPTIMIZACION_UX.md (plan post-MVP)
 ```
 
-### 🔥 ALGO FALLÓ
+### � Contribuciones y Ramas
+
+- Política de rama única: trabajamos sobre `main` (PRs opcionales; requeridos para cambios riesgosos).
+- Guía completa: ver `CONTRIBUTING.md`.
+
+### �🔥 ALGO FALLÓ
 ```
 1. ops/INCIDENT_RESPONSE_RUNBOOK.md (7 escenarios comunes)
 2. ops/DISASTER_RECOVERY.md (si DB está corrupta)
