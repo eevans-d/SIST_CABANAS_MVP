@@ -106,6 +106,14 @@ Si este PR incluye breaking changes, describirlos aquí:
 - [ ] Cambios en nginx/docker-compose documentados
 - [ ] Plan de rollback definido
 
+## 🛡️ Guardas de Costo y Política (si aplica a deploy)
+
+- [ ] Ejecuté `./ops/deploy-check.sh` y obtuve: CHECKS OK
+- [ ] App única en Fly: `sist-cabanas-mvp`, región `gru`, usando `--ha=false`
+- [ ] Exporté `DEPLOY_ACK="I_ACCEPT_SINGLE_APP_COSTS"`
+- [ ] Confirmo NO modificar constraint anti doble-booking ni locks Redis sin aprobación
+- [ ] Leí `CONTRIBUTING.md` (política de rama única y convenciones)
+
 ## 🎓 Notas para Reviewers
 
 Información adicional relevante para quienes revisan:

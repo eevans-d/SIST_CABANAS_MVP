@@ -209,6 +209,12 @@ Más detalles en `DEPLOY_FAST_TRACK.md` y `ops/STAGING_DEPLOYMENT_QUICK_START.md
 
 ---
 
+Docs footer:
+- Contribuciones y política de ramas: `CONTRIBUTING.md`
+- Guardas de despliegue (costos): `DEPLOY_FAST_TRACK.md` y `ops/deploy-check.sh`
+
+---
+
 ## 🔐 Seguridad (mandatorios)
 
 - Validar SIEMPRE firmas de webhooks (WhatsApp `X-Hub-Signature-256`, Mercado Pago `x-signature`).

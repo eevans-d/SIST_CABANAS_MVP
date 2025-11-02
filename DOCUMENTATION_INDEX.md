@@ -156,6 +156,7 @@
 📍 ops/STAGING_DEPLOYMENT_QUICK_START.md (RECOMENDADO FIRST)
 📍 ops/STAGING_DEPLOYMENT_PLAYBOOK.md (detallado)
 📍 ops/DEPLOYMENT_DECISION_MAP.md (visual tree)
+📍 CONTRIBUTING.md (política de ramas y contribuciones)
 ```
 
 ### 🛠️ Scripts Ejecutables
