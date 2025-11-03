@@ -389,3 +389,10 @@ Ejecuta: `./ops/staging-deploy-interactive.sh` o lee `ops/STAGING_DEPLOYMENT_QUI
 *Generated: Oct 30, 2025 - 07:45 UTC*
 *Git: integration/minimax-work (consolidating branches)*
 *Latest: Minimax testing reports integrated*
+
+---
+
+### 🧭 Docs footer
+
+- Contribuciones y política de ramas: `CONTRIBUTING.md`
+- Guardas de despliegue (costos): `DEPLOY_FAST_TRACK.md` y `ops/deploy-check.sh`

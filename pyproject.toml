@@ -173,7 +173,6 @@ select = [
 ignore = [
     "E203",  # whitespace before ':' (conflicts with black)
     "E501",  # line too long (handled by black)
-    "W503",  # line break before binary operator
 ]
 exclude = [
     ".git",
