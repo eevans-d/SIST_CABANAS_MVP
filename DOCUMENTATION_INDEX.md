@@ -395,4 +395,4 @@ Ejecuta: `./ops/staging-deploy-interactive.sh` o lee `ops/STAGING_DEPLOYMENT_QUI
 ### 🧭 Docs footer
 
 - Contribuciones y política de ramas: `CONTRIBUTING.md`
-- Guardas de despliegue (costos): `DEPLOY_FAST_TRACK.md` y `ops/deploy-check.sh`
+- Guardas de despliegue (costos): `ops/deploy-check.sh` y `ops/STAGING_DEPLOYMENT_QUICK_START.md`

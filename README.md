@@ -196,7 +196,7 @@ fly deploy -a sist-cabanas-mvp --ha=false
 ./ops/smoke-tests.sh https://sist-cabanas-mvp.fly.dev
 ```
 
-Más detalles en `DEPLOY_FAST_TRACK.md` y `ops/STAGING_DEPLOYMENT_QUICK_START.md`.
+Más detalles en `ops/STAGING_DEPLOYMENT_QUICK_START.md` (documentación canónica).
 
 ---
 
@@ -211,7 +211,7 @@ Más detalles en `DEPLOY_FAST_TRACK.md` y `ops/STAGING_DEPLOYMENT_QUICK_START.md
 
 Docs footer:
 - Contribuciones y política de ramas: `CONTRIBUTING.md`
-- Guardas de despliegue (costos): `DEPLOY_FAST_TRACK.md` y `ops/deploy-check.sh`
+- Guardas de despliegue (costos): `ops/deploy-check.sh` y `ops/STAGING_DEPLOYMENT_QUICK_START.md`
 
 ---
 

@@ -1,7 +1,7 @@
 """Add performance indexes
 
-Revision ID: 002_perf_indexes
-Revises: 001_initial_schema
+Revision ID: 006_perf_indexes
+Revises: 005_idempotency_keys
 Create Date: 2025-10-14 16:00:00.000000
 
 Optimizaciones:
@@ -14,8 +14,8 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "002_perf_indexes"
-down_revision: Union[str, None] = "001_initial_schema"
+revision: str = "006_perf_indexes"
+down_revision: Union[str, None] = "005_idempotency_keys"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

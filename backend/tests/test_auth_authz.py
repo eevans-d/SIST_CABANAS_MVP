@@ -18,7 +18,7 @@ from datetime import datetime, timedelta
 import jwt
 import pytest
 import redis.asyncio as redis
-from app.core.cache import get_redis_pool
+from app.core.redis import get_redis_pool
 from app.core.config import settings
 from app.core.security import create_access_token, verify_jwt_token
 from app.main import app
@@ -287,8 +287,8 @@ class TestRateLimiting:
         # En producción, validar con IPs reales diferentes
 
         # Verificar que rate limit está configurado en Redis
-        pool = await get_redis_pool()
-        redis_client = pool.client()
+        pool = get_redis_pool()
+        redis_client = redis.Redis(connection_pool=pool)
 
         # Buscar keys de rate limiting
         keys = await redis_client.keys("ratelimit:*")

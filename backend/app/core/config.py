@@ -151,3 +151,7 @@ def get_settings() -> Settings:
             }
             _settings = Settings(**dummy)
     return _settings
+
+
+# Export singleton instance for backward compatibility with tests
+settings = get_settings()
