@@ -18,8 +18,8 @@ from datetime import datetime, timedelta
 import jwt
 import pytest
 import redis.asyncio as redis
-from app.core.redis import get_redis_pool
 from app.core.config import settings
+from app.core.redis import get_redis_pool
 from app.core.security import create_access_token, verify_jwt_token
 from app.main import app
 from httpx import AsyncClient
