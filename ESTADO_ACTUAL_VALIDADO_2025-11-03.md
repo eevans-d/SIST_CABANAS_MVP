@@ -318,16 +318,61 @@ Deployment:
 
 ---
 
+## 📚 TESTING ADICIONAL (MINIMAX M2)
+
+**Documento de referencia**: [`docs/qa/MINIMAX_TESTING_REPORT_2025-10-29.md`](docs/qa/MINIMAX_TESTING_REPORT_2025-10-29.md)
+
+**Validación complementaria** realizada desde plataforma Minimax M2 (29-30 octubre 2025):
+
+### Fase 1.3-1.5: Fixes Avanzados
+- **JWT/Auth**: Corrección `verify_jwt_token()` → `HTTPException` (3 tests)
+- **Loop Detection**: Normalización regex `\s+` para espacios múltiples (4 tests)
+- **Memory Leaks**: Imports `tempfile` y timing en cancelación de tareas (2 tests)
+- **MercadoPago**: 13 tests skipped (requieren token real, comportamiento esperado)
+- **WhatsApp**: 5 tests corregidos (await en sync method `resp.json()`)
+
+### Resultados Validados
+- **Success Rate**: ~95% (~276 tests passing)
+- **Coverage**: 80%+ en módulos core
+- **Performance**: Locust 753 req/s throughput (22K requests/30s)
+- **Security**: Bandit + Safety + Semgrep → 100% score, 0 CVEs
+
+---
+
+## 🔌 ANÁLISIS TÉCNICO DETALLADO
+
+**Documento de referencia**: [`docs/integrations/integrations_analysis.md`](docs/integrations/integrations_analysis.md)
+
+**Deep-dive de 1225 líneas** sobre integraciones externas:
+
+### MercadoPago Integration
+- Arquitectura webhook idempotente
+- Validación de firmas `x-signature` + HMAC-SHA256
+- Esquema BD completo con índices optimizados
+- Retry logic (429, 500, 502, 503, 504)
+- Mapping `external_reference` → `reservation_code`
+
+### WhatsApp Business Cloud API
+- Verificación webhook (`hub.mode`, `hub.challenge`, `hub.verify_token`)
+- Validación firma `X-Hub-Signature-256` + SHA256
+- Tipos de mensaje: texto, imágenes, interactivos (botones/listas)
+- Rate limiting y retry automático
+- Payload normalization a contrato unificado
+
+---
+
 ## ✅ VERIFICACIÓN FINAL
 
 ```
 [ ✅ ] Backend 100% funcional
 [ ✅ ] Anti-double-booking validado (dual-layer)
-[ ✅ ] Tests 99.7% passing
+[ ✅ ] Tests 99.7% passing (381/382)
+[ ✅ ] Testing adicional Minimax M2: ~95% success
 [ ✅ ] Migraciones Alembic con DAG válido
 [ ✅ ] Seguridad: 0 issues críticos
 [ ✅ ] Documentación limpia y unificada
 [ ✅ ] .env.template sanitizado
+[ ✅ ] Integraciones documentadas (MercadoPago + WhatsApp)
 [ 🔶 ] Frontend Admin 60% completo (Fase 1 en curso)
 [ ⏳ ] Staging deployment pendiente
 [ ⏳ ] Alerting validation pendiente
@@ -335,11 +380,16 @@ Deployment:
 
 ---
 
-**Última actualización**: 3 de noviembre 2025, 05:30 UTC  
-**Commit**: d2e3744  
-**Branch**: main  
+**Última actualización**: 3 de noviembre 2025, 06:15 UTC
+**Commits**: d2e3744 (fixes) + 4f036fc (cleanup) + recuperación Minimax M2
+**Branch**: main
 **Estado**: ✅ LISTO PARA STAGING DEPLOYMENT
 
 ---
 
 *Este documento reemplaza TODOS los análisis anteriores. Es la única fuente de verdad sobre el estado actual del sistema.*
+
+**Referencias complementarias**:
+- Testing avanzado: [`MINIMAX_TESTING_REPORT_2025-10-29.md`](docs/qa/MINIMAX_TESTING_REPORT_2025-10-29.md)
+- Análisis integraciones: [`integrations_analysis.md`](docs/integrations/integrations_analysis.md)
+- Sync histórico: [`REPO_SYNC_STATUS.md`](REPO_SYNC_STATUS.md)
