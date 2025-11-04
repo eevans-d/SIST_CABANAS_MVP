@@ -14,6 +14,9 @@ jobs:
     concurrency:
       group: ci-tests-${{ github.ref }}
       cancel-in-progress: true
+    permissions:
+      contents: read
+      pull-requests: write
 
     services:
       postgres:
@@ -117,17 +120,55 @@ jobs:
         if: always()
         run: |
           python - <<'PY'
+          import os
           import xml.etree.ElementTree as ET
           try:
               tree = ET.parse('backend/coverage.xml')
               root = tree.getroot()
               rate = float(root.attrib.get('line-rate', 0.0)) * 100
               print(f"Coverage total: {rate:.2f}%")
-              with open('${{ github.step_summary }}', 'a') as f:
-                  f.write(f"\n### Coverage\n\n- Total: {rate:.2f}%\n")
+              summary_path = os.environ.get('GITHUB_STEP_SUMMARY')
+              if summary_path:
+                  with open(summary_path, 'a', encoding='utf-8') as f:
+                      f.write(f"\n### Coverage\n\n- Total: {rate:.2f}%\n")
           except Exception as e:
               print('No se pudo leer coverage.xml:', e)
           PY
+
+      - name: Build PR coverage comment
+        if: always()
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          from datetime import datetime
+          header = [
+              "## ✅ Coverage Report",
+              "",
+          ]
+          try:
+              tree = ET.parse('backend/coverage.xml')
+              root = tree.getroot()
+              rate = float(root.attrib.get('line-rate', 0.0)) * 100
+              body = [
+                  f"- Total: **{rate:.2f}%**",
+                  f"- Fecha: {datetime.utcnow().isoformat(timespec='seconds')}Z",
+                  "",
+                  "> Nota: Este reporte se actualiza automáticamente en cada ejecución del CI.",
+              ]
+          except Exception as e:
+              body = [
+                  f"No se pudo leer coverage.xml: {e}",
+              ]
+          with open('backend/coverage_comment.md', 'w', encoding='utf-8') as f:
+              f.write("\n".join(header + body))
+          PY
+
+      - name: Post coverage comment to PR
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: coverage-report
+          path: backend/coverage_comment.md
 
       - name: Upload pytest timings (artifact)
         if: always()
