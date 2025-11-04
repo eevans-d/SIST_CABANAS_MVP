@@ -27,7 +27,7 @@ Backend:  FastAPI 0.109.0 + SQLAlchemy 2.0.25 async + PostgreSQL 16+ (btree_gist
 Cache:    Redis 7 (distributed locks + rate limiting)
 Frontend: React 19 + Vite + Tailwind + TanStack Query (~60% completo)
 Deploy:   Fly.io (single-app policy: sist-cabanas-mvp, region: gru)
-Obs:      Prometheus + Grafana + Alertmanager (321 líneas de reglas)
+Obs:      Prometheus + Grafana + Alertmanager (320 líneas de reglas)
 ```
 
 ### Anti-Double-Booking (CRÍTICO - Validado)
@@ -195,7 +195,7 @@ flyctl logs -a sist-cabanas-mvp -f
 
 ## 📊 OBSERVABILIDAD
 
-### Alertas Configuradas (321 líneas)
+### Alertas Configuradas (320 líneas)
 - `monitoring/prometheus/rules/alerts.yml`
 - Cubre: API down, high error rate, slow response, DB issues, Redis issues, double-booking attempts
 
@@ -297,6 +297,7 @@ Código:
 ├─ Backend:  7150 líneas Python
 ├─ Frontend: ~3000 líneas TypeScript/React
 ├─ Tests:    382 tests (381 passing)
+├─ Docs:     443 archivos Markdown
 └─ Coverage: >80% backend crítico
 
 Seguridad:
