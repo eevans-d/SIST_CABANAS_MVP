@@ -50,6 +50,7 @@ Si aplica, agregar screenshots o logs que demuestren el cambio.
 ### Code Quality
 - [ ] Tests añadidos/actualizados (coverage > 80%)
 - [ ] Todos los tests pasan (`pytest tests/ -v`)
+- [ ] CI "CI - Tests" pasando en GitHub Actions
 - [ ] Linting ok (`flake8 app/ tests/`)
 - [ ] Format ok (`black app/ tests/ --check`)
 - [ ] Type checking ok (`mypy app/`) [si aplica]
@@ -70,6 +71,9 @@ Si aplica, agregar screenshots o logs que demuestren el cambio.
 - [ ] Sin logs de información sensible
 - [ ] Validaciones de entrada implementadas
 - [ ] Manejo de errores apropiado
+- [ ] Webhooks con firma HMAC validados y tests pasando (WhatsApp/MercadoPago)
+- [ ] Constraint anti doble-booking activo (PostgreSQL EXCLUDE gist) y no alterado
+- [ ] Locks Redis presentes en operaciones críticas (reservas)
 
 ### Performance
 - [ ] No hay regresiones de performance
@@ -105,6 +109,7 @@ Si este PR incluye breaking changes, describirlos aquí:
 - [ ] Variables de entorno documentadas en `.env.template`
 - [ ] Cambios en nginx/docker-compose documentados
 - [ ] Plan de rollback definido
+- [ ] (`btree_gist`) habilitado en Postgres para entornos nuevos
 
 ## 🛡️ Guardas de Costo y Política (si aplica a deploy)
 

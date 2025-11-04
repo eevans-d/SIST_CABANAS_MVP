@@ -11,6 +11,9 @@ jobs:
     name: Run backend test suite
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    concurrency:
+      group: ci-tests-${{ github.ref }}
+      cancel-in-progress: true
 
     services:
       postgres:
@@ -57,6 +60,14 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
       - name: Install system packages
         run: |
           sudo apt-get update
@@ -88,12 +99,19 @@ jobs:
         run: |
           alembic upgrade head
 
-      - name: Run tests
+      - name: Run tests (with coverage)
         working-directory: backend
         env:
           PYTHONPATH: backend
         run: |
-          pytest -v --maxfail=1 --durations=25 --tb=short
+          pytest -v --maxfail=1 --durations=25 --tb=short --cov=app --cov-report=xml --cov-report=term
+
+      - name: Upload coverage.xml
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: backend/coverage.xml
 
       - name: Upload pytest timings (artifact)
         if: always()
