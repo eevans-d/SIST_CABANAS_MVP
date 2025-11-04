@@ -113,6 +113,22 @@ jobs:
           name: coverage-xml
           path: backend/coverage.xml
 
+      - name: Publish coverage to job summary
+        if: always()
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          try:
+              tree = ET.parse('backend/coverage.xml')
+              root = tree.getroot()
+              rate = float(root.attrib.get('line-rate', 0.0)) * 100
+              print(f"Coverage total: {rate:.2f}%")
+              with open('${{ github.step_summary }}', 'a') as f:
+                  f.write(f"\n### Coverage\n\n- Total: {rate:.2f}%\n")
+          except Exception as e:
+              print('No se pudo leer coverage.xml:', e)
+          PY
+
       - name: Upload pytest timings (artifact)
         if: always()
         uses: actions/upload-artifact@v4

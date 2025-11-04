@@ -51,6 +51,7 @@ Si aplica, agregar screenshots o logs que demuestren el cambio.
 - [ ] Tests añadidos/actualizados (coverage > 80%)
 - [ ] Todos los tests pasan (`pytest tests/ -v`)
 - [ ] CI "CI - Tests" pasando en GitHub Actions
+- [ ] CI "CI - Lint & Types" pasando en GitHub Actions
 - [ ] Linting ok (`flake8 app/ tests/`)
 - [ ] Format ok (`black app/ tests/ --check`)
 - [ ] Type checking ok (`mypy app/`) [si aplica]

@@ -1,6 +1,7 @@
 # 🏠 Sistema MVP de Automatización de Reservas
 
 [![CI - Tests](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci-tests.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci-tests.yml)
+[![CI - Lint & Types](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci-lint.yml/badge.svg)](https://github.com/eevans-d/SIST_CABANAS_MVP/actions/workflows/ci-lint.yml)
 
 
 
