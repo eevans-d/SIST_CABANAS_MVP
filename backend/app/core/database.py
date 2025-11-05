@@ -1,3 +1,7 @@
+"""Inicialización de motor y sesión asíncronos para la base de datos."""
+
+from typing import Any
+
 import structlog
 from app.core.config import get_settings
 from sqlalchemy import text
@@ -7,7 +11,7 @@ from sqlalchemy.pool import NullPool
 logger = structlog.get_logger()
 settings = get_settings()
 
-engine_kwargs = {
+engine_kwargs: dict[str, Any] = {
     "echo": settings.ENVIRONMENT == "development",
 }
 
@@ -21,6 +25,11 @@ else:
     engine_kwargs["pool_pre_ping"] = True
     engine_kwargs["pool_size"] = settings.DB_POOL_SIZE  # type: ignore
     engine_kwargs["max_overflow"] = settings.DB_MAX_OVERFLOW  # type: ignore
+
+# SSL para proveedores gestionados (p.ej., Supabase). asyncpg acepta `ssl=True`.
+if not is_sqlite and getattr(settings, "DB_SSL", False):
+    engine_kwargs.setdefault("connect_args", {})
+    engine_kwargs["connect_args"]["ssl"] = True
 
 engine = create_async_engine(
     database_url,
@@ -39,7 +48,7 @@ async_session_maker = async_sessionmaker(
 
 # Dependency for FastAPI
 async def get_db():
-    """Get database session for dependency injection"""
+    """Get database session for dependency injection."""
     async with async_session_maker() as session:
         try:
             yield session

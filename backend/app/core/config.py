@@ -1,12 +1,18 @@
+"""Configuración de la aplicación (variables de entorno y defaults)."""
+
 import os
 import secrets
-from typing import Optional
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    """Modelo de configuración central basada en BaseSettings.
+
+    Lee variables desde el entorno/.env y aplica validaciones mínimas.
+    """
+
     model_config: SettingsConfigDict = {
         "env_file": ".env",
         "case_sensitive": True,
@@ -19,6 +25,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str | None = None
     DB_POOL_SIZE: int = 50  # Increased for load handling (was 10)
     DB_MAX_OVERFLOW: int = 25  # Increased for spike traffic (was 5)
+    DB_SSL: bool = False  # Habilitar SSL para proveedores gestionados (p.ej., Supabase)
 
     # Redis
     REDIS_URL: str | None = None
@@ -32,7 +39,7 @@ class Settings(BaseSettings):
 
     # Mercado Pago
     MERCADOPAGO_ACCESS_TOKEN: str | None = None
-    MERCADOPAGO_WEBHOOK_SECRET: Optional[str] = None
+    MERCADOPAGO_WEBHOOK_SECRET: str | None = None
 
     # Application
     BASE_URL: str | None = None
@@ -75,6 +82,11 @@ class Settings(BaseSettings):
 
     @field_validator("DATABASE_URL", mode="before")
     def validate_database_url(cls, v: str | None):
+        """Normaliza/valida DATABASE_URL y fuerza el driver asyncpg.
+
+        - Permite SQLite para tests.
+        - Reemplaza postgresql:// por postgresql+asyncpg:// cuando aplique.
+        """
         if v is None:
             raise ValueError("DATABASE_URL is required")
         # Permitir SQLite (principalmente usado en tests / fallback import-time)
@@ -88,6 +100,7 @@ class Settings(BaseSettings):
 
     @field_validator("REDIS_URL", mode="before")
     def validate_redis_url(cls, v: str | None, info):
+        """Valida REDIS_URL e inserta contraseña si se provee por separado."""
         if v is None:
             raise ValueError("REDIS_URL is required")
         if not v.startswith("redis://"):
@@ -127,7 +140,8 @@ def get_settings() -> Settings:
         try:
             _settings = Settings()
         except Exception:
-            # Fallback mínimamente viable si variables no están listas (no recomendado fuera de tests)
+            # Fallback mínimamente viable si variables no están listas
+            # (no recomendado fuera de tests)
             default_db = "postgresql+asyncpg://user:pass@localhost:5432/db"
             dummy = {
                 "ENVIRONMENT": env or "development",
