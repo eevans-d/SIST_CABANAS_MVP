@@ -11,38 +11,71 @@ echo "🚀 Starting SIST_CABAÑAS_MVP Backend on Fly.io..."
 # ============================================================================
 echo "📋 Validating environment variables..."
 
-# Required variables
-REQUIRED_VARS=(
+# Integraciones opcionales: permite arrancar sin WhatsApp/Mercado Pago
+# Usa INTEGRATIONS_REQUIRED=true|false (default: true)
+INTEGRATIONS_REQUIRED=${INTEGRATIONS_REQUIRED:-true}
+
+# Núcleo requerido siempre
+CORE_REQUIRED_VARS=(
     "DATABASE_URL"
     "REDIS_URL"
     "JWT_SECRET"
+    "ADMIN_ALLOWED_EMAILS"
+)
+
+# Integraciones (se pueden omitir para pruebas iniciales)
+INTEGRATIONS_VARS=(
     "WHATSAPP_ACCESS_TOKEN"
     "WHATSAPP_APP_SECRET"
     "WHATSAPP_PHONE_ID"
     "WHATSAPP_VERIFY_TOKEN"
     "MERCADOPAGO_ACCESS_TOKEN"
-    "ADMIN_ALLOWED_EMAILS"
+    "MERCADOPAGO_WEBHOOK_SECRET"
 )
 
 MISSING_VARS=0
-for var in "${REQUIRED_VARS[@]}"; do
+
+echo "🔹 Checking core variables..."
+for var in "${CORE_REQUIRED_VARS[@]}"; do
     if [ -z "${!var}" ]; then
-        echo "❌ ERROR: Missing required environment variable: $var"
+        echo "❌ ERROR: Missing required core environment variable: $var"
         MISSING_VARS=$((MISSING_VARS + 1))
     else
         echo "✅ $var is set"
     fi
 done
 
+if [ "${INTEGRATIONS_REQUIRED}" = "true" ]; then
+    echo "🔹 Checking integrations (WhatsApp/Mercado Pago)..."
+    for var in "${INTEGRATIONS_VARS[@]}"; do
+        if [ -z "${!var}" ]; then
+            echo "❌ ERROR: Missing required integration variable: $var"
+            MISSING_VARS=$((MISSING_VARS + 1))
+        else
+            echo "✅ $var is set"
+        fi
+    done
+else
+    echo "⚠️  Integrations are disabled (INTEGRATIONS_REQUIRED=false). Skipping WhatsApp/Mercado Pago checks."
+fi
+
 if [ $MISSING_VARS -gt 0 ]; then
     echo ""
     echo "❌ ERROR: $MISSING_VARS required environment variable(s) missing!"
     echo "Configure them with: flyctl secrets set VARIABLE=value"
     echo ""
-    echo "Required variables:"
-    for var in "${REQUIRED_VARS[@]}"; do
+    echo "Required core variables:"
+    for var in "${CORE_REQUIRED_VARS[@]}"; do
         echo "  - $var"
     done
+    if [ "${INTEGRATIONS_REQUIRED}" = "true" ]; then
+        echo "Also required integration variables:"
+        for var in "${INTEGRATIONS_VARS[@]}"; do
+            echo "  - $var"
+        done
+    else
+        echo "Integrations are optional in this run (INTEGRATIONS_REQUIRED=false)."
+    fi
     exit 1
 fi
 
