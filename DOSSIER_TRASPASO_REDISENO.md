@@ -238,6 +238,7 @@ Tailwind para un panel de administración; despliegue previsto en Fly.io.
 | Crítica | Los endpoints `/api/v1/reservations/*` y `/api/v1/ical/import` **no tienen autenticación**: cualquiera podía crear, confirmar o cancelar reservas, o inyectar bloqueos de calendario. | `routers/reservations.py` (solo `Depends(get_db)`) |
 | Crítica | **Cuatro secretos reales versionados**, presentes en el árbol y en el historial de git: `ADMIN_CSRF_SECRET` y `GRAFANA_ADMIN_PASSWORD` en `.env.template:215,233`; `JWT_SECRET_KEY` e `ICAL_EXPORT_SECRET` en un documento de despliegue. Requieren **rotación**, no borrado. | verificado con `grep` |
 | Crítica | La constraint `EXCLUDE` existe **solo en la migración, no en el modelo ORM**. En desarrollo la aplicación creaba el esquema con `Base.metadata.create_all()` (`main.py:43-45`), produciendo una base **sin protección anti-doble-booking**. | `models/reservation.py` |
+| Crítica | **`alembic upgrade head` no puede completarse contra PostgreSQL.** La migración 006 crea cuatro índices con `postgresql_concurrently=True` sin `autocommit_block()`, y PostgreSQL prohíbe `CREATE INDEX CONCURRENTLY` dentro de la transacción en la que Alembic ejecuta cada migración. Falla siempre, de forma determinista. Ver §6.1. | `alembic/versions/006_perf_indexes.py` |
 | Alta | Los dos workflows de despliegue se disparan al hacer push y **no dependen de los tests**: uno no declara `needs`, el otro declara `needs: []` bajo un comentario que afirma lo contrario. | `deploy-fly.yml`, `deploy-staging.yml:16` |
 | Alta | El lock distribuido se anula ante cualquier fallo: `except Exception: locked = True`, sin log ni métrica. Si Redis caía, el sistema seguía adelante. | `services/reservations.py:105-111` |
 | Alta | El compose de producción no compila: usa `target: production` y el Dockerfile no tiene *stages*. | `docker-compose.prod.yml:29` |
@@ -295,12 +296,53 @@ camino para cada cosa.
 Esta sección es más útil que todo el análisis técnico anterior. **El proyecto no se estancó
 por falta de código. Se estancó porque nada impedía declarar "terminado" sin evidencia.**
 
-### 6.1 El mecanismo exacto
+### 6.1 El hecho central: la integración continua nunca pasó. Ni una sola vez.
 
-**[V]** El workflow de integración continua levantaba un contenedor de PostgreSQL y definía la
-variable `DATABASE_URL`. Pero el archivo de configuración de tests leía **`TEST_DATABASE_URL`**,
-que nadie definía nunca; su valor por defecto apuntaba a un usuario y una base inexistentes.
-La conexión fallaba, y el código caía **en silencio** a SQLite:
+**[V]** El workflow de tests (`ci-tests.yml`) se creó el 2025-11-04. Sobre la rama `main`
+acumula **10 ejecuciones, numeradas 1 a 10, y las diez concluyeron en `failure`** — desde la
+primera, la del propio commit que lo creó, hasta la última del proyecto (2025-11-09). El
+workflow de lint (`ci-lint.yml`) lleva **19 ejecuciones sin un solo éxito**. El de
+`ci.yml` ("Quick Tests") también falla.
+
+**Ninguno de los tres workflows del repositorio ha tenido jamás una ejecución exitosa.**
+
+Y sin embargo, dos commits posteriores a esa primera falla agregaron **badges de CI al
+README**: `c8de7e8` ("badge de CI en README") y `1bf794d` ("badges de Lint & Types"). Se
+publicaron insignias de estado para workflows que nunca habían pasado.
+
+**[V] Por qué falla el workflow de tests.** No llega a ejecutar un solo test. El paso
+`alembic upgrade head` aborta en la migración 006, que crea índices con
+`postgresql_concurrently=True`:
+
+```
+ERROR: CREATE INDEX CONCURRENTLY cannot run inside a transaction block
+STATEMENT: CREATE INDEX CONCURRENTLY idx_reservation_expires_prereserved ...
+```
+
+Alembic ejecuta cada migración dentro de una transacción, y PostgreSQL prohíbe
+`CREATE INDEX CONCURRENTLY` ahí. La solución habitual es `op.get_context().autocommit_block()`,
+y **no aparece en ningún archivo de `alembic/`**. Es un defecto determinista y permanente, no
+una deriva: `alembic upgrade head` **no puede completarse contra PostgreSQL**. Como el job
+aborta ahí, `pytest` nunca corre — el log lo confirma: *"No files were found with the provided
+path: backend/.pytest_cache"*.
+
+Consecuencia práctica: el sistema **nunca fue migrado a una base PostgreSQL real por su propia
+cadena de migraciones**, lo cual es coherente con que nunca se haya desplegado.
+
+**[V] Qué pasa cuando los tests sí corren.** El workflow `ci.yml` ejecuta la suite sobre
+SQLite, sin migraciones. Resultado en la ejecución más reciente:
+
+```
+47 failed, 272 passed, 19 skipped, 19 warnings, 33 errors in 35.04s
+```
+
+Los fallos se concentran en `test_auth_authz.py` y `test_input_validation.py` — es decir, en
+las pruebas de autenticación, autorización, inyección SQL, XSS y SSRF. Ninguna cifra
+publicada por el proyecto ("381/382 pasando", "99.7%") se parece a esto.
+
+**[V] Y aun así, ese camino no prueba el núcleo.** El archivo de configuración de tests lee
+`TEST_DATABASE_URL`, que ningún workflow define; su valor por defecto apunta a un usuario y una
+base inexistentes, la conexión falla y el código cae **en silencio** a SQLite:
 
 ```python
 TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", "postgresql+asyncpg://test:test@localhost:5432/test_db")
@@ -311,17 +353,19 @@ if not await _can_connect(primary_engine):     # siempre verdadero en CI
 ```
 
 SQLite no soporta `EXCLUDE USING gist`. Los **9 tests** que protegían la regla central del
-producto —los de `test_double_booking.py` y `test_constraint_validation.py`— se auto-saltaban
-con `pytest.skip("Constraint EXCLUDE sólo soportado en PostgreSQL")`, y el workflow reportaba
-éxito.
+producto —los de `test_double_booking.py` y `test_constraint_validation.py`— se auto-saltan con
+`pytest.skip("Constraint EXCLUDE sólo soportado en PostgreSQL")`. **La prevención de
+doble-booking, que es el requisito no negociable del sistema, no fue verificada nunca por la
+integración continua.**
 
-**El badge verde del README certificaba una suite que no probaba el núcleo del producto.**
-
-**[V]** Agravantes: no existía ningún umbral de cobertura en todo el repositorio (`fail_under`
-o `--cov-fail-under`: cero apariciones). El archivo `pytest.ini` anulaba por completo la
+**[V]** Agravantes: no existe ningún umbral de cobertura en todo el repositorio (`fail_under`
+o `--cov-fail-under`: cero apariciones). El archivo `pytest.ini` anula por completo la
 configuración de `pyproject.toml`, incluidos `--strict-markers` y `filterwarnings = ["error"]`,
-que nunca se aplicaron. 21 tests (los de extremo a extremo) nunca llegaban a ejecutarse porque
-quedaban fuera de `testpaths`.
+que nunca se aplicaron. 21 tests (los de extremo a extremo) nunca llegan a ejecutarse porque
+quedan fuera de `testpaths`. Y las herramientas de lint se instalan **sin versiones fijas**
+(`pip install flake8 black mypy ruff`), de modo que el resultado cambia solo con el tiempo: hoy
+`black 26.5.1` marca 19 archivos, mientras que `black 23.12.1` —la versión que el propio
+proyecto fija en `.pre-commit-config.yaml`— deja los 101 archivos limpios.
 
 ### 6.2 El síntoma
 
@@ -346,19 +390,27 @@ microservicios", y un índice canónico que enlazaba cinco archivos inexistentes
 El nuevo proyecto necesita, antes que cualquier funcionalidad, un mecanismo que haga
 **imposible** repetir esto. Como mínimo:
 
-1. **Prohibido el degradado silencioso.** Si la dependencia que hace válido un test no está,
-   el test **falla**; no se salta ni se sustituye por algo más débil. Ese fallback fue la
-   causa raíz.
-2. **Un solo comando de verificación**, idéntico en local y en integración continua, del que
+1. **Un gate que nadie mira no es un gate.** Es la lección más dura de §6.1: el proyecto tenía
+   tres workflows, ninguno pasó jamás, y se les pusieron badges igual. Antes de agregar el
+   segundo control, el primero tiene que estar en verde y alguien tiene que notar cuándo deja
+   de estarlo. Un control roto es peor que ninguno: da la apariencia de rigor sin el rigor.
+2. **Prohibido el degradado silencioso.** Si la dependencia que hace válido un test no está,
+   el test **falla**; no se salta ni se sustituye por algo más débil.
+3. **Fija las versiones de todas las herramientas.** Un `pip install black` sin versión hace
+   que el resultado del control cambie solo, sin que nadie toque el código.
+4. **Prueba las migraciones aplicándolas de verdad**, contra el mismo motor que usa
+   producción, en cada ejecución — y también el `downgrade`. El defecto de la migración 006
+   habría aparecido en el primer minuto.
+5. **Un solo comando de verificación**, idéntico en local y en integración continua, del que
    dependa el despliegue.
-3. **Umbral de cobertura activo y con trinquete** (sube, nunca baja), fijado en un número
+6. **Umbral de cobertura activo y con trinquete** (sube, nunca baja), fijado en un número
    medido y honesto, no aspiracional.
-4. **"Terminado" se demuestra con la salida del comando, pegada.** No con un documento.
-5. **Prohibidos los documentos de estado.** El estado es el tablero de tareas y el resultado
+7. **"Terminado" se demuestra con la salida del comando, pegada.** No con un documento.
+8. **Prohibidos los documentos de estado.** El estado es el tablero de tareas y el resultado
    de la verificación. El proyecto anterior generó 12.216 líneas de documentación y borró 87
    archivos por contradictorios; ninguno de ellos evitó el estancamiento, y varios lo
    ocultaron.
-6. **Los porcentajes de avance son ruido.** Nadie los puede verificar. Sustitúyelos por
+9. **Los porcentajes de avance son ruido.** Nadie los puede verificar. Sustitúyelos por
    criterios de salida binarios y comprobables.
 
 ---
