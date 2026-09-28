@@ -26,7 +26,7 @@ Sobre ese sistema existente llegaron tres propuestas:
 
 Dos afirmaciones de estos documentos resultaron incorrectas al verificarlas contra fuentes primarias y contra el código:
 
-**1. La latencia de iCal.** El `DOCUMENTO_MAESTRO_P0` §4.1 estima la latencia de sincronización iCal en "15 a 45 minutos" y enuncia **"0% overbooking"** como métrica principal. La documentación oficial de Airbnb (Help, artículo 99) dice literalmente: *"Your Airbnb calendar automatically updates every 3 hours, and pulls in information from the other calendars you've connected."* iCal es un mecanismo **pull**: la OTA no recibe un push cuando se confirma una reserva directa, consulta el feed en su propio ciclo. En Airbnb la ventana es de 3 horas; en Booking.com, 2 a 6 horas en la práctica.
+**1. La latencia de iCal.** El `DOCUMENTO_MAESTRO_P0` §4.1 estima la latencia de sincronización iCal en "15 a 45 minutos" y enuncia como métrica principal una tasa de sobreventa igual a cero. **Ese documento es la fuente de la afirmación, y este ADR la rechaza por falsa.** La documentación oficial de Airbnb (Help, artículo 99) dice literalmente: *"Your Airbnb calendar automatically updates every 3 hours, and pulls in information from the other calendars you've connected."* iCal es un mecanismo **pull**: la OTA no recibe un push cuando se confirma una reserva directa, consulta el feed en su propio ciclo. En Airbnb la ventana es de 3 horas; en Booking.com, 2 a 6 horas en la práctica.
 
 Consecuencia directa: **la métrica de 0% de sobreventa no es alcanzable con sincronización iCal**, y afirmar lo contrario en un documento de arquitectura induce a error sobre el nivel de protección real del sistema.
 
@@ -181,7 +181,7 @@ Condiciones heredadas de `ADR-001` que **no** cambian: la prohibición de integr
 ## Criterios de éxito
 
 - [ ] Instantly Book desactivado en Airbnb y en Booking, con responsable, fecha y evidencia registrados en el issue de seguimiento.
-- [ ] Ningún documento vigente afirma "0% overbooking".
+- [ ] Ningún documento vigente afirma una tasa de sobreventa igual a cero.
 - [ ] Todo documento vigente declara explícitamente que iCal no es un control de concurrencia.
 - [ ] Las constantes canónicas (50%, 2 h / 4 h) están escritas en un único documento, sin duplicación contradictoria.
 - [ ] El operador tiene un procedimiento M1/M2/M3 escrito y conocido.
@@ -194,7 +194,7 @@ Los tres documentos recibidos en septiembre de 2026 se resuelven así:
 
 | Documento | Destino | Razón |
 |---|---|---|
-| `DOCUMENTO_MAESTRO_P0_SISTEMA_CABANAS.md` | **Parcialmente adoptado.** Copiado en [`docs/entrantes/`](../entrantes/) como registro histórico. | Se adoptan sus constantes comerciales, la definición de las cadenas de integración y sus criterios de producción. Se rechazan su arquitectura (n8n), su latencia iCal de "15-45 min", su costo de WhatsApp de "$0" y su métrica de "0% overbooking". |
+| `DOCUMENTO_MAESTRO_P0_SISTEMA_CABANAS.md` | **Parcialmente adoptado.** Copiado en [`docs/entrantes/`](../entrantes/) como registro histórico. | Se adoptan sus constantes comerciales, la definición de las cadenas de integración y sus criterios de producción. Se rechazan su arquitectura (n8n), su latencia iCal de "15-45 min", su costo de WhatsApp de "$0" y su métrica de sobreventa igual a cero. |
 | `PMS_CABANAS_NECOCHEA_ESPECIFICACION_DEFINITIVA.md` | **Rechazado.** No se copia al repositorio. | Contradice `ADR-001` de forma directa al proponer Beds24 como fuente maestra. Su prohibición de iCal y su exigencia de API 2-way son correctas como diagnóstico, pero la solución que propone es descartada. Citada por título y fecha para trazabilidad. |
 | `PMS_Criterios_Produccion.md` | **No es una decisión arquitectónica.** No se copia. | Es una rúbrica de evaluación de 17 dominios de calidad de un PMS. Se conserva como referencia conceptual: su criterio de que "una capacidad indispensable puede estar resuelta por un módulo externo siempre que esté integrado, sea observable y mantenga datos consistentes con el núcleo" es exactamente el principio de D1. |
 
